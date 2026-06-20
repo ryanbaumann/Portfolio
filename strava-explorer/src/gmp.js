@@ -8,6 +8,7 @@ let elevator = null;
 let previousPolyline = null;
 let routeMarkers = [];
 let photoMarkers = new Map(); // Stores { marker, popover } pairs, key = photo.unique_id
+let trackingMarker = null;
 
 // Follow Camera state moved to followCamera.js
 // GMP Class variables (populated in initMap)
@@ -274,6 +275,7 @@ export function clearRouteMarkers() {
         try { map3d?.removeChild(marker); } catch (e) { console.warn('Error removing route marker', e); }
     });
     routeMarkers = [];
+    updateTrackingMarker(null);
 }
 
 export function removePreviousPolyline() {
@@ -467,4 +469,33 @@ export function downsamplePath(path, maxPoints) { // path = array of LatLng obje
 
     console.log(`[downsamplePath] Returning new path. Length: ${newPath?.length}`);
     return newPath;
+}
+
+export function updateTrackingMarker(position, color = '#3b82f6') {
+    if (!map3d || !Marker3DElement || !AltitudeMode) return;
+    
+    if (!position) {
+        if (trackingMarker) {
+            try { map3d.removeChild(trackingMarker); } catch (e) {}
+            trackingMarker = null;
+        }
+        return;
+    }
+    
+    const lat = typeof position.lat === 'function' ? position.lat() : position.lat;
+    const lng = typeof position.lng === 'function' ? position.lng() : position.lng;
+    const altitude = (position.altitude ?? 10) + 5; // offset slightly above route
+    
+    if (trackingMarker) {
+        trackingMarker.position = { lat, lng, altitude };
+    } else {
+        trackingMarker = new Marker3DElement({
+            position: { lat, lng, altitude },
+            altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+            title: 'Tour Position',
+            extruded: true,
+        });
+        trackingMarker.style.setProperty('--gmp-marker-color', color);
+        map3d.append(trackingMarker);
+    }
 }

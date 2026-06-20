@@ -82,7 +82,6 @@ export async function fetchActivityStreams(activityId, token, streamTypes) {
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Strava API error (streams):", errorData);
-            showError(`Error fetching streams: ${errorData.message || response.statusText}`);
             throw new Error(`Strava API Error: ${response.status} ${response.statusText}`);
         }
         const streamsData = await response.json();
@@ -90,7 +89,6 @@ export async function fetchActivityStreams(activityId, token, streamTypes) {
         return streamsData;
     } catch (error) {
         console.error("Error in fetchActivityStreams:", error);
-        showError("Failed to fetch activity streams.");
         showLoading(false);
         throw error;
     }
@@ -214,7 +212,6 @@ export async function fetchPhotoData(activityId, accessToken) {
         return photos;
     } catch (error) {
         console.error("Error fetching Strava photos:", error);
-        showError(`Failed to load photos: ${error.message}`);
         throw error; // Re-throw
     } finally {
         showLoading(false);

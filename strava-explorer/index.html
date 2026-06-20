@@ -120,35 +120,114 @@
                             <p id="activity-total-loss" class="font-medium text-gray-800 text-sm">-- ft</p>
                         </div>
                     </div>
-                    <!-- Elevation Profile Widget -->
-<!-- Follow Camera Controls -->
-                    <div class="border-t pt-3 space-y-3"> <!-- Added space-y-2 -->
-                        <div class="flex items-center justify-between">
-                            <label for="follow-camera-toggle" class="text-sm font-medium text-gray-700">Follow Camera:</label>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="follow-camera-toggle" class="sr-only peer"> <!-- Default unchecked -->
-                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                            </label>
+                    <!-- Follow Camera Tour Controls -->
+                    <div class="border-t pt-3 space-y-3">
+                        <span class="block text-sm font-semibold text-gray-800">3D Tour Player</span>
+                        
+                        <!-- Scrubber and Time/Distance -->
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-2">
+                                <input type="range" id="tour-scrubber" min="0" max="1000" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-50" disabled>
+                            </div>
+                            <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                                <span id="tour-distance-elapsed">0.0 mi</span>
+                                <span id="tour-distance-total">0.0 mi</span>
+                            </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2" role="group" aria-label="3D camera shortcuts">
+                        <!-- Player Buttons -->
+                        <div class="flex items-center justify-center space-x-3">
+                            <button id="tour-stop-btn" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none" title="Stop & Reset" disabled>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+                            </button>
+                            <button id="tour-play-btn" class="p-3 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1" title="Play Tour" disabled>
+                                <!-- Play Icon -->
+                                <svg id="play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <!-- Pause Icon (Hidden) -->
+                                <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                            </button>
+                        </div>
+
+                        <!-- 3D Camera Shortcuts -->
+                        <div class="grid grid-cols-2 gap-2 pt-1" role="group" aria-label="3D camera shortcuts">
                             <button id="fit-route-button" class="focus-ring rounded-lg bg-gray-900 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50" disabled>Fit route</button>
                             <button id="fly-start-button" class="focus-ring rounded-lg bg-white px-3 py-2 text-xs font-semibold text-gray-800 ring-1 ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Fly start</button>
                             <button id="fly-finish-button" class="focus-ring rounded-lg bg-white px-3 py-2 text-xs font-semibold text-gray-800 ring-1 ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Fly finish</button>
                             <button id="orbit-route-button" class="focus-ring rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white shadow hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>Orbit 3D</button>
                         </div>
-                        <!-- Animation Speed Slider -->
-                        <div class="flex items-center justify-between">
-                            <label for="follow-camera-speed-slider" class="text-sm font-medium text-gray-700">Animation Speed:</label>
-                            <div class="flex items-center space-x-2">
-                                <input type="range" id="follow-camera-speed-slider" min="0.1" max="5" step="0.1" value="1" class="w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
-                                <span id="follow-camera-speed-value" class="text-xs font-medium text-gray-600 w-8 text-right">1.0x</span>
+
+                        <!-- Collapsible Settings Panel -->
+                        <details class="group border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
+                            <summary class="flex justify-between items-center p-2 text-xs font-medium text-gray-700 cursor-pointer hover:bg-gray-100 select-none">
+                                <span>Tour Settings</span>
+                                <svg class="w-3.5 h-3.5 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                            </summary>
+                            <div class="p-3 space-y-3 border-t bg-white text-xs">
+                                <!-- Speed Slider -->
+                                <div class="flex items-center justify-between">
+                                    <label for="follow-camera-speed-slider" class="font-medium text-gray-600">Playback Speed:</label>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="range" id="follow-camera-speed-slider" min="0.1" max="5" step="0.1" value="1" class="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                        <span id="follow-camera-speed-value" class="font-mono text-gray-600 w-8 text-right">1.0x</span>
+                                    </div>
+                                </div>
+                                <!-- Altitude (Height Offset) Slider -->
+                                <div class="flex items-center justify-between">
+                                    <label for="tour-height-slider" class="font-medium text-gray-600">Camera Height:</label>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="range" id="tour-height-slider" min="10" max="250" step="5" value="50" class="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                        <span id="tour-height-value" class="font-mono text-gray-600 w-8 text-right">50m</span>
+                                    </div>
+                                </div>
+                                <!-- Range (Zoom Offset) Slider -->
+                                <div class="flex items-center justify-between">
+                                    <label for="tour-range-slider" class="font-medium text-gray-600">Camera Distance:</label>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="range" id="tour-range-slider" min="100" max="2000" step="50" value="500" class="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                        <span id="tour-range-value" class="font-mono text-gray-600 w-8 text-right">500m</span>
+                                    </div>
+                                </div>
+                                <!-- Smoothness (LERP) Slider -->
+                                <div class="flex items-center justify-between">
+                                    <label for="tour-smoothness-slider" class="font-medium text-gray-600">Smoothness:</label>
+                                    <div class="flex items-center space-x-2">
+                                        <input type="range" id="tour-smoothness-slider" min="0.01" max="0.3" step="0.01" value="0.05" class="w-24 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
+                                        <span id="tour-smoothness-value" class="font-mono text-gray-600 w-8 text-right">0.05</span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </details>
                     </div>
-                    <div class="border-t pt-3"> <!-- Removed mt-4 -->
-                         <label class="block text-sm font-medium text-gray-700 mb-1">Elevation Profile:</label>
-                         <gmp-elevation id="elevation-profile" resolution="high" unit-system="imperial"></gmp-elevation>
+
+                    <!-- Elevation Profile SVG Widget -->
+                    <div class="border-t pt-3">
+                         <label class="block text-sm font-semibold text-gray-800 mb-1.5">Elevation Profile</label>
+                         <div id="elevation-profile-container" class="relative w-full h-24 bg-slate-50 rounded-lg border border-slate-200 overflow-hidden select-none cursor-crosshair">
+                              <div id="elevation-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
+                                  No activity loaded
+                              </div>
+                              <svg id="elevation-svg" class="w-full h-full hidden" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                   <!-- Gradient Definition -->
+                                   <defs>
+                                        <linearGradient id="elevation-gradient" x1="0" y1="0" x2="0" y2="1">
+                                             <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.35"></stop>
+                                             <stop offset="100%" stop-color="#4f46e5" stop-opacity="0.0"></stop>
+                                        </linearGradient>
+                                   </defs>
+                                   <!-- Chart Area Path -->
+                                   <path id="elevation-area" fill="url(#elevation-gradient)"></path>
+                                   <!-- Chart Line Path -->
+                                   <path id="elevation-line" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                              </svg>
+                              <!-- Hover Indicator Line -->
+                              <div id="elevation-hover-line" class="absolute top-0 bottom-0 w-[1px] bg-indigo-500 opacity-0 pointer-events-none"></div>
+                              <!-- Scrubber/Tour Progress Indicator Line (red dashed line) -->
+                              <div id="elevation-progress-line" class="absolute top-0 bottom-0 w-[1.5px] border-l border-dashed border-red-500 opacity-0 pointer-events-none"></div>
+                              <!-- Hover Dot -->
+                              <div id="elevation-hover-dot" class="absolute w-2 h-2 rounded-full bg-indigo-600 border border-white opacity-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+                              <!-- Hover Tooltip -->
+                              <div id="elevation-tooltip" class="absolute bg-slate-900/95 text-[10px] text-white px-1.5 py-1 rounded shadow-md pointer-events-none opacity-0 z-20 whitespace-nowrap leading-none border border-white/10"></div>
+                         </div>
                     </div>
                 </div>
                 <!-- Photo Display Section (Initially Hidden) -->
