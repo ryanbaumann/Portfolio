@@ -325,7 +325,7 @@ function getMarkerPhotoUrl(imageUrl) {
     return imageUrl;
 }
 
-function createPhotoBillboardTemplate(imageUrl, caption) {
+function createPhotoBillboardTemplate(imageUrl, caption, size = 600) {
     const template = document.createElement('template');
     const image = document.createElement('img');
 
@@ -338,16 +338,16 @@ function createPhotoBillboardTemplate(imageUrl, caption) {
     image.loading = 'eager';
     image.decoding = 'async';
     image.referrerPolicy = 'no-referrer';
-    image.width = 16;
-    image.height = 16;
+    image.width = size;
+    image.height = size;
     image.style.cssText = `
-        width: 16px;
-        height: 16px;
+        width: ${size}px;
+        height: ${size}px;
         object-fit: cover;
-        border-radius: 2px;
-        border: 1px solid #ffffff;
+        border-radius: ${Math.round(size * 0.05)}px;
+        border: ${Math.round(size * 0.02)}px solid #ffffff;
         background: #e5e7eb;
-        box-shadow: 0 2px 4px rgba(15,23,42,.38), 0 0 0 1px rgba(79,70,229,.32);
+        box-shadow: 0 ${Math.round(size * 0.02)}px ${Math.round(size * 0.04)}px rgba(15,23,42,.38);
         cursor: pointer;
     `;
     image.onerror = () => { image.alt = 'Activity photo preview unavailable'; };
@@ -389,7 +389,16 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
 
             if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
             const position = { lat, lng, altitude: 42 };
-            const photoThumbUrl = photo.urls?.["100"] || photo.urls?.["600"] || photo.urls?.["1000"];
+            let photoWidth = 600;
+            let photoThumbUrl = photo.urls?.["600"];
+            if (!photoThumbUrl) {
+                photoThumbUrl = photo.urls?.["1000"];
+                photoWidth = 1000;
+            }
+            if (!photoThumbUrl) {
+                photoThumbUrl = photo.urls?.["100"];
+                photoWidth = 100;
+            }
 
             // Create an interactive 3D billboard marker. The altitude is relative to
             // terrain so photo cards float consistently above the photorealistic mesh
@@ -402,7 +411,9 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 drawsWhenOccluded: true,
                 sizePreserved: false,
             });
-            marker.append(createPhotoBillboardTemplate(photoThumbUrl, photo.caption));
+            const targetSizeMeters = 16;
+            marker.scale = targetSizeMeters / photoWidth;
+            marker.append(createPhotoBillboardTemplate(photoThumbUrl, photo.caption, photoWidth));
 
             // Create Popover
             const popover = new PopoverElement({
