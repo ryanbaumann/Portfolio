@@ -2,15 +2,33 @@
 
 import * as strava from './strava.js';
 import * as gmp from './gmp.js';
-import { setFollowCameraState, stopFollowCamera, setFollowCameraSpeed } from './followCamera.js'; // Import specific functions
+import {
+    playFollowCamera,
+    pauseFollowCamera,
+    stopFollowCamera,
+    setFollowCameraProgress,
+    setFollowCameraSpeed,
+    setTourSettings,
+    registerTourCallbacks,
+    getTourState,
+    updateCameraForProgress
+} from './followCamera.js';
 
 // --- Module-Level Variables ---
 let currentActivityId = null; // Keep track of the currently displayed activity ID
 let currentRouteCoords = null; // Store the LatLng array for the current route
+let currentActivityElevations = []; // Stores array of { distanceKm, elevationM, lat, lng } objects
 
 // --- DOM Element References ---
 let cameraStatusEl, fitRouteButton, flyStartButton, flyFinishButton, orbitRouteButton;
-let mapHost, loadingIndicator, loadingText, errorMessageDiv, statsContainer, activityNameEl, activityDistEl, activityTimeEl, activityElevEl, activityAvgSpeedEl, activityMaxSpeedEl, activityTotalLossEl, elevationProfileWidget, selectList, activityFilterDiv, startDateInput, endDateInput, activityCountInput, fetchFilteredButton, footerAthleteInfo, footerProfileImg, footerProfileName, logoutButton, stravaConnectButton, stravaAuthDiv, followCameraToggle, followCameraSpeedSlider, followCameraSpeedValue;
+let mapHost, loadingIndicator, loadingText, errorMessageDiv, statsContainer, activityNameEl, activityDistEl, activityTimeEl, activityElevEl, activityAvgSpeedEl, activityMaxSpeedEl, activityTotalLossEl, selectList, activityFilterDiv, startDateInput, endDateInput, activityCountInput, fetchFilteredButton, footerAthleteInfo, footerProfileImg, footerProfileName, logoutButton, stravaConnectButton, stravaAuthDiv;
+
+// Tour Player DOM elements
+let tourScrubber, tourPlayBtn, tourStopBtn, playIcon, pauseIcon, tourDistanceElapsed, tourDistanceTotal;
+let tourHeightSlider, tourHeightValue, tourRangeSlider, tourRangeValue, tourSmoothnessSlider, tourSmoothnessValue, followCameraSpeedSlider, followCameraSpeedValue;
+
+// Elevation Profile DOM elements
+let elevationProfileContainer, elevationPlaceholder, elevationSvg, elevationAreaPath, elevationLinePath, elevationHoverLine, elevationProgressLine, elevationHoverDot, elevationTooltip;
 
 // --- Utility Functions (Passed to Modules) ---
 function showLoading(isLoading, text = "Loading...") {
@@ -43,8 +61,7 @@ async function initApp() {
     activityElevEl = document.getElementById('activity-elevation');
     activityAvgSpeedEl = document.getElementById('activity-avg-speed');
     activityMaxSpeedEl = document.getElementById('activity-max-speed');
-    activityTotalLossEl = document.getElementById('activity-total-loss'); // Added
-    elevationProfileWidget = document.getElementById('elevation-profile');
+    activityTotalLossEl = document.getElementById('activity-total-loss');
     activityFilterDiv = document.getElementById('activity-filter');
     startDateInput = document.getElementById('start-date');
     endDateInput = document.getElementById('end-date');
@@ -59,12 +76,38 @@ async function initApp() {
     flyStartButton = document.getElementById('fly-start-button');
     flyFinishButton = document.getElementById('fly-finish-button');
     orbitRouteButton = document.getElementById('orbit-route-button');
-    followCameraToggle = document.getElementById('follow-camera-toggle');
+
+    // Tour player controls
+    tourScrubber = document.getElementById('tour-scrubber');
+    tourPlayBtn = document.getElementById('tour-play-btn');
+    tourStopBtn = document.getElementById('tour-stop-btn');
+    playIcon = document.getElementById('play-icon');
+    pauseIcon = document.getElementById('pause-icon');
+    tourDistanceElapsed = document.getElementById('tour-distance-elapsed');
+    tourDistanceTotal = document.getElementById('tour-distance-total');
+
+    // Settings sliders
     followCameraSpeedSlider = document.getElementById('follow-camera-speed-slider');
     followCameraSpeedValue = document.getElementById('follow-camera-speed-value');
+    tourHeightSlider = document.getElementById('tour-height-slider');
+    tourHeightValue = document.getElementById('tour-height-value');
+    tourRangeSlider = document.getElementById('tour-range-slider');
+    tourRangeValue = document.getElementById('tour-range-value');
+    tourSmoothnessSlider = document.getElementById('tour-smoothness-slider');
+    tourSmoothnessValue = document.getElementById('tour-smoothness-value');
 
+    // Elevation Profile DOM
+    elevationProfileContainer = document.getElementById('elevation-profile-container');
+    elevationPlaceholder = document.getElementById('elevation-placeholder');
+    elevationSvg = document.getElementById('elevation-svg');
+    elevationAreaPath = document.getElementById('elevation-area');
+    elevationLinePath = document.getElementById('elevation-line');
+    elevationHoverLine = document.getElementById('elevation-hover-line');
+    elevationProgressLine = document.getElementById('elevation-progress-line');
+    elevationHoverDot = document.getElementById('elevation-hover-dot');
+    elevationTooltip = document.getElementById('elevation-tooltip');
 
-    if (!mapHost || !activityFilterDiv || !fetchFilteredButton || !footerAthleteInfo || !logoutButton || !stravaConnectButton || !stravaAuthDiv || !followCameraToggle || !followCameraSpeedSlider || !followCameraSpeedValue || !activityTotalLossEl || !fitRouteButton || !flyStartButton || !flyFinishButton || !orbitRouteButton || !cameraStatusEl) { // Added activityTotalLossEl
+    if (!mapHost || !activityFilterDiv || !fetchFilteredButton || !footerAthleteInfo || !logoutButton || !stravaConnectButton || !stravaAuthDiv || !activityTotalLossEl || !fitRouteButton || !flyStartButton || !flyFinishButton || !orbitRouteButton || !cameraStatusEl || !tourPlayBtn || !tourScrubber || !elevationProfileContainer) {
         showError("Essential HTML elements are missing. Cannot initialize.");
         return;
     }
@@ -76,6 +119,12 @@ async function initApp() {
 
     // Set initial date inputs for filters
     setInitialDateInputs();
+
+    // Initialize Tour Player listeners & callbacks
+    initTourPlayer();
+
+    // Initialize Elevation Profile hover events
+    initElevationHover();
 
     try {
         // Initialize Google Maps Platform
@@ -116,27 +165,26 @@ async function initApp() {
     flyStartButton.addEventListener('click', () => runCameraAction('Flying to route start...', () => gmp.flyToRoutePoint(currentRouteCoords, 'start')));
     flyFinishButton.addEventListener('click', () => runCameraAction('Flying to route finish...', () => gmp.flyToRoutePoint(currentRouteCoords, 'finish')));
     orbitRouteButton.addEventListener('click', () => runCameraAction('Orbiting current 3D view...', () => gmp.orbitCurrentView(getReducedMotionPreference() ? 2500 : 9000)));
+}
 
-    // Add listener for the follow camera toggle
-    followCameraToggle.addEventListener('change', (event) => {
-        const isChecked = event.target.checked;
-        console.log(`Follow camera toggled: ${isChecked}`);
-        if (isChecked && !currentRouteCoords) {
-            showError("Cannot enable follow camera: No activity route loaded.");
-            event.target.checked = false; // Revert toggle if no route
-            return;
+function setCameraControlsEnabled(isEnabled) {
+    [fitRouteButton, flyStartButton, flyFinishButton, orbitRouteButton, tourPlayBtn, tourStopBtn, tourScrubber].forEach((el) => {
+        if (el) {
+            el.disabled = !isEnabled;
+            if (isEnabled) {
+                el.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                el.classList.add('opacity-50', 'cursor-not-allowed');
+            }
         }
-        // Start immediately when toggled manually, no delay
-        setFollowCameraState(isChecked, currentRouteCoords, false);
-        updateCameraStatus(isChecked ? 'Follow camera is touring the loaded route.' : 'Follow camera paused. Use shortcuts to inspect the route.'); // Use direct import
     });
 
-    // Add listener for the follow camera speed slider
-    followCameraSpeedSlider.addEventListener('input', (event) => {
-        const speed = parseFloat(event.target.value);
-        followCameraSpeedValue.textContent = `${speed.toFixed(1)}x`;
-        setFollowCameraSpeed(speed); // Use direct import
-    });
+    if (!isEnabled) {
+        if (tourStopBtn) {
+            tourStopBtn.disabled = true;
+            tourStopBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    }
 }
 
 // --- Authentication Handling ---
@@ -176,11 +224,7 @@ function handleSuccessfulAuth(authData) {
     handleFetchFilteredActivities();
 }
 
-function setCameraControlsEnabled(isEnabled) {
-    [fitRouteButton, flyStartButton, flyFinishButton, orbitRouteButton].forEach((button) => {
-        if (button) button.disabled = !isEnabled;
-    });
-}
+
 
 function updateCameraStatus(message) {
     if (cameraStatusEl) cameraStatusEl.textContent = message;
@@ -262,16 +306,17 @@ function handleActivitiesResponse(activities) {
         return;
     }
 
-    if (!activities || activities.length === 0) {
-        console.log("No activities found for the selected filters.");
-        showError("No Strava activities found matching the criteria.");
-        selectList.innerHTML = '<option disabled selected>No activities found</option>';
+    // Filter to only include activities that have GPS data (a summary polyline)
+    const gpsActivities = (activities || []).filter(activity => activity.map && activity.map.summary_polyline);
+
+    if (gpsActivities.length === 0) {
+        console.log("No GPS-recorded activities found for the selected filters.");
+        showError("No GPS-recorded activities found. Manual and indoor activities cannot be explored in 3D.");
+        selectList.innerHTML = '<option disabled selected>No GPS activities found</option>';
         actSelectContainer.classList.remove('hidden'); // Show the (empty) dropdown
-        // Clear previous activity display if any
         clearActivityDisplay();
         return;
     }
-
 
     actSelectContainer.classList.remove('hidden');
     selectList.innerHTML = ''; // Clear previous options
@@ -282,7 +327,7 @@ function handleActivitiesResponse(activities) {
     defaultOption.selected = true;
     selectList.appendChild(defaultOption);
 
-    activities.forEach((activity) => {
+    gpsActivities.forEach((activity) => {
         let option = document.createElement('option');
         option.textContent = activity.name;
         option.value = activity.id;
@@ -293,7 +338,7 @@ function handleActivitiesResponse(activities) {
     selectList.onchange = handleActivitySelectionChange;
 
     // Add a visual cue
-    if (selectList && activities.length > 0) {
+    if (selectList && gpsActivities.length > 0) {
         selectList.focus();
         const selectLabel = document.querySelector('label[for="select_lst"]');
         if (selectLabel) {
@@ -335,6 +380,7 @@ function clearActivityDisplay() {
     stopFollowCamera(); // Stop any active animation (Use direct import)
     gmp.removePreviousPolyline();
     gmp.clearPhotoMarkers();
+    gmp.updateTrackingMarker(null); // Clear tracking marker
     currentRouteCoords = null; // Clear stored coordinates
     setCameraControlsEnabled(false);
     updateCameraStatus('Load an activity to sync the 3D camera, route, markers, and elevation.');
@@ -349,21 +395,16 @@ function clearActivityDisplay() {
     if (activityMaxSpeedEl) activityMaxSpeedEl.textContent = '';
     if (activityTotalLossEl) activityTotalLossEl.textContent = ''; // Added
 
-    // Clear elevation widget path
-    if (elevationProfileWidget) {
-        // Await definition before trying to set path (safer)
-        customElements.whenDefined('gmp-elevation').then(() => {
-            try {
-                elevationProfileWidget.path = null; // Use null to clear
-                console.log("Cleared elevation widget path.");
-            } catch (e) {
-                console.warn("Could not clear elevation widget path:", e);
-            }
-        });
+    // Clear elevation widget
+    currentActivityElevations = [];
+    showElevationPlaceholder("No activity loaded");
+    if (tourDistanceElapsed) tourDistanceElapsed.textContent = '0.0 mi';
+    if (tourDistanceTotal) tourDistanceTotal.textContent = '0.0 mi';
+    if (tourScrubber) {
+        tourScrubber.value = 0;
+        tourScrubber.disabled = true;
     }
     currentActivityId = null;
-    // Ensure toggle is explicitly off when activity cleared
-    if (followCameraToggle) followCameraToggle.checked = false;
 }
 
 
@@ -381,31 +422,28 @@ async function fetchAndDisplayDetailedActivity(activityId) {
 
     try {
         const detailedActivityData = await strava.fetchDetailedActivityData(activityId, token);
-        // Fetch altitude stream
-        // Assuming strava.js will have fetchActivityStreams(activityId, token, streamTypesArray)
-        // and it returns an object like { altitude: { data: [...] }, ... }
+        // Fetch streams: altitude, distance, and latlng for precise route alignment
         let altitudeStream = null;
+        let distanceStream = null;
+        let latlngStream = null;
         try {
-            const streams = await strava.fetchActivityStreams(activityId, token, ['altitude']);
-            if (streams && streams.altitude) {
+            const streams = await strava.fetchActivityStreams(activityId, token, ['altitude', 'distance', 'latlng']);
+            if (streams) {
                 altitudeStream = streams.altitude;
-            } else {
-                console.warn(`Altitude stream not found for activity ${activityId}`);
+                distanceStream = streams.distance;
+                latlngStream = streams.latlng;
             }
         } catch (streamError) {
-            console.error(`Failed to fetch altitude stream for activity ${activityId}:`, streamError);
-            // Continue without elevation loss if streams fail, or show specific error part
+            console.error(`Failed to fetch streams for activity ${activityId}:`, streamError);
         }
-        await displayDetailedActivity(detailedActivityData, altitudeStream); // Pass data and stream to display function
+        await displayDetailedActivity(detailedActivityData, { altitudeStream, distanceStream, latlngStream });
     } catch (error) {
         console.error(`Failed to fetch or display detailed activity ${activityId}:`, error);
-        // Error should have been shown by strava.fetchDetailedActivityData or displayDetailedActivity
-        // Optionally show a generic error here if needed
-        // showError("Failed to load activity details.");
     }
 }
 
-async function displayDetailedActivity(activityData, altitudeStream) { // Added altitudeStream parameter
+async function displayDetailedActivity(activityData, streams) {
+    const { altitudeStream, distanceStream, latlngStream } = streams || {};
     console.log(`[displayDetailedActivity] Called with data for activity ID: ${activityData?.id}`);
     if (!activityData?.map?.polyline) {
         showError("Detailed activity data is missing map polyline.");
@@ -433,7 +471,6 @@ async function displayDetailedActivity(activityData, altitudeStream) { // Added 
     } else {
         showError("Failed to decode or process activity route.");
         showLoading(false);
-        showLoading(false);
         return; // Stop if polyline is bad
     }
 
@@ -441,18 +478,19 @@ async function displayDetailedActivity(activityData, altitudeStream) { // Added 
     currentRouteCoords = decodedPathLatLng;
     setCameraControlsEnabled(true);
     updateCameraStatus('Route loaded. Camera shortcuts, 3D endpoints, photo markers, and follow tour are ready.');
-    // // Ensure toggle is ON by default for new route - REMOVED: Keep follow camera off by default
-    // if (followCameraToggle) followCameraToggle.checked = true;
-    // // Start with 5-second delay (Use direct import) - REMOVED: Keep follow camera off by default
-    // setFollowCameraState(true, currentRouteCoords, true);
 
     showLoading(false); // Hide loading after polyline processing and camera flight start
 
     // --- Update UI Stats (Imperial Units) ---
     updateStatsUI(activityData, altitudeStream); // Pass altitudeStream
 
+    // Update player total distance label
+    const kmToMiles = 0.621371;
+    const distanceMiles = (activityData.distance / 1000 * kmToMiles).toFixed(2);
+    if (tourDistanceTotal) tourDistanceTotal.textContent = `${distanceMiles} mi`;
+
     // --- Configure Elevation Profile Widget ---
-    configureElevationWidget(decodedPathLatLng); // Pass the LatLng array
+    configureElevationWidget(decodedPathLatLng, streams); // Pass the LatLng array and streams
 
     // --- Fetch and Display Photos ---
     const token = strava.getStravaToken();
@@ -522,67 +560,340 @@ function updateStatsUI(activityData, altitudeStream) { // Added altitudeStream p
     console.log("[updateStatsUI] UI stats updated.");
 }
 
-async function configureElevationWidget(decodedPathLatLng) { // Expects array of LatLng objects
-    if (!elevationProfileWidget) return;
-
-    console.log(`[configureElevationWidget] Configuring elevation profile widget.`);
-    try {
-        await customElements.whenDefined('gmp-elevation');
-        console.log(`[configureElevationWidget] gmp-elevation element is defined.`);
-
-        if (decodedPathLatLng && decodedPathLatLng.length > 0) {
-            const maxPoints = 300; // Target maximum points for the profile
-            console.log(`[configureElevationWidget] Calling gmp.downsamplePath with path length: ${decodedPathLatLng.length}`);
-            const downsampledPath = gmp.downsamplePath(decodedPathLatLng, maxPoints); // Use GMP module's downsampler
-            console.log(`[configureElevationWidget] Downsampled path created. Length: ${downsampledPath?.length}`);
-
-            if (Array.isArray(downsampledPath) && downsampledPath.length > 0) {
-                 // Log the first point for verification
-                 const firstPoint = downsampledPath[0];
-                 console.log(`Attempting to set elevation path with ${downsampledPath.length} LatLng points. First point: {lat: ${firstPoint.lat()}, lng: ${firstPoint.lng()}}`);
-                try {
-                    elevationProfileWidget.path = downsampledPath; // Assign the LatLng array
-                    console.log("[configureElevationWidget] Successfully assigned path to elevation widget.");
-                } catch (elevationError) {
-                    console.error("[configureElevationWidget] Error setting elevation path:", elevationError);
-                    showError(`Failed to display elevation profile: ${elevationError.message}`);
-                }
-            } else {
-                console.warn("[configureElevationWidget] Downsampled path is empty or invalid, clearing elevation path.");
-                elevationProfileWidget.path = null; // Clear path if downsampling failed
-            }
-        } else {
-            console.log("[configureElevationWidget] No valid path data, clearing elevation path.");
-            elevationProfileWidget.path = null; // Clear path if no input data
+async function configureElevationWidget(decodedPathLatLng, streams) {
+    if (!elevationProfileContainer) return;
+    
+    // Clear previous
+    showElevationPlaceholder("Loading elevation profile...");
+    
+    let chartPoints = []; // Array of { distanceKm, elevationM, lat, lng }
+    const { altitudeStream, distanceStream, latlngStream } = streams || {};
+    
+    if (altitudeStream?.data && distanceStream?.data && latlngStream?.data) {
+        const altData = altitudeStream.data;
+        const distData = distanceStream.data;
+        const llData = latlngStream.data;
+        const length = Math.min(altData.length, distData.length, llData.length);
+        
+        // Downsample streams for rendering performance
+        const targetCount = 300;
+        const step = Math.max(1, Math.ceil(length / targetCount));
+        
+        for (let i = 0; i < length; i += step) {
+            chartPoints.push({
+                distanceKm: distData[i] / 1000,
+                elevationM: altData[i],
+                lat: llData[i][0],
+                lng: llData[i][1]
+            });
         }
-    } catch (e) {
-        console.error("Error configuring elevation widget:", e);
-        showError("Could not display elevation profile.");
-        if (elevationProfileWidget) elevationProfileWidget.path = null; // Attempt to clear on error
+        if (length > 0 && (length - 1) % step !== 0) {
+            chartPoints.push({
+                distanceKm: distData[length - 1] / 1000,
+                elevationM: altData[length - 1],
+                lat: llData[length - 1][0],
+                lng: llData[length - 1][1]
+            });
+        }
+    } else {
+        // Fallback: Query Google Maps Elevation Service
+        console.log("Strava streams missing. Querying Google Maps Elevation API...");
+        const maxPoints = 200;
+        const downsampledPath = gmp.downsamplePath(decodedPathLatLng, maxPoints);
+        
+        if (downsampledPath && downsampledPath.length > 0) {
+            try {
+                const elevations = await gmp.getElevationsForPoints(downsampledPath);
+                
+                let accumDistKm = 0;
+                chartPoints.push({
+                    distanceKm: 0,
+                    elevationM: elevations[0],
+                    lat: downsampledPath[0].lat(),
+                    lng: downsampledPath[0].lng()
+                });
+                
+                for (let i = 1; i < downsampledPath.length; i++) {
+                    const d = calculateHaversineDistance(
+                        downsampledPath[i-1].lat(), downsampledPath[i-1].lng(),
+                        downsampledPath[i].lat(), downsampledPath[i].lng()
+                    );
+                    accumDistKm += d;
+                    chartPoints.push({
+                        distanceKm: accumDistKm,
+                        elevationM: elevations[i],
+                        lat: downsampledPath[i].lat(),
+                        lng: downsampledPath[i].lng()
+                    });
+                }
+            } catch (err) {
+                console.error("Fallback elevation query failed:", err);
+            }
+        }
+    }
+    
+    if (chartPoints.length < 2) {
+        showElevationPlaceholder("Could not load elevation profile");
+        return;
+    }
+    
+    currentActivityElevations = chartPoints;
+    drawElevationSVG(chartPoints);
+}
+
+function drawElevationSVG(points) {
+    if (!elevationSvg || !elevationLinePath || !elevationAreaPath) return;
+
+    const metersToFeet = 3.28084;
+    const kmToMiles = 0.621371;
+
+    const elevationsFeet = points.map(p => p.elevationM * metersToFeet);
+    const distancesMiles = points.map(p => p.distanceKm * kmToMiles);
+
+    const minElev = Math.min(...elevationsFeet);
+    const maxElev = Math.max(...elevationsFeet);
+    const totalDist = distancesMiles[distancesMiles.length - 1];
+
+    const elevRange = maxElev - minElev;
+    const elevPadding = elevRange * 0.1 || 10;
+    const yMin = Math.max(0, minElev - elevPadding);
+    const yMax = maxElev + elevPadding;
+
+    const svgWidth = 1000;
+    const svgHeight = 100;
+
+    let linePathData = '';
+    let areaPathData = '';
+
+    points.forEach((p, idx) => {
+        const xPercent = totalDist > 0 ? (p.distanceKm * kmToMiles) / totalDist : 0;
+        const yPercent = (p.elevationM * metersToFeet - yMin) / (yMax - yMin);
+
+        const x = xPercent * svgWidth;
+        const y = svgHeight - (yPercent * svgHeight);
+
+        if (idx === 0) {
+            linePathData = `M ${x} ${y}`;
+            areaPathData = `M ${x} ${svgHeight} L ${x} ${y}`;
+        } else {
+            linePathData += ` L ${x} ${y}`;
+            areaPathData += ` L ${x} ${y}`;
+        }
+    });
+
+    areaPathData += ` L ${svgWidth} ${svgHeight} Z`;
+
+    elevationLinePath.setAttribute('d', linePathData);
+    elevationAreaPath.setAttribute('d', areaPathData);
+
+    elevationSvg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
+    elevationSvg.classList.remove('hidden');
+    if (elevationPlaceholder) elevationPlaceholder.classList.add('hidden');
+}
+
+function showElevationPlaceholder(text) {
+    if (elevationPlaceholder) {
+        elevationPlaceholder.textContent = text;
+        elevationPlaceholder.classList.remove('hidden');
+    }
+    if (elevationSvg) elevationSvg.classList.add('hidden');
+    if (elevationHoverLine) elevationHoverLine.style.opacity = '0';
+    if (elevationHoverDot) elevationHoverDot.style.opacity = '0';
+    if (elevationTooltip) elevationTooltip.style.opacity = '0';
+    if (elevationProgressLine) elevationProgressLine.style.opacity = '0';
+}
+
+function calculateHaversineDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+}
+
+function initElevationHover() {
+    if (!elevationProfileContainer) return;
+
+    elevationProfileContainer.addEventListener('mousemove', (e) => {
+        if (!currentActivityElevations || currentActivityElevations.length < 2) return;
+
+        const rect = elevationProfileContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mousePercent = Math.max(0, Math.min(1, mouseX / rect.width));
+
+        const metersToFeet = 3.28084;
+        const kmToMiles = 0.621371;
+
+        const totalDistKm = currentActivityElevations[currentActivityElevations.length - 1].distanceKm;
+        const targetDistKm = mousePercent * totalDistKm;
+
+        let closestIdx = 0;
+        let minDiff = Infinity;
+        for (let i = 0; i < currentActivityElevations.length; i++) {
+            const diff = Math.abs(currentActivityElevations[i].distanceKm - targetDistKm);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closestIdx = i;
+            }
+        }
+
+        const point = currentActivityElevations[closestIdx];
+        const pointDistMiles = point.distanceKm * kmToMiles;
+        const pointElevFeet = point.elevationM * metersToFeet;
+
+        const xPos = mousePercent * rect.width;
+        if (elevationHoverLine) {
+            elevationHoverLine.style.left = `${xPos}px`;
+            elevationHoverLine.style.opacity = '1';
+        }
+
+        const elevationsFeet = currentActivityElevations.map(p => p.elevationM * metersToFeet);
+        const minElev = Math.min(...elevationsFeet);
+        const maxElev = Math.max(...elevationsFeet);
+        const elevRange = maxElev - minElev;
+        const elevPadding = elevRange * 0.1 || 10;
+        const yMin = Math.max(0, minElev - elevPadding);
+        const yMax = maxElev + elevPadding;
+
+        const yPercent = (pointElevFeet - yMin) / (yMax - yMin);
+        const yPos = rect.height - (yPercent * rect.height);
+
+        if (elevationHoverDot) {
+            elevationHoverDot.style.left = `${xPos}px`;
+            elevationHoverDot.style.top = `${yPos}px`;
+            elevationHoverDot.style.opacity = '1';
+        }
+
+        if (elevationTooltip) {
+            elevationTooltip.innerHTML = `<strong>Dist:</strong> ${pointDistMiles.toFixed(2)} mi<br><strong>Elev:</strong> ${pointElevFeet.toFixed(0)} ft`;
+            elevationTooltip.style.opacity = '1';
+            
+            const tooltipRect = elevationTooltip.getBoundingClientRect();
+            let tooltipX = xPos + 10;
+            if (tooltipX + tooltipRect.width > rect.width) {
+                tooltipX = xPos - tooltipRect.width - 10;
+            }
+            let tooltipY = yPos - tooltipRect.height - 10;
+            if (tooltipY < 0) {
+                tooltipY = yPos + 10;
+            }
+            elevationTooltip.style.left = `${tooltipX}px`;
+            elevationTooltip.style.top = `${tooltipY}px`;
+        }
+
+        gmp.updateTrackingMarker({ lat: point.lat, lng: point.lng, altitude: point.elevationM });
+    });
+
+    elevationProfileContainer.addEventListener('mouseleave', () => {
+        if (elevationHoverLine) elevationHoverLine.style.opacity = '0';
+        if (elevationHoverDot) elevationHoverDot.style.opacity = '0';
+        if (elevationTooltip) elevationTooltip.style.opacity = '0';
+        gmp.updateTrackingMarker(null);
+    });
+    
+    elevationProfileContainer.addEventListener('click', (e) => {
+        if (!currentActivityElevations || currentActivityElevations.length < 2) return;
+        
+        const rect = elevationProfileContainer.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const progress = Math.max(0, Math.min(1, mouseX / rect.width));
+        
+        setFollowCameraProgress(progress);
+        if (tourScrubber) {
+            tourScrubber.value = Math.round(progress * 1000);
+        }
+    });
+}
+
+function initTourPlayer() {
+    registerTourCallbacks(
+        (progress, distanceElapsedKm) => {
+            const kmToMiles = 0.621371;
+            const distanceElapsedMiles = distanceElapsedKm * kmToMiles;
+            
+            if (tourScrubber) {
+                tourScrubber.value = Math.round(progress * 1000);
+            }
+            if (tourDistanceElapsed) {
+                tourDistanceElapsed.textContent = `${distanceElapsedMiles.toFixed(2)} mi`;
+            }
+            if (elevationProgressLine && elevationProfileContainer) {
+                const rect = elevationProfileContainer.getBoundingClientRect();
+                const xPos = progress * rect.width;
+                elevationProgressLine.style.left = `${xPos}px`;
+                elevationProgressLine.style.opacity = '1';
+            }
+        },
+        (state) => {
+            console.log(`Tour state changed: ${state}`);
+            if (state === 'playing') {
+                if (playIcon) playIcon.classList.add('hidden');
+                if (pauseIcon) pauseIcon.classList.remove('hidden');
+                if (tourStopBtn) tourStopBtn.disabled = false;
+            } else if (state === 'paused') {
+                if (playIcon) playIcon.classList.remove('hidden');
+                if (pauseIcon) pauseIcon.classList.add('hidden');
+                if (tourStopBtn) tourStopBtn.disabled = false;
+            } else if (state === 'stopped') {
+                if (playIcon) playIcon.classList.remove('hidden');
+                if (pauseIcon) pauseIcon.classList.add('hidden');
+                if (tourStopBtn) tourStopBtn.disabled = true;
+                if (elevationProgressLine) elevationProgressLine.style.opacity = '0';
+            }
+        }
+    );
+
+    if (tourScrubber) {
+        tourScrubber.addEventListener('input', (e) => {
+            const progress = parseInt(e.target.value) / 1000;
+            setFollowCameraProgress(progress);
+        });
+    }
+
+    if (tourPlayBtn) {
+        tourPlayBtn.addEventListener('click', () => {
+            const state = getTourState();
+            if (state.active) {
+                pauseFollowCamera();
+            } else {
+                playFollowCamera(currentRouteCoords);
+            }
+        });
+    }
+
+    if (tourStopBtn) {
+        tourStopBtn.addEventListener('click', () => {
+            stopFollowCamera();
+        });
+    }
+
+    if (tourHeightSlider) {
+        tourHeightSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (tourHeightValue) tourHeightValue.textContent = `${val}m`;
+            setTourSettings({ height: val });
+        });
+    }
+
+    if (tourRangeSlider) {
+        tourRangeSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            if (tourRangeValue) tourRangeValue.textContent = `${val}m`;
+            setTourSettings({ range: val });
+        });
+    }
+
+    if (tourSmoothnessSlider) {
+        tourSmoothnessSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            if (tourSmoothnessValue) tourSmoothnessValue.textContent = val.toFixed(2);
+            setTourSettings({ smoothness: val });
+        });
     }
 }
-
-
-// --- UI Helpers ---
-function setInitialDateInputs() {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1); // Set to tomorrow
-
-    const ninetyDaysAgo = new Date();
-    ninetyDaysAgo.setDate(today.getDate() - 90);
-
-    const formatDate = (date) => {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    };
-
-    if (startDateInput) startDateInput.value = formatDate(ninetyDaysAgo);
-    if (endDateInput) endDateInput.value = formatDate(tomorrow); // Changed from today to tomorrow
-}
-
 
 // --- Start Application ---
 initApp();
