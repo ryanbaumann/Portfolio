@@ -1,5 +1,4 @@
 // strava-explorer/gmp.js
-import { Loader } from '@googlemaps/js-api-loader';
 import { initializeFollowCamera } from './followCamera.js'; // Import initializer
 
 // --- Module-Level Variables ---
@@ -26,29 +25,47 @@ export function setHelpers(helpers) {
     showError = helpers.showError;
 }
 
+
+async function loadGoogleMapsApi(apiKey, libraries) {
+    const GoogleMapsLoader = await import('@googlemaps/js-api-loader');
+    const loaderModule = GoogleMapsLoader.default ?? GoogleMapsLoader;
+
+    if (typeof GoogleMapsLoader.setOptions === 'function' && typeof GoogleMapsLoader.importLibrary === 'function') {
+        GoogleMapsLoader.setOptions({ key: apiKey, v: 'weekly', libraries });
+        return GoogleMapsLoader.importLibrary;
+    }
+
+    // Compatibility path for @googlemaps/js-api-loader v1.x in existing installs.
+    // v2.x exposes setOptions/importLibrary and package.json targets that path.
+    const LoaderClass = GoogleMapsLoader.Loader ?? loaderModule.Loader;
+    const loader = new LoaderClass({
+        apiKey,
+        version: 'weekly',
+        libraries,
+    });
+    await loader.load();
+    return google.maps.importLibrary.bind(google.maps);
+}
+
 // --- Map Initialization ---
 export async function initMap(mapHostElement, apiKey) {
     if (!mapHostElement) throw new Error("Map host element is required.");
     if (!apiKey) throw new Error("Google Maps API Key is required.");
 
     showLoading(true, "Loading Google Maps...");
-    const loader = new Loader({
-        apiKey: apiKey,
-        version: "weekly",
-        libraries: ["maps3d", "marker", "elevation", "places", "geometry", "core"] // Keep places for now if needed elsewhere, geometry for encoding
-    });
+    const libraries = ["maps3d", "marker", "elevation", "places", "geometry", "core"];
 
     try {
-        await loader.load();
+        const importLibrary = await loadGoogleMapsApi(apiKey, libraries);
         console.log("Google Maps API loaded.");
 
         // Import necessary classes *after* API is loaded
-        ({ Map3DElement, Marker3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PopoverElement } = await google.maps.importLibrary("maps3d"));
-        ({ PinElement } = await google.maps.importLibrary("marker")); // Keep PinElement if default marker appearance is customized later
-        ({ ElevationService, ElevationElement } = await google.maps.importLibrary("elevation"));
-        // ({ Place } = await google.maps.importLibrary("places")); // Removed Place import
-        ({ LatLng, LatLngBounds } = await google.maps.importLibrary("core"));
-        ({ encoding } = await google.maps.importLibrary("geometry"));
+        ({ Map3DElement, Marker3DElement, Marker3DInteractiveElement, Polyline3DElement, AltitudeMode, MapMode, PopoverElement } = await importLibrary("maps3d"));
+        ({ PinElement } = await importLibrary("marker")); // Keep PinElement if default marker appearance is customized later
+        ({ ElevationService, ElevationElement } = await importLibrary("elevation"));
+        // ({ Place } = await importLibrary("places")); // Removed Place import
+        ({ LatLng, LatLngBounds } = await importLibrary("core"));
+        ({ encoding } = await importLibrary("geometry"));
 
         // Instantiate services
         elevator = new ElevationService();
