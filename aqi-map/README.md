@@ -2,6 +2,24 @@
 
 Browser-based hyperlocal AQI map that renders PurpleAir sensor data on a Mapbox GL globe with geocoder search, point markers, and interpolated AQI contours.
 
+## Current architecture
+
+- `index.js` is the CommonJS Browserify entry point.
+- `index.html` provides the map container, sidebar, external Mapbox styles, and bundled script tag.
+- `npm run build` copies `index.html` into `build/` and writes `build/bundle.js`.
+- `npm start` runs the Budo dev server.
+
+## Agent-native workflow
+
+Before changing this app, read:
+
+1. `AGENTS.md`
+2. `package.json`
+3. `index.html`
+4. `index.js`
+
+Keep app-specific dependencies and commands inside this directory. Prefer small, focused changes that preserve the existing Browserify pipeline unless the task is explicitly a build-system or Google Maps Platform migration.
+
 ## Runtime configuration
 
 This app is fully static, but it still needs browser-exposed public service credentials at runtime. Do **not** commit real tokens to this repository. Configure them in `index.html` before local use or inject the same `window.AQI_MAP_CONFIG` object with your static host:
@@ -22,6 +40,13 @@ Best-practice restrictions:
 - Use a Mapbox public token restricted to the production origin and local development origins that need access.
 - Restrict the PurpleAir key according to the controls available for the account, rotate any key that has been committed or shared, and monitor API usage.
 - Keep `maxSensorAgeSeconds` as low as product requirements allow to reduce stale readings.
+
+If migrating to Google Maps Platform, document:
+
+- Enabled APIs, such as Maps JavaScript API, Places API, Air Quality API, Pollen API, Solar API, or Weather API.
+- Browser key restrictions by HTTP referrer, including local development origins.
+- API-specific quotas/billing and cache/debounce behavior.
+- Attribution and source-label requirements for environmental data.
 
 ## Prerequisites
 
