@@ -30,16 +30,19 @@ A focused static web app for connecting Strava, selecting recent activities, and
 
 ## Environment variables
 
-Create `strava-explorer/.env.development` for local development and configure equivalent variables in your deployment provider for production builds:
+Create `strava-explorer/.env.development` for local development. For production, prefer `VITE_STRAVA_AUTH_BASE_URL` plus the Cloud Run broker so the Strava client secret stays server-side:
 
 ```dotenv
 VITE_STRAVA_CLIENT_ID=YOUR_STRAVA_CLIENT_ID
-VITE_STRAVA_CLIENT_SECRET=YOUR_STRAVA_CLIENT_SECRET
 VITE_STRAVA_REDIRECT_URI=http://localhost:5173/
 VITE_GMP_API_KEY=YOUR_GOOGLE_MAPS_BROWSER_KEY
+# Use one of these auth options:
+VITE_STRAVA_AUTH_BASE_URL=https://YOUR_CLOUD_RUN_BROKER_URL
+# Local-only fallback; never publish this in a static production build.
+VITE_STRAVA_CLIENT_SECRET=YOUR_STRAVA_CLIENT_SECRET
 ```
 
-Never commit `.env.*` files. All `VITE_` variables are browser-exposed after build, so restrict the Google Maps browser key by API and HTTP referrer and treat the Strava browser OAuth flow accordingly.
+Never commit `.env.*` files. All `VITE_` variables are browser-exposed after build, so restrict the Google Maps browser key by API and HTTP referrer and do not publish `VITE_STRAVA_CLIENT_SECRET` in a static production build.
 
 ## Service setup
 
@@ -114,7 +117,7 @@ Strava announced a revised Developer Program on June 1, 2026. The parts that mat
 For sharing with many people, use a two-tier deployment:
 
 1. **Static frontend on GCS + Cloud CDN** for the Vite build in `dist/`. This is the cheapest serving path, can be public, supports a custom HTTPS domain, and lets the Google Maps browser key be locked to exact HTTP referrers.
-2. **Small Cloud Run OAuth/token broker** before broad public launch. The current static-only app can deploy today, but Vite exposes every `VITE_` value to the browser, so `VITE_STRAVA_CLIENT_SECRET` is not appropriate for a public app. A Cloud Run broker should own `STRAVA_CLIENT_SECRET`, perform `POST /oauth/token` and refresh-token exchanges server-side, set secure HTTP-only cookies or return short-lived session tokens, implement logout by calling Strava's current revoke endpoint, and delete cached user data on request. Keep the broker direct-to-Strava; do not make it an API intermediary, pass-through proxy for third parties, MCP server, or data aggregation layer.
+2. **Small Cloud Run OAuth/token broker** before broad public launch. The current static-only app can deploy today, but Vite exposes every `VITE_` value to the browser, so `VITE_STRAVA_CLIENT_SECRET` is not appropriate for a public app. A Cloud Run broker should own `STRAVA_CLIENT_SECRET`, perform `POST /oauth/token` and refresh-token exchanges server-side, return the Strava token payload only to the current browser session, implement logout by calling Strava's current revoke endpoint, and avoid server-side activity storage by default. Keep the broker direct-to-Strava; do not make it an API intermediary, pass-through proxy for third parties, MCP server, or data aggregation layer.
 3. **No server-side Strava data persistence by default.** Keep selected activity data in browser memory/local storage only when needed for the user's current session. If server caching is added, cap it below Strava's current 7-day cache policy and support immediate deletion.
 
 A public GCS bucket is acceptable for the frontend because activity data is fetched only after each athlete authenticates. A private bucket alone is less useful for sharing; if you need private hosting, put Cloud CDN + HTTPS Load Balancer, Firebase Hosting, App Engine, or Cloud Run in front of the same static assets.
@@ -137,13 +140,28 @@ Static GCS build variables:
 VITE_STRAVA_CLIENT_ID=YOUR_STRAVA_CLIENT_ID
 VITE_STRAVA_REDIRECT_URI=https://YOUR_DOMAIN_OR_BUCKET_HOST/index.html
 VITE_GMP_API_KEY=YOUR_RESTRICTED_GOOGLE_MAPS_BROWSER_KEY
+# Production builds should point at the Cloud Run broker created by npm run deploy:gcp.
+VITE_STRAVA_AUTH_BASE_URL=https://YOUR_CLOUD_RUN_BROKER_URL
 # Optional compatibility switch. Use the Strava changelog's active host when the migration window opens.
 VITE_STRAVA_API_BASE_URL=https://www.strava.com/api/v3
 ```
 
-Static-only local development still supports `VITE_STRAVA_CLIENT_SECRET`, but do not use or publish a browser-exposed Strava client secret for a public deployment. Move it to Cloud Run as `STRAVA_CLIENT_SECRET` before inviting users outside a trusted test group.
+Static-only local development still supports `VITE_STRAVA_CLIENT_SECRET`, but do not use or publish a browser-exposed Strava client secret for a public deployment. The Cloud Run broker uses non-`VITE_` `STRAVA_CLIENT_SECRET` from Secret Manager and the frontend calls it through `VITE_STRAVA_AUTH_BASE_URL`.
 
-### Deploy to a public GCS bucket
+### Deploy the full GCP architecture
+
+The repo includes an opinionated deploy command for project `geojson-bq-blog`, account `rsbaumann@gmail.com`, a GCS frontend bucket, Secret Manager, and a Cloud Run OAuth broker. Run it from `strava-explorer/` after installing/authenticating the Google Cloud CLI and creating a Strava app:
+
+```bash
+export VITE_STRAVA_CLIENT_ID=12345
+export STRAVA_CLIENT_SECRET=YOUR_STRAVA_CLIENT_SECRET
+export VITE_GMP_API_KEY=YOUR_RESTRICTED_GOOGLE_MAPS_BROWSER_KEY
+npm run deploy:gcp
+```
+
+Override defaults with flags such as `--project`, `--account`, `--bucket`, `--region`, or `--private`. The command enables required GCP services, stores the Strava client secret in Secret Manager, deploys the broker to Cloud Run, builds the frontend with `VITE_STRAVA_AUTH_BASE_URL`, and publishes `dist/` to GCS.
+
+### Deploy only the public GCS frontend
 
 Authenticate the Google Cloud CLI first, then run from `strava-explorer/`:
 
