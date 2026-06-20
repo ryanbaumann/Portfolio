@@ -895,5 +895,24 @@ function initTourPlayer() {
     }
 }
 
+function setInitialDateInputs() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1); // Set to tomorrow
+
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(today.getDate() - 90);
+
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    if (startDateInput) startDateInput.value = formatDate(ninetyDaysAgo);
+    if (endDateInput) endDateInput.value = formatDate(tomorrow); // Changed from today to tomorrow
+}
+
 // --- Start Application ---
 initApp();
