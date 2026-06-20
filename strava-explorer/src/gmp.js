@@ -294,7 +294,8 @@ export function removePreviousPolyline() {
 }
 
 
-function createPhotoBillboard(imageUrl, caption) {
+function createPhotoBillboardTemplate(imageUrl, caption) {
+    const template = document.createElement('template');
     const billboard = document.createElement('div');
     billboard.className = 'photo-billboard';
     billboard.style.cssText = `
@@ -336,7 +337,8 @@ function createPhotoBillboard(imageUrl, caption) {
     `;
 
     billboard.append(image, label);
-    return billboard;
+    template.content.append(billboard);
+    return template;
 }
 
 // --- Photo Marker Handling ---
@@ -384,7 +386,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 extruded: true,
                 drawsWhenOccluded: true,
             });
-            marker.append(createPhotoBillboard(photoThumbUrl, photo.caption));
+            marker.append(createPhotoBillboardTemplate(photoThumbUrl, photo.caption));
 
             // Create Popover
             const popover = new PopoverElement({
