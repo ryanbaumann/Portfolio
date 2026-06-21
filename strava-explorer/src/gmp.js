@@ -32,7 +32,7 @@ async function loadGoogleMapsApi(apiKey, libraries) {
     const loaderModule = GoogleMapsLoader.default ?? GoogleMapsLoader;
 
     if (typeof GoogleMapsLoader.setOptions === 'function' && typeof GoogleMapsLoader.importLibrary === 'function') {
-        GoogleMapsLoader.setOptions({ key: apiKey, v: 'weekly', libraries });
+        GoogleMapsLoader.setOptions({ key: apiKey, v: 'alpha', libraries });
         return GoogleMapsLoader.importLibrary;
     }
 
@@ -41,7 +41,7 @@ async function loadGoogleMapsApi(apiKey, libraries) {
     const LoaderClass = GoogleMapsLoader.Loader ?? loaderModule.Loader;
     const loader = new LoaderClass({
         apiKey,
-        version: 'weekly',
+        version: 'alpha',
         libraries,
     });
     await loader.load();
@@ -295,7 +295,7 @@ function addRouteEndpointMarkers(path) {
             glyphColor: '#ffffff',
             scale: 1.0,
         });
-        marker.append(pin.element);
+        marker.append(pin);
         map3d.append(marker);
         routeMarkers.push(marker);
     });
@@ -397,7 +397,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 borderColor: '#e5e7eb',
                 glyphSrc: getMarkerPhotoUrl(photoThumbUrl)
             });
-            marker.append(pin.element);
+            marker.append(pin);
 
             // Create Popover
             const popover = new PopoverElement({

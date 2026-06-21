@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - **Dynamic Tour Timing**: The follow-camera fly-through duration now scales based on route length instead of a fixed time, improving the visual pacing on both short trails and long rides.
 
 ### Changed / Improved
-- **Maps JS API Version**: Reverted back to the `weekly` build for production stability in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js).
+- **Maps JS API Version**: Switched back to the `alpha` build channel in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js) to gain access to the fixed 3D custom element observer loop, allowing clean, non-deprecated usage of `PinElement`.
 - **Enhanced Camera Smoothing**: Blended multiple look-ahead route coordinates and implemented a frame-rate-aware yaw rate limit in [followCamera.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/followCamera.js) to prevent sudden camera jumps or "rubber-banding" around switchbacks.
 - **Improved Elevation Tracking**: Connected elevation profile clicks directly to tracking markers and follow-camera progress, enabling fluid map scrub previews.
 - **Shareable URL Parameters & Deep-Linking**: Implemented serialization of date filters, activity selection, and all follow-camera settings to query parameters using `history.replaceState()`. Includes intelligent deep-linking that safely auto-loads shared activities.
@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 - **Compact UI Optimization**: Removed static debug HUD badge and tightened vertical padding between the sidebar title and the "Pick a route" section.
 
 ### Fixed
-- **Call Stack Overflow Crash**: Resolved a severe `RangeError: Maximum call stack size exceeded` crash in the Maps 3D custom element observer by appending the underlying DOM element `pin.element` (`marker.append(pin.element)`) instead of the wrapper object (`marker.append(pin)`), which causes infinite recursion.
+- **Call Stack Overflow & Deprecation Errors**: Fixed a `RangeError: Maximum call stack size exceeded` recursion loop and `<gmp-pin>` deprecation warnings by updating Google Maps loader to `alpha` and directly appending the `PinElement` object (`marker.append(pin)`) instead of the deprecated, recursive `pin.element` property.
 - **Reference Errors**: Fixed ReferenceErrors where `temp_token` and `getTourSettings` were undefined during URL state parsing and authentication flow.
 - **Custom Pin Image Deprecation**: Swapped deprecated `glyph` to `glyphSrc` for loading photo URLs onto custom `PinElement` markers, preventing WebGL/Maps 3D serialization failures.
 - **3D Photo Marker Sizing**: Replaced custom unscalable `HTMLTemplateElement` image billboards with properly proportioned, natively scalable `PinElement` structures.
