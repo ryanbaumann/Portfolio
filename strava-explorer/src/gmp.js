@@ -84,8 +84,8 @@ export async function initMap(mapHostElement, apiKey) {
         console.log("3D Map initialized.");
 
         // Initialize Follow Camera module after map and dependencies are ready
-        // Pass the module-level showError, which might be updated by setHelpers
-        initializeFollowCamera(map3d, LatLng, getClientElevation, showError);
+        // Pass the module-level showError and updateTrackingMarker
+        initializeFollowCamera(map3d, LatLng, getClientElevation, showError, updateTrackingMarker);
 
         showLoading(false);
         return map3d; // Return the map instance
@@ -284,10 +284,9 @@ function addRouteEndpointMarkers(path) {
         const lat = typeof point.lat === 'function' ? point.lat() : (point.lat ?? 0);
         const lng = typeof point.lng === 'function' ? point.lng() : (point.lng ?? 0);
         const marker = new Marker3DInteractiveElement({
-            position: { lat, lng, altitude: 24 },
-            altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+            position: { lat, lng },
+            altitudeMode: AltitudeMode.CLAMP_TO_GROUND,
             title: `${label} of activity route`,
-            extruded: true,
             label,
         });
         const pin = new PinElement({
@@ -296,8 +295,7 @@ function addRouteEndpointMarkers(path) {
             glyphColor: '#ffffff',
             scale: 1.0,
         });
-        const pinNode = pin instanceof HTMLElement ? pin : pin.element;
-        if (pinNode) marker.append(pinNode);
+        marker.append(pin);
         map3d.append(marker);
         routeMarkers.push(marker);
     });
@@ -387,10 +385,9 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
             // Create an interactive 3D marker for the photo. The altitude is relative to
             // terrain so it floats consistently above the photorealistic mesh.
             const marker = new Marker3DInteractiveElement({
-                position: position,
-                altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+                position: { lat, lng }, // Strip altitude for CLAMP_TO_GROUND
+                altitudeMode: AltitudeMode.CLAMP_TO_GROUND,
                 title: photo.caption || `Activity photo ${photo.unique_id}`,
-                extruded: true,
                 drawsWhenOccluded: true
             });
 
@@ -431,7 +428,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
             popover.append(popoverCaption);
 
             // Add Click Listener to Toggle Popover
-            marker.addEventListener('gmp-click', () => {
+            marker.addEventListener('gmp-click', async () => {
                 console.log("Clicked Photo Marker:", photo.unique_id);
                 // Close other open popovers
                 photoMarkers.forEach(({ popover: otherPopover }, key) => {
@@ -441,8 +438,9 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 });
                 // Toggle this popover
                 popover.open = !popover.open;
-                // Fly closer
-                flyToLocation({ lat, lng, altitude: 72 }, 850, 66, map3d.heading, 900);
+                // Fly closer with API ground elevation + overhead clearance
+                const trueElevation = await getClientElevation({ lat, lng });
+                flyToLocation({ lat, lng, altitude: trueElevation + 72 }, 850, 66, map3d.heading, 900);
             });
 
             // Add Marker and Popover to Map
@@ -534,22 +532,13 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
     
     if (!trackingMarker) {
         try {
-            trackingMarker = new Marker3DInteractiveElement({
-                position: { lat: 0, lng: 0, altitude: -1000 }, // off-screen initially
+            trackingMarker = new Marker3DElement({
                 altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
                 title: 'Tour Position',
                 extruded: true,
                 drawsWhenOccluded: true
             });
-            const pin = new PinElement({
-                background: color,
-                borderColor: '#ffffff',
-                glyphColor: color, // hides the dot inside
-                scale: 1.2,
-            });
-            trackingMarker.append(pin);
-            map3d.append(trackingMarker);
-            console.log("[updateTrackingMarker] Created and appended trackingMarker singleton.");
+            console.log("[updateTrackingMarker] Created trackingMarker singleton volumetric Marker3DElement.");
         } catch (e) {
             console.error("[updateTrackingMarker] Failed to initialize tracking marker:", e);
             return;
@@ -557,17 +546,24 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
     }
     
     if (!position) {
-        trackingMarker.style.display = 'none';
+        if (trackingMarker.parentNode) {
+            try {
+                map3d.removeChild(trackingMarker);
+            } catch (e) {
+                console.warn("[updateTrackingMarker] Error removing marker:", e);
+            }
+        }
         return;
     }
     
     const lat = typeof position.lat === 'function' ? position.lat() : position.lat;
     const lng = typeof position.lng === 'function' ? position.lng() : position.lng;
-    const altitude = (Number.isFinite(position.altitude) ? position.altitude : 10) + 5; // offset slightly above route
-    
+    // Support both altitude and elevationM, fallback to 10
     try {
-        trackingMarker.style.display = ''; // Reset display to show
-        trackingMarker.position = { lat, lng, altitude };
+        trackingMarker.position = { lat, lng, altitude: 5 }; // Boost relative to ground directly by 5 meters
+        if (!trackingMarker.parentNode) {
+            map3d.append(trackingMarker);
+        }
     } catch (e) {
         console.warn("[updateTrackingMarker] Error updating position:", e);
     }

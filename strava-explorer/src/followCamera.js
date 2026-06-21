@@ -32,14 +32,17 @@ let lastFrameTime = null; // Timestamp of the last frame
 let onProgressUpdate = null; // function(progress, distanceElapsedKm)
 let onPlaybackStateChange = null; // function(state) -> 'playing' | 'paused' | 'stopped'
 
+let updateTrackingMarkerCb = null; // Placeholder
+
 /**
  * Initializes the follow camera module with necessary dependencies.
  */
-export function initializeFollowCamera(mapInstance, latLngClass, elevationGetter, errorReporter) {
+export function initializeFollowCamera(mapInstance, latLngClass, elevationGetter, errorReporter, trackingMarkerUpdater) {
     map3d = mapInstance;
     LatLng = latLngClass;
     getClientElevation = elevationGetter;
     showError = errorReporter;
+    updateTrackingMarkerCb = trackingMarkerUpdater;
     console.log("Follow Camera module initialized.");
 }
 
@@ -159,11 +162,15 @@ function lerpAngle(start, end, amt) {
 function haversineDistance(p1, p2) {
     if (!p1 || !p2) return 0;
     const R = 6371;
-    const dLat = (p2.lat() - p1.lat()) * Math.PI / 180;
-    const dLon = (p2.lng() - p1.lng()) * Math.PI / 180;
+    const lat1 = typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0);
+    const lng1 = typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0);
+    const lat2 = typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0);
+    const lng2 = typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0);
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lng2 - lng1) * Math.PI / 180;
     const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(p1.lat() * Math.PI / 180) * Math.cos(p2.lat() * Math.PI / 180) *
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
         Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
@@ -172,14 +179,14 @@ function haversineDistance(p1, p2) {
 /** Bearing in degrees */
 function calculateBearing(p1, p2) {
     if (!p1 || !p2) return 0;
-    const lat1 = p1.lat() * Math.PI / 180;
-    const lon1 = p1.lng() * Math.PI / 180;
-    const lat2 = p2.lat() * Math.PI / 180;
-    const lon2 = p2.lng() * Math.PI / 180;
+    const lat1 = (typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0)) * Math.PI / 180;
+    const lng1 = (typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0)) * Math.PI / 180;
+    const lat2 = (typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0)) * Math.PI / 180;
+    const lng2 = (typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0)) * Math.PI / 180;
 
-    const y = Math.sin(lon2 - lon1) * Math.cos(lat2);
+    const y = Math.sin(lng2 - lng1) * Math.cos(lat2);
     const x = Math.cos(lat1) * Math.sin(lat2) -
-              Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1);
+              Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
     let bearing = Math.atan2(y, x) * 180 / Math.PI;
     bearing = (bearing + 360) % 360;
     return bearing;
@@ -202,13 +209,19 @@ export function samplePointAlongLine(coords, distance) {
         if (cumulativeDistance + segmentDistance >= distance - epsilon) {
             const fraction = Math.max(0, Math.min(1, (distance - cumulativeDistance) / segmentDistance));
             const bearing = calculateBearing(p1, p2);
-            const lat = p1.lat() + (p2.lat() - p1.lat()) * fraction;
-            const lng = p1.lng() + (p2.lng() - p1.lng()) * fraction;
+            const lat1 = typeof p1.lat === 'function' ? p1.lat() : (p1.lat ?? 0);
+            const lng1 = typeof p1.lng === 'function' ? p1.lng() : (p1.lng ?? 0);
+            const lat2 = typeof p2.lat === 'function' ? p2.lat() : (p2.lat ?? 0);
+            const lng2 = typeof p2.lng === 'function' ? p2.lng() : (p2.lng ?? 0);
+            const lat = lat1 + (lat2 - lat1) * fraction;
+            const lng = lng1 + (lng2 - lng1) * fraction;
             const alt1 = p1.altitude ?? 10;
             const alt2 = p2.altitude ?? 10;
             const altitude = alt1 + (alt2 - alt1) * fraction;
 
-            return { point: new LatLng(lat, lng, altitude), bearing: bearing };
+            const pt = new LatLng(lat, lng);
+            pt.altitude = altitude;
+            return { point: pt, bearing: bearing };
         }
         cumulativeDistance += segmentDistance;
     }
@@ -218,7 +231,8 @@ export function samplePointAlongLine(coords, distance) {
         const secondLastPoint = coords[coords.length - 2];
         if (!lastPoint || !secondLastPoint) return null;
         const bearing = calculateBearing(secondLastPoint, lastPoint);
-        const lastPointWithAlt = new LatLng(lastPoint.lat(), lastPoint.lng(), lastPoint.altitude ?? 10);
+        const lastPointWithAlt = new LatLng(lastPoint.lat(), lastPoint.lng());
+        lastPointWithAlt.altitude = lastPoint.altitude ?? 10;
         return { point: lastPointWithAlt, bearing: bearing };
     }
 
@@ -239,13 +253,15 @@ async function buildFollowCameraSamples(routeCoords) {
 
     const enriched = [];
     for (const point of samples) {
-        const lat = point.lat();
-        const lng = point.lng();
+        const lat = typeof point.lat === 'function' ? point.lat() : (point.lat ?? 0);
+        const lng = typeof point.lng === 'function' ? point.lng() : (point.lng ?? 0);
         let altitude = point.altitude;
         if (altitude == null) {
             altitude = await getClientElevation({ lat, lng });
         }
-        enriched.push(new LatLng(lat, lng, altitude));
+        const pt = new LatLng(lat, lng);
+        pt.altitude = altitude;
+        enriched.push(pt);
     }
     return enriched;
 }
@@ -369,6 +385,9 @@ export function stopFollowCamera() {
     
     if (onProgressUpdate) onProgressUpdate(0, 0);
     if (onPlaybackStateChange) onPlaybackStateChange('stopped');
+    if (typeof updateTrackingMarkerCb === 'function') {
+        updateTrackingMarkerCb(null);
+    }
 }
 
 /**
@@ -476,6 +495,15 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
         range: cameraRangeOffset,
         tilt: cameraTiltOffset,
     };
+
+    if (typeof updateTrackingMarkerCb === 'function') {
+        const alt = Number.isFinite(alongCoords.point.altitude) ? alongCoords.point.altitude : 10;
+        updateTrackingMarkerCb({
+            lat: alongCoords.point.lat(),
+            lng: alongCoords.point.lng(),
+            altitude: alt
+        });
+    }
 
     // If scrubbing or snapping directly, set the camera directly without LERP interpolation.
     // During playback, bias the user-facing smoothness upward so the camera tracks the
