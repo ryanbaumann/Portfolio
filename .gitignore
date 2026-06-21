@@ -9,3 +9,8 @@ strava-explorer/.env
 # Ignore build artifacts
 strava-explorer/build
 strava-explorer/dist
+
+# OS files
+.DS_Store
+**/.DS_Store
+
