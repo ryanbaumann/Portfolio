@@ -13,6 +13,9 @@ All notable changes to this project will be documented in this file.
 - **Maps JS API Version**: Reverted back to the `weekly` build for production stability in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js).
 - **Enhanced Camera Smoothing**: Blended multiple look-ahead route coordinates and implemented a frame-rate-aware yaw rate limit in [followCamera.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/followCamera.js) to prevent sudden camera jumps or "rubber-banding" around switchbacks.
 - **Improved Elevation Tracking**: Connected elevation profile clicks directly to tracking markers and follow-camera progress, enabling fluid map scrub previews.
+- **Shareable URL Parameters & Deep-Linking**: Implemented serialization of date filters, activity selection, and all follow-camera settings to query parameters using `history.replaceState()`. Includes intelligent deep-linking that safely auto-loads shared activities.
+- **Floating HUD Share Button**: Added a beautiful glass-morphism "Share Tour" button with built-in clipboard copying and visual feedback.
+- **Compact UI Optimization**: Removed static debug HUD badge and tightened vertical padding between the sidebar title and the "Pick a route" section.
 
 ### Fixed
 - **Call Stack Overflow Crash**: Resolved a severe `RangeError: Maximum call stack size exceeded` crash in the Maps 3D custom element observer by appending the native `PinElement` directly (`marker.append(pin)`) instead of the deprecated, recursive `.element` property. In modern Maps JS API libraries, `PinElement` directly extends `HTMLElement`. Also updated Google Maps loader to use the `alpha` channel to ensure all latest 3D Maps bug fixes are applied.

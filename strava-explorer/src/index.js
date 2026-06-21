@@ -46,9 +46,109 @@ function showError(message) {
     if (message) showLoading(false); // Hide loading if error occurs
 }
 
+// --- URL State Management ---
+function readUrlState() {
+    const params = new URLSearchParams(window.location.search);
+    const parseNum = (val, fn) => {
+        if (!val) return null;
+        const n = fn(val);
+        return isNaN(n) ? null : n;
+    };
+    return {
+        startDate: params.get('start_date'),
+        endDate: params.get('end_date'),
+        count: parseNum(params.get('count'), parseInt),
+        activityId: params.get('activity_id'),
+        cameraHeight: parseNum(params.get('camera_height'), parseInt),
+        cameraRange: parseNum(params.get('camera_range'), parseInt),
+        cameraTilt: parseNum(params.get('camera_tilt'), parseInt),
+        cameraSmoothness: parseNum(params.get('camera_smoothness'), parseFloat),
+        cameraSpeed: parseNum(params.get('camera_speed'), parseFloat)
+    };
+}
+
+function updateUrlState() {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('code');
+    params.delete('scope');
+
+    if (startDateInput?.value) params.set('start_date', startDateInput.value);
+    if (endDateInput?.value) params.set('end_date', endDateInput.value);
+    if (activityCountInput?.value) params.set('count', activityCountInput.value);
+    if (currentActivityId) {
+        params.set('activity_id', currentActivityId);
+    } else {
+        params.delete('activity_id');
+    }
+
+    try {
+        const settings = getTourSettings();
+        if (settings) {
+            if (typeof settings.height === 'number') params.set('camera_height', settings.height);
+            if (typeof settings.range === 'number') params.set('camera_range', settings.range);
+            if (typeof settings.tilt === 'number') params.set('camera_tilt', settings.tilt);
+            if (typeof settings.smoothness === 'number') params.set('camera_smoothness', settings.smoothness.toFixed(2));
+        }
+    } catch (e) {
+        console.warn("Could not read tour settings for URL state:", e);
+    }
+
+    if (followCameraSpeedSlider) {
+        params.set('camera_speed', parseFloat(followCameraSpeedSlider.value).toFixed(2));
+    }
+
+    const queryString = params.toString();
+    const newUrl = window.location.pathname + (queryString ? `?${queryString}` : '');
+    window.history.replaceState({}, document.title, newUrl);
+}
+
+function setupShareButton() {
+    const shareUrlButton = document.getElementById('share-url-button');
+    const shareTooltip = document.getElementById('share-tooltip');
+    if (shareUrlButton && shareTooltip) {
+        shareUrlButton.addEventListener('click', () => {
+            updateUrlState();
+            const url = window.location.href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(() => {
+                    shareTooltip.classList.remove('opacity-0');
+                    shareTooltip.classList.add('opacity-100');
+                    setTimeout(() => {
+                        shareTooltip.classList.remove('opacity-100');
+                        shareTooltip.classList.add('opacity-0');
+                    }, 2000);
+                }).catch(err => {
+                    console.error("Failed to copy URL:", err);
+                    showError("Failed to copy link to clipboard.");
+                });
+            } else {
+                const textArea = document.createElement("textarea");
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    shareTooltip.classList.remove('opacity-0');
+                    shareTooltip.classList.add('opacity-100');
+                    setTimeout(() => {
+                        shareTooltip.classList.remove('opacity-100');
+                        shareTooltip.classList.add('opacity-0');
+                    }, 2000);
+                } catch (e) {
+                    showError("Failed to copy link to clipboard.");
+                }
+                document.body.removeChild(textArea);
+            }
+        });
+    }
+}
+
 // --- Initialization ---
 async function initApp() {
     console.log("Initializing App...");
+    setupShareButton();
+    const urlState = readUrlState();
+
     // Get DOM elements
     mapHost = document.getElementById("map3d-host");
     stravaConnectButton = document.getElementById('strava-connect-button');
@@ -122,10 +222,10 @@ async function initApp() {
     gmp.setHelpers(helpers);
 
     // Set initial date inputs for filters
-    setInitialDateInputs();
+    setInitialDateInputs(urlState);
 
     // Initialize Tour Player listeners & callbacks
-    initTourPlayer();
+    initTourPlayer(urlState);
 
     // Initialize Elevation Profile hover events
     initElevationHover();
@@ -135,12 +235,15 @@ async function initApp() {
         await gmp.initMap(mapHost, import.meta.env.VITE_GMP_API_KEY);
 
         // --- Strava Auth Flow ---
-        const urlParams = new URLSearchParams(window.location.search);
-        const temp_token = urlParams.get('code');
-
         if (temp_token) {
-            // Clear the code from the URL
-            window.history.replaceState({}, document.title, window.location.pathname);
+            // Clear the code from the URL while preserving application state params
+            const params = new URLSearchParams(window.location.search);
+            params.delete('code');
+            params.delete('scope');
+            const queryString = params.toString();
+            const cleanUrl = window.location.pathname + (queryString ? `?${queryString}` : '');
+            window.history.replaceState({}, document.title, cleanUrl);
+
             const authData = await strava.exchangeToken(temp_token);
             handleSuccessfulAuth(authData);
         } else {
@@ -220,7 +323,10 @@ function handleSuccessfulAuth(authData) {
 
     // Add listener to the fetch button
     if (fetchFilteredButton) {
-        fetchFilteredButton.onclick = handleFetchFilteredActivities;
+        fetchFilteredButton.onclick = () => {
+            updateUrlState();
+            handleFetchFilteredActivities();
+        };
     } else {
          console.error("Fetch filtered activities button not found.");
     }
@@ -369,14 +475,34 @@ function handleActivitiesResponse(activities) {
         }
     }
 
-    // Auto-select and trigger the first activity
-    if (selectList.options.length > 1) {
-        selectList.selectedIndex = 1;
-        handleActivitySelectionChange({ target: selectList }); // Simulate event
-        console.log(`Auto-selected first activity: ${selectList.options[1].textContent}`);
-    } else {
-        // If only the placeholder exists, clear any previous display
-        clearActivityDisplay();
+    // Auto-select and trigger the activity if present in URL
+    const urlState = readUrlState();
+    let foundUrlActivity = false;
+
+    if (urlState.activityId) {
+        for (let i = 0; i < selectList.options.length; i++) {
+            if (selectList.options[i].value == urlState.activityId) {
+                selectList.selectedIndex = i;
+                handleActivitySelectionChange({ target: selectList });
+                foundUrlActivity = true;
+                console.log(`[URL State] Auto-selected activity from URL: ${urlState.activityId}`);
+                break;
+            }
+        }
+    }
+
+    if (!foundUrlActivity) {
+        if (urlState.activityId) {
+            console.log(`[URL State] Activity ${urlState.activityId} not found in recent list. Fetching detailed activity directly...`);
+            clearActivityDisplay();
+            fetchAndDisplayDetailedActivity(urlState.activityId);
+        } else if (selectList.options.length > 1) {
+            selectList.selectedIndex = 1;
+            handleActivitySelectionChange({ target: selectList });
+            console.log(`Auto-selected first activity: ${selectList.options[1].textContent}`);
+        } else {
+            clearActivityDisplay();
+        }
     }
 }
 
@@ -423,6 +549,7 @@ function clearActivityDisplay() {
         tourScrubber.disabled = true;
     }
     currentActivityId = null;
+    updateUrlState();
 }
 
 
@@ -439,6 +566,8 @@ async function fetchAndDisplayDetailedActivity(activityId) {
     currentActivityId = activityId; // Store the ID of the activity being displayed
 
     try {
+        currentActivityId = activityId; // Store the ID of the activity being displayed
+        updateUrlState();
         const detailedActivityData = await strava.fetchDetailedActivityData(activityId, token);
         // Fetch streams: altitude, distance, and latlng for precise route alignment
         let altitudeStream = null;
@@ -859,7 +988,7 @@ function initElevationHover() {
     });
 }
 
-function initTourPlayer() {
+function initTourPlayer(urlState) {
     registerTourCallbacks(
         (progress, distanceElapsedKm) => {
             const kmToMiles = 0.621371;
@@ -924,55 +1053,72 @@ function initTourPlayer() {
     }
 
     if (followCameraSpeedSlider) {
+        const speedVal = urlState?.cameraSpeed !== null && urlState?.cameraSpeed !== undefined ? urlState.cameraSpeed : 1.0;
+        followCameraSpeedSlider.value = speedVal.toString();
+        if (followCameraSpeedValue) followCameraSpeedValue.textContent = `${speedVal.toFixed(2)}x`;
+        setFollowCameraSpeed(speedVal);
         followCameraSpeedSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             if (followCameraSpeedValue) followCameraSpeedValue.textContent = `${val.toFixed(2)}x`;
             setFollowCameraSpeed(val);
+            updateUrlState();
         });
     }
 
     if (tourHeightSlider) {
-        tourHeightSlider.value = '120';
-        if (tourHeightValue) tourHeightValue.textContent = '120m';
+        const heightVal = urlState?.cameraHeight !== null && urlState?.cameraHeight !== undefined ? urlState.cameraHeight : 120;
+        tourHeightSlider.value = heightVal.toString();
+        if (tourHeightValue) tourHeightValue.textContent = `${heightVal}m`;
+        setTourSettings({ height: heightVal });
         tourHeightSlider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
+            const val = parseInt(e.target.value, 10);
             if (tourHeightValue) tourHeightValue.textContent = `${val}m`;
             setTourSettings({ height: val });
+            updateUrlState();
         });
     }
 
     if (tourRangeSlider) {
-        tourRangeSlider.value = '760';
-        if (tourRangeValue) tourRangeValue.textContent = '760m';
+        const rangeVal = urlState?.cameraRange !== null && urlState?.cameraRange !== undefined ? urlState.cameraRange : 760;
+        tourRangeSlider.value = rangeVal.toString();
+        if (tourRangeValue) tourRangeValue.textContent = `${rangeVal}m`;
+        setTourSettings({ range: rangeVal });
         tourRangeSlider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
+            const val = parseInt(e.target.value, 10);
             if (tourRangeValue) tourRangeValue.textContent = `${val}m`;
             setTourSettings({ range: val });
+            updateUrlState();
         });
     }
 
     if (tourTiltSlider) {
-        tourTiltSlider.value = '64';
-        if (tourTiltValue) tourTiltValue.textContent = '64°';
+        const tiltVal = urlState?.cameraTilt !== null && urlState?.cameraTilt !== undefined ? urlState.cameraTilt : 64;
+        tourTiltSlider.value = tiltVal.toString();
+        if (tourTiltValue) tourTiltValue.textContent = `${tiltVal}°`;
+        setTourSettings({ tilt: tiltVal });
         tourTiltSlider.addEventListener('input', (e) => {
-            const val = parseInt(e.target.value);
+            const val = parseInt(e.target.value, 10);
             if (tourTiltValue) tourTiltValue.textContent = `${val}°`;
             setTourSettings({ tilt: val });
+            updateUrlState();
         });
     }
 
     if (tourSmoothnessSlider) {
-        tourSmoothnessSlider.value = '0.18';
-        if (tourSmoothnessValue) tourSmoothnessValue.textContent = '0.18';
+        const smoothnessVal = urlState?.cameraSmoothness !== null && urlState?.cameraSmoothness !== undefined ? urlState.cameraSmoothness : 0.18;
+        tourSmoothnessSlider.value = smoothnessVal.toString();
+        if (tourSmoothnessValue) tourSmoothnessValue.textContent = smoothnessVal.toFixed(2);
+        setTourSettings({ smoothness: smoothnessVal });
         tourSmoothnessSlider.addEventListener('input', (e) => {
             const val = parseFloat(e.target.value);
             if (tourSmoothnessValue) tourSmoothnessValue.textContent = val.toFixed(2);
             setTourSettings({ smoothness: val });
+            updateUrlState();
         });
     }
 }
 
-function setInitialDateInputs() {
+function setInitialDateInputs(urlState) {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(today.getDate() + 1); // Set to tomorrow
@@ -987,8 +1133,8 @@ function setInitialDateInputs() {
         return `${year}-${month}-${day}`;
     };
 
-    if (startDateInput) startDateInput.value = formatDate(ninetyDaysAgo);
-    if (endDateInput) endDateInput.value = formatDate(tomorrow); // Changed from today to tomorrow
+    if (startDateInput) startDateInput.value = urlState?.startDate || formatDate(ninetyDaysAgo);
+    if (endDateInput) endDateInput.value = urlState?.endDate || formatDate(tomorrow);
 }
 
 // --- Start Application ---
