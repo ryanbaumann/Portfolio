@@ -250,9 +250,15 @@ export function displayPolyline(decodedPathLatLng) { // Expects array of LatLng 
     removePreviousPolyline();
     clearRouteMarkers();
 
-    // Create new 3D Polyline clamped to ground
+    // Create new 3D Polyline clamped to ground with normalized literals
+    const pathLiterals = decodedPathLatLng.map((point) => ({
+        lat: typeof point.lat === 'function' ? point.lat() : (point.lat ?? 0),
+        lng: typeof point.lng === 'function' ? point.lng() : (point.lng ?? 0),
+        altitude: Number.isFinite(point.altitude) ? point.altitude : 10
+    }));
+
     const routePolyline = new Polyline3DElement({
-        path: decodedPathLatLng, // Pass the array of LatLng objects directly
+        path: pathLiterals, // Pass plain LatLngAltitudeLiteral objects
         strokeColor: '#ff4d2e',
         strokeWidth: 14,
         outerColor: '#ffffff',
@@ -275,8 +281,10 @@ function addRouteEndpointMarkers(path) {
         { label: 'Finish', point: path[path.length - 1], color: '#ef4444' },
     ];
     endpoints.forEach(({ label, point, color }) => {
+        const lat = typeof point.lat === 'function' ? point.lat() : (point.lat ?? 0);
+        const lng = typeof point.lng === 'function' ? point.lng() : (point.lng ?? 0);
         const marker = new Marker3DInteractiveElement({
-            position: { lat: point.lat(), lng: point.lng(), altitude: 24 },
+            position: { lat, lng, altitude: 24 },
             altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
             title: `${label} of activity route`,
             extruded: true,
@@ -521,36 +529,45 @@ export function downsamplePath(path, maxPoints) { // path = array of LatLng obje
 }
 
 export function updateTrackingMarker(position, color = '#3b82f6') {
-    if (!map3d || !Marker3DElement || !AltitudeMode) return;
+    if (!map3d || !Marker3DInteractiveElement || !AltitudeMode) return;
+    
+    if (!trackingMarker) {
+        try {
+            trackingMarker = new Marker3DInteractiveElement({
+                position: { lat: 0, lng: 0, altitude: -1000 }, // off-screen initially
+                altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
+                title: 'Tour Position',
+                extruded: true,
+                drawsWhenOccluded: true
+            });
+            const pin = new PinElement({
+                background: color,
+                borderColor: '#ffffff',
+                glyphColor: color, // hides the dot inside
+                scale: 1.2,
+            });
+            trackingMarker.append(pin);
+            map3d.append(trackingMarker);
+            console.log("[updateTrackingMarker] Created and appended trackingMarker singleton.");
+        } catch (e) {
+            console.error("[updateTrackingMarker] Failed to initialize tracking marker:", e);
+            return;
+        }
+    }
     
     if (!position) {
-        if (trackingMarker) {
-            try { map3d.removeChild(trackingMarker); } catch (e) {}
-            trackingMarker = null;
-        }
+        trackingMarker.style.display = 'none';
         return;
     }
     
     const lat = typeof position.lat === 'function' ? position.lat() : position.lat;
     const lng = typeof position.lng === 'function' ? position.lng() : position.lng;
-    const altitude = (position.altitude ?? 10) + 5; // offset slightly above route
+    const altitude = (Number.isFinite(position.altitude) ? position.altitude : 10) + 5; // offset slightly above route
     
-    if (trackingMarker) {
+    try {
+        trackingMarker.style.display = ''; // Reset display to show
         trackingMarker.position = { lat, lng, altitude };
-    } else {
-        trackingMarker = new Marker3DInteractiveElement({
-            position: { lat, lng, altitude },
-            altitudeMode: AltitudeMode.RELATIVE_TO_GROUND,
-            title: 'Tour Position',
-            extruded: true,
-        });
-        const pin = new PinElement({
-            background: color,
-            borderColor: '#ffffff',
-            glyphColor: color, // hides the dot inside
-            scale: 1.2,
-        });
-        trackingMarker.append(pin);
-        map3d.append(trackingMarker);
+    } catch (e) {
+        console.warn("[updateTrackingMarker] Error updating position:", e);
     }
 }
