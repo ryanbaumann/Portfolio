@@ -463,6 +463,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 title: photo.caption || `Activity photo ${photo.unique_id}`,
                 drawsWhenOccluded: true,
                 gmpPopoverTargetElement: popover,
+                sizePreserved: true,
             });
 
             // Create custom photo thumbnail using HTMLTemplateElement
