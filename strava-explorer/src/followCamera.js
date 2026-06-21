@@ -23,6 +23,7 @@ let cameraTiltOffset = 64; // degrees tilt
 let cameraSmoothness = 0.18; // LERP factor; higher defaults reduce lag during fly-throughs
 let filteredHeading = null;
 let lastCameraUpdateTime = null;
+let lastTargetAltitude = null;
 
 // Animation Progress variables
 let currentProgress = 0; // 0.0 to 1.0 (tour progress)
@@ -106,6 +107,24 @@ export function setFollowCameraSpeed(multiplier) {
 
 function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
+}
+
+function analyzeUpcomingTerrain(distanceAlongPath, windowKm = 0.5) {
+    const sampleCount = 6;
+    let minAlt = Infinity;
+    let maxAlt = -Infinity;
+    
+    for (let i = 0; i <= sampleCount; i++) {
+        const dist = distanceAlongPath + (windowKm * (i / sampleCount));
+        const sample = samplePointAlongLine(followCameraSamples, clamp(dist, 0, followCameraPathDistance));
+        if (sample?.point?.altitude != null) {
+            minAlt = Math.min(minAlt, sample.point.altitude);
+            maxAlt = Math.max(maxAlt, sample.point.altitude);
+        }
+    }
+    
+    if (minAlt === Infinity) return { variance: 0, maxAlt: 0 };
+    return { variance: Math.max(0, maxAlt - minAlt), maxAlt };
 }
 
 function calculateTourDuration(pathDistanceKm) {
@@ -284,9 +303,37 @@ export async function loadTourRoute(routeCoords) {
     followCameraBaseDuration = calculateTourDuration(followCameraPathDistance);
     console.log(`Follow camera duration set to ${(followCameraBaseDuration / 1000).toFixed(0)}s for ${followCameraPathDistance.toFixed(1)} km.`);
     
+    // Smart profile defaults assessment based on terrain and elevation gain
+    let globalMinAlt = Infinity;
+    let globalMaxAlt = -Infinity;
+    followCameraSamples.forEach(p => {
+        const alt = typeof p.altitude === 'number' ? p.altitude : (typeof p.altitude === 'function' ? p.altitude() : 10);
+        globalMinAlt = Math.min(globalMinAlt, alt);
+        globalMaxAlt = Math.max(globalMaxAlt, alt);
+    });
+    const totalElevationGain = Math.max(0, globalMaxAlt - globalMinAlt);
+    
+    if (totalElevationGain > 450) { // High Alpine Climb
+        cameraHeightOffset = 180;
+        cameraRangeOffset = 1150;
+        cameraTiltOffset = 42;
+        console.log(`[loadTourRoute] Smart Profile: High Alpine. Gain: ${totalElevationGain.toFixed(0)}m. Set tight tilt and high range.`);
+    } else if (totalElevationGain > 120) { // Rolling Hills / Moderate
+        cameraHeightOffset = 130;
+        cameraRangeOffset = 760;
+        cameraTiltOffset = 58;
+        console.log(`[loadTourRoute] Smart Profile: Rolling Hills. Gain: ${totalElevationGain.toFixed(0)}m.`);
+    } else { // Flat Coastal / Urban
+        cameraHeightOffset = 85;
+        cameraRangeOffset = 460;
+        cameraTiltOffset = 68;
+        console.log(`[loadTourRoute] Smart Profile: Flat Coastal. Gain: ${totalElevationGain.toFixed(0)}m. Set scenic close range.`);
+    }
+    
     currentProgress = 0;
     filteredHeading = null;
     lastCameraUpdateTime = null;
+    lastTargetAltitude = null;
     if (onProgressUpdate) onProgressUpdate(0, 0);
 }
 
@@ -463,19 +510,39 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
 
     if (!alongCoords || !alongCoords.point) return;
 
-    const targetCameraAltitude = calculateTerrainClearanceAltitude(distanceAlongPath, alongCoords.point.altitude ?? 10);
+    const upcomingTerrain = analyzeUpcomingTerrain(distanceAlongPath, 0.5);
+    const varianceMeters = upcomingTerrain.variance;
 
-    const lookAheadDistanceKm = Math.min(0.45, Math.max(0.06, followCameraPathDistance * 0.018));
-    const lookAheadBearings = [0.35, 0.75, 1.2]
-        .map((multiplier) => samplePointAlongLine(
-            followCameraSamples,
-            Math.min(followCameraPathDistance, distanceAlongPath + lookAheadDistanceKm * multiplier)
-        )?.bearing)
-        .filter((bearing) => Number.isFinite(bearing));
-    let smoothedBearing = lookAheadBearings.reduce(
-        (heading, bearing, index) => lerpAngle(heading, bearing, index === 0 ? 0.45 : 0.32),
-        alongCoords.bearing
+    // Aggressive Spatial Elevation Anti-Clipping (Part 1)
+    const varianceFactor = clamp(varianceMeters / 150, 0, 1);
+    const dynamicHeightBoost = varianceFactor * 150; // Push up to 150m above for steep climbs
+    const dynamicRangeBoost = varianceMeters * 25; // Inflate range aggressively by 25x variance
+    const dynamicTiltDrop = varianceFactor * 45; // Slam tilt from horizontal down toorbital drop
+
+    const baseClearance = calculateTerrainClearanceAltitude(distanceAlongPath, alongCoords.point.altitude ?? 10);
+    const rawTargetAltitude = Math.max(baseClearance, upcomingTerrain.maxAlt + cameraHeightOffset + dynamicHeightBoost);
+
+    // Velocity Slope Clamping (Jank Prevention)
+    const maxAltitudeDeltaPerFrame = 4.0 * followCameraSpeedMultiplier;
+    let targetCameraAltitude = rawTargetAltitude;
+    if (lastTargetAltitude !== null && !snapDirectly) {
+        const targetDelta = rawTargetAltitude - lastTargetAltitude;
+        const clampedDelta = clamp(targetDelta, -maxAltitudeDeltaPerFrame, maxAltitudeDeltaPerFrame);
+        targetCameraAltitude = lastTargetAltitude + clampedDelta;
+    }
+    lastTargetAltitude = targetCameraAltitude;
+
+    // Cinematic Inertia View (Time-Based 8-second Future Bearing)
+    const currentDurationMs = followCameraBaseDuration / followCameraSpeedMultiplier;
+    const kmPerMs = followCameraPathDistance / currentDurationMs;
+    const lookAheadMs = 8000; 
+    const lookAheadDistanceKm = clamp(kmPerMs * lookAheadMs, 0.05, 0.55);
+
+    const lookAheadSample = samplePointAlongLine(
+        followCameraSamples,
+        Math.min(followCameraPathDistance, distanceAlongPath + lookAheadDistanceKm)
     );
+    let smoothedBearing = lookAheadSample ? lookAheadSample.bearing : alongCoords.bearing;
 
     const now = performance.now();
     if (snapDirectly || filteredHeading == null || lastCameraUpdateTime == null) {
@@ -492,8 +559,8 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
     const targetCameraPosition = {
         center: { lat: alongCoords.point.lat(), lng: alongCoords.point.lng(), altitude: targetCameraAltitude },
         heading: smoothedBearing,
-        range: cameraRangeOffset,
-        tilt: cameraTiltOffset,
+        range: clamp(cameraRangeOffset + dynamicRangeBoost, 200, 3500),
+        tilt: clamp(cameraTiltOffset - dynamicTiltDrop, 20, 85),
     };
 
     if (typeof updateTrackingMarkerCb === 'function') {
