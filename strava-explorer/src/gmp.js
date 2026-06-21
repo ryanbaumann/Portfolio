@@ -400,8 +400,7 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 borderColor: '#e5e7eb',
                 glyphSrc: getMarkerPhotoUrl(photoThumbUrl)
             });
-            const pinNode = pin instanceof HTMLElement ? pin : pin.element;
-            if (pinNode) marker.append(pinNode);
+            marker.append(pin);
 
             // Create Popover
             const popover = new PopoverElement({
@@ -548,8 +547,7 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
                 glyphColor: color, // hides the dot inside
                 scale: 1.2,
             });
-            const pinNode = pin instanceof HTMLElement ? pin : pin.element;
-            if (pinNode) trackingMarker.append(pinNode);
+            trackingMarker.append(pin);
             map3d.append(trackingMarker);
             console.log("[updateTrackingMarker] Created and appended trackingMarker singleton.");
         } catch (e) {

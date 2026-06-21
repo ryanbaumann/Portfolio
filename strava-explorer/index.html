@@ -186,115 +186,116 @@
         <!-- Snapshot Canvas (Hidden - Functionality Removed) -->
         <!-- <canvas id='snapshot' class='absolute top-0 left-0 w-full h-full pointer-events-none' style="visibility:hidden"></canvas> -->
 
-        <!-- Sidebar Container - Optimized with premium-glass -->
-        <aside class="absolute top-[clamp(0.75rem,2vw,1.25rem)] left-3 z-10 w-[min(28rem,calc(100%-1.5rem))] flex flex-col premium-glass rounded-2xl shadow-2xl text-white overflow-hidden md:bottom-auto md:max-h-[calc(100vh-2.5rem)] max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:top-auto max-md:w-full max-md:max-w-full max-md:max-h-[58vh] max-md:rounded-none max-md:rounded-t-2xl max-md:border-t max-md:border-white/10" aria-label="Strava activity controls">
+        <!-- Sidebar Container - Optimized with premium-glass and tighter vertical spacing -->
+        <aside class="absolute top-[clamp(0.5rem,1.5vw,1rem)] left-3 z-10 w-[min(28rem,calc(100%-1.5rem))] flex flex-col premium-glass rounded-2xl shadow-2xl text-white overflow-hidden md:bottom-auto md:max-h-[calc(100vh-4rem)] max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:top-auto max-md:w-full max-md:max-w-full max-md:max-h-[33.33vh] max-md:rounded-none max-md:rounded-t-2xl max-md:border-t max-md:border-white/10" aria-label="Strava activity controls">
             <!-- Sidebar Header -->
-            <div class='p-4 border-b border-white/10 flex-shrink-0'>
-                 <p class='text-xs font-semibold uppercase tracking-[0.22em] text-indigo-400'>Trails Ninja</p>
-                 <h1 class='text-xl font-bold text-white tracking-wide mt-0.5'>3D Strava Explorer</h1>
-                 <p id='camera-status' class='mt-1 text-xs text-gray-400 leading-relaxed' aria-live='polite'>1) Pick a route. 2) Press play. 3) Tune the view if needed.</p>
+            <div class='p-3 border-b border-white/10 flex-shrink-0'>
+                 <p class='text-[10px] font-semibold uppercase tracking-[0.22em] text-indigo-400'>Trails Ninja</p>
+                 <h1 class='text-lg font-bold text-white tracking-wide mt-0.5'>3D Strava Explorer</h1>
+                 <p id='camera-status' class='mt-0.5 text-[10px] text-gray-400 leading-tight' aria-live='polite'>1) Pick a route. 2) Press play. 3) Tune the view if needed.</p>
             </div>
             <!-- Sidebar Scrollable Content -->
-            <div class='p-4 flex-grow overflow-y-auto sidebar-content space-y-5'>
+            <div class='p-3 flex-grow overflow-y-auto sidebar-content space-y-3'>
                 <!-- Strava Auth Section -->
                 <div id="strava_auth" class="flex flex-col items-center">
-                    <p class="text-sm text-gray-300 mb-4 text-center">Connect to your Strava activities and explore them in 3D.</p>
+                    <p class="text-xs text-gray-300 mb-2 text-center">Connect to your Strava activities and explore them in 3D.</p>
                     <!-- Strava Connect Button -->
                     <button id="strava-connect-button" class="mx-auto hover:scale-[1.02] transition-transform">
-                        <img src="./static/btn_strava_connectwith_orange@2x.png" alt="Connect to Strava" class="h-10">
+                        <img src="./static/btn_strava_connectwith_orange@2x.png" alt="Connect to Strava" class="h-8">
                     </button>
                 </div>
                 <!-- Athlete Profile Section (Initially Hidden) -->
-                <div id="athlete-info" class="flex items-center hidden bg-white/5 p-2 rounded-lg border border-white/5">
-                     <img id="strava_profile" src="" class="w-10 h-10 rounded-full mr-3 border border-white/20">
-                     <p id="strava-username" class="text-gray-200 font-medium tracking-wide"></p>
+                <div id="athlete-info" class="flex items-center hidden bg-white/5 p-1.5 rounded-lg border border-white/5">
+                     <img id="strava_profile" src="" class="w-8 h-8 rounded-full mr-2 border border-white/20">
+                     <p id="strava-username" class="text-gray-200 text-xs font-medium tracking-wide"></p>
                 </div>
 
                  <!-- Activity Filtering Section (Initially Hidden until Auth) -->
-                 <div id="activity-filter" class="border-t border-white/10 pt-5 space-y-4 hidden">
-                     <p class="text-sm font-semibold text-gray-200">1. Pick a route</p>
-                     <div class="grid grid-cols-2 gap-4">
+                 <div id="activity-filter" class="border-t border-white/10 pt-3 space-y-2 hidden">
+                     <p class="text-xs font-semibold text-gray-200 mb-1">1. Pick a route</p>
+                     <!-- ONE ROW FILTERS -->
+                     <div class="grid grid-cols-[1fr_1fr_65px] gap-2 items-end">
                         <div>
-                            <label for="start-date" class="block text-xs font-medium text-gray-400 mb-1">Start Date:</label>
-                            <input type="date" id="start-date" class="w-full bg-white/5 text-white text-xs p-2 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="start-date" class="block text-[10px] font-medium text-gray-400 mb-1">Start Date:</label>
+                            <input type="date" id="start-date" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
                         <div>
-                            <label for="end-date" class="block text-xs font-medium text-gray-400 mb-1">End Date:</label>
-                            <input type="date" id="end-date" class="w-full bg-white/5 text-white text-xs p-2 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="end-date" class="block text-[10px] font-medium text-gray-400 mb-1">End Date:</label>
+                            <input type="date" id="end-date" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="activity-count" class="block text-[10px] font-medium text-gray-400 mb-1">Load:</label>
+                            <input type="number" id="activity-count" value="30" min="1" max="100" class="w-full bg-white/5 text-white text-[10px] p-1 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
                     </div>
-                    <div>
-                        <label for="activity-count" class="block text-xs font-medium text-gray-400 mb-1">Activities to load:</label>
-                        <input type="number" id="activity-count" value="30" min="1" max="100" class="w-24 bg-white/5 text-white text-xs p-2 border border-white/10 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <button id="fetch-filtered-activities" class="w-full btn-primary text-white text-sm font-semibold py-2.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500">
+                    <button id="fetch-filtered-activities" class="w-full btn-primary text-white text-xs font-semibold py-1.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500">
                         Refresh routes
                     </button>
                 </div>
 
                 <!-- Activity Selection Dropdown (Initially Hidden) -->
                 <div id="act_select" class='relative hidden'>
-                    <label for="select_lst" class="block text-sm font-semibold text-gray-200 mb-1.5">Route</label>
-                    <select id="select_lst" class='custom-select w-full text-base sm:text-sm'>
+                    <label for="select_lst" class="block text-xs font-semibold text-gray-200 mb-1">Route</label>
+                    <select id="select_lst" class='custom-select w-full text-xs'>
                         <!-- Options populated by JS -->
                     </select>
                 </div>
                 <!-- Activity Stats Section (Initially Hidden) -->
-                <div id="activity-stats" class="pt-5 border-t border-white/10 hidden space-y-4">
-                    <h4 id="activity-name" class="text-base font-bold text-white truncate border-l-2 border-indigo-500 pl-2">Activity Name</h4>
-                    <!-- Stats Grid Optimized with Cards -->
-                    <div class="grid grid-cols-3 gap-3">
-                        <div class="stat-card">
+                <div id="activity-stats" class="pt-3 border-t border-white/10 hidden space-y-3">
+                    <h4 id="activity-name" class="text-sm font-bold text-white truncate border-l-2 border-indigo-500 pl-1.5">Activity Name</h4>
+                    <!-- Stats Grid Optimized with Tighter Cards -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="stat-card p-1.5">
                             <p class="label">Distance</p>
-                            <p id="activity-distance" class="value">-- mi</p>
+                            <p id="activity-distance" class="value text-sm">-- mi</p>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card p-1.5">
                             <p class="label">Time</p>
-                            <p id="activity-time" class="value">--:--:--</p>
+                            <p id="activity-time" class="value text-sm">--:--:--</p>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card p-1.5">
                             <p class="label">Gain</p>
-                            <p id="activity-elevation" class="value">-- ft</p>
+                            <p id="activity-elevation" class="value text-sm">-- ft</p>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card p-1.5">
                             <p class="label">Avg Speed</p>
-                            <p id="activity-avg-speed" class="value">-- mph</p>
+                            <p id="activity-avg-speed" class="value text-sm">-- mph</p>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card p-1.5">
                             <p class="label">Max Speed</p>
-                            <p id="activity-max-speed" class="value">-- mph</p>
+                            <p id="activity-max-speed" class="value text-sm">-- mph</p>
                         </div>
-                        <div class="stat-card">
+                        <div class="stat-card p-1.5">
                             <p class="label">Loss</p>
-                            <p id="activity-total-loss" class="value">-- ft</p>
+                            <p id="activity-total-loss" class="value text-sm">-- ft</p>
                         </div>
                     </div>
 
                     <!-- Follow Camera Tour Controls -->
-                    <div class="border-t border-white/10 pt-4 space-y-4">
-                        <span class="block text-sm font-semibold text-gray-200">2. Play the 3D tour</span>
+                    <div class="border-t border-white/10 pt-3 space-y-3">
+                        <span class="block text-xs font-semibold text-gray-200">2. Play the 3D tour</span>
                         
                         <!-- Scrubber and Time/Distance -->
-                        <div class="space-y-2">
+                        <div class="space-y-1">
                             <div class="flex items-center space-x-2">
                                 <input type="range" id="tour-scrubber" min="0" max="1000" value="0" class="custom-range w-full disabled:opacity-50" disabled>
                             </div>
-                            <div class="flex justify-between text-[11px] text-gray-400 font-mono">
+                            <div class="flex justify-between text-[9px] text-gray-400 font-mono">
                                 <span id="tour-distance-elapsed">0.00 / 0.00 mi</span>
                                 <span id="tour-distance-total" class="text-indigo-400">route total</span>
                             </div>
                         </div>
 
                         <!-- Player Buttons -->
-                        <div class="flex items-center justify-center space-x-4">
-                            <button id="tour-stop-btn" class="p-2.5 rounded-full btn-secondary text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none" title="Stop & Reset" disabled>
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
+                        <div class="flex items-center justify-center space-x-3">
+                            <button id="tour-stop-btn" class="p-2 rounded-full btn-secondary text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none" title="Stop & Reset" disabled>
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12"/></svg>
                             </button>
-                            <button id="tour-play-btn" class="p-4 rounded-full btn-primary text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900" title="Play Tour" disabled>
+                            <button id="tour-play-btn" class="p-3 rounded-full btn-primary text-white disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900" title="Play Tour" disabled>
                                 <!-- Play Icon -->
-                                <svg id="play-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                 <!-- Pause Icon (Hidden) -->
-                                <svg id="pause-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                <svg id="pause-icon" class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                             </button>
                         </div>
 
