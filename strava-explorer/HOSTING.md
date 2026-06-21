@@ -1,4 +1,4 @@
-# Strava Explorer hosting strategy
+# Strava Explorer Hosting and Deployment Strategy
 
 ## Deployment architecture for 2026 Strava API changes
 
