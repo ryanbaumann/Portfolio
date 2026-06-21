@@ -1,109 +1,67 @@
-# AQI Map
+# Hyperlocal AQI Map
 
-Browser-based hyperlocal AQI map that renders PurpleAir sensor data on a Mapbox GL globe with geocoder search, point markers, and interpolated AQI contours.
+A browser-based hyperlocal air quality index (AQI) map that retrieves real-time PurpleAir sensor data and renders interpolated local AQI contours on a Mapbox GL map.
 
-## Current architecture
+## Features
 
-- `index.js` is the CommonJS Browserify entry point.
-- `index.html` provides the map container, sidebar, external Mapbox styles, and bundled script tag.
-- `npm run build` copies `index.html` into `build/` and writes `build/bundle.js`.
-- `npm start` runs the Budo dev server.
-
-## Current status and migration notes
-
-This app remains intentionally separate from the Strava Explorer 3D runtime. Recent Strava Explorer work added durable Google Maps JavaScript 3D lessons, but `aqi-map/` should keep its current Mapbox GL/CommonJS architecture unless a task explicitly requests a migration. If migration work starts, prefer a staged plan: preserve PurpleAir behavior first, document Google Maps browser-key restrictions, then choose 2D Maps JavaScript overlays, deck.gl, Environment API heatmap tiles, or Advanced Markers based on data density.
-
-## Agent-native workflow
-
-Before changing this app, read:
-
-1. `AGENTS.md`
-2. `package.json`
-3. `index.html`
-4. `index.js`
-
-Keep app-specific dependencies and commands inside this directory. Prefer small, focused changes that preserve the existing Browserify pipeline unless the task is explicitly a build-system or Google Maps Platform migration.
-
-## Runtime configuration
-
-This app is fully static, but it still needs browser-exposed public service credentials at runtime. Do **not** commit real tokens to this repository. Configure them in `index.html` before local use or inject the same `window.AQI_MAP_CONFIG` object with your static host:
-
-```html
-<script>
-  window.AQI_MAP_CONFIG = {
-    mapboxAccessToken: "YOUR_MAPBOX_PUBLIC_TOKEN",
-    mapboxStyleUrl: "mapbox://styles/YOUR_ACCOUNT/YOUR_STYLE?optimize=true",
-    purpleAirApiKey: "YOUR_PURPLEAIR_API_KEY",
-    maxSensorAgeSeconds: 604800
-  };
-</script>
-```
-
-Best-practice restrictions:
-
-- Use a Mapbox public token restricted to the production origin and local development origins that need access.
-- Restrict the PurpleAir key according to the controls available for the account, rotate any key that has been committed or shared, and monitor API usage.
-- Keep `maxSensorAgeSeconds` as low as product requirements allow to reduce stale readings.
-
-If migrating to Google Maps Platform, document:
-
-- Enabled APIs, such as Maps JavaScript API, Places API, Air Quality API, Pollen API, Solar API, or Weather API.
-- Browser key restrictions by HTTP referrer, including local development origins.
-- API-specific quotas/billing and cache/debounce behavior.
-- Attribution and source-label requirements for environmental data.
+*   **Real-time Sensor Data**: Fetches hyperlocal particulate matter data directly from PurpleAir sensors.
+*   **AQI Interpolation**: Uses Turf.js and D3 tricontours to compute and render air quality contours.
+*   **Interactive Search**: Includes a Mapbox Geocoder search box to quickly fly to different locations.
 
 ## Prerequisites
 
-- Node.js 20 or newer.
-- npm, or Yarn if you prefer matching the existing lockfile workflow.
+*   [Node.js](https://nodejs.org/) (version 20 or newer).
+*   A Mapbox Public Access Token (obtainable via [Mapbox Account](https://account.mapbox.com/)).
+*   A PurpleAir API Read Key (obtainable via [PurpleAir Developer Dashboard](https://develop.purpleair.com/)).
 
-## Install
+## Getting Started
 
-```bash
-cd aqi-map
-npm install
-# or: yarn install
-```
+1.  **Clone the repo and install dependencies**:
+    ```bash
+    cd aqi-map
+    npm install
+    ```
 
-## Run locally
+2.  **Configure environment credentials**:
+    Open `index.html` (or create a custom config in your static host environment) and configure the `window.AQI_MAP_CONFIG` block:
+    ```html
+    <script>
+      window.AQI_MAP_CONFIG = {
+        mapboxAccessToken: "YOUR_MAPBOX_PUBLIC_TOKEN",
+        mapboxStyleUrl: "mapbox://styles/mapbox/streets-v11",
+        purpleAirApiKey: "YOUR_PURPLEAIR_READ_API_KEY",
+        maxSensorAgeSeconds: 604800
+      };
+    </script>
+    ```
 
-```bash
-npm start
-# or: yarn start
-```
+3.  **Run the local development server**:
+    ```bash
+    npm start
+    ```
+    Open the address printed in the terminal (usually `http://localhost:9966`) to view the application with live reload enabled.
 
-`budo` opens the app with live reload. Confirm `window.AQI_MAP_CONFIG` has development-safe values before loading the page.
+4.  **Build for production**:
+    ```bash
+    npm run build
+    ```
+    This bundles the JavaScript using Browserify into `build/bundle.js` and copies the static assets to `build/`.
 
-## Build
+## Security Best Practices
 
-```bash
-npm run build
-# or: yarn build
-```
+*   **Expose Only Restricted Tokens**: Use a public Mapbox token and restrict it to your specific production and local development referrers.
+*   **Do Not Commit Credentials**: Never commit active Mapbox access tokens or PurpleAir API keys to the repository. Keep credentials configuration local or injected at deploy time.
 
-The production bundle is written to `build/`.
+## Terms of Service & Compliance
 
-## Test and validation
+By running this application, you must comply with:
+*   **Mapbox Terms**: Subject to the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos).
+*   **PurpleAir API Terms**: Subject to the [PurpleAir Terms of Service](https://www.purpleair.com/terms-of-service). Ensure your API usage stays within the bounds of your PurpleAir plan limits.
 
-```bash
-npm test
-```
+## Contributing
 
-`npm test` currently runs the production build. When map rendering or sensor-fetch behavior changes, also do a browser check with valid Mapbox and PurpleAir credentials. If a Google Maps Platform migration is involved, additionally check the browser console for loader, marker, overlay, and quota/auth warnings.
+Contributions are welcome! Please open a pull request or submit an issue. Keep changes focused and self-contained within this project directory.
 
-## Deploy
+## License
 
-```bash
-npm run deploy:static
-```
-
-Then upload the contents of `build/` to a static host such as Netlify, Cloudflare Pages, GitHub Pages, or S3/CloudFront. Inject production `window.AQI_MAP_CONFIG` values before serving the app, and ensure the Mapbox token allows the production referrer.
-
-## Manual QA checklist
-
-1. App shows a clear missing-configuration message when any required config value is absent.
-2. With valid config, Mapbox GL loads the configured style and geocoder.
-3. PurpleAir sensor data loads without exposing credentials in source control.
-4. Low-confidence sensors are excluded and latitude/longitude values are validated before rendering.
-5. AQI contour fill, sensor points, and popup values match expected ranges.
-6. The map remains usable on desktop and mobile viewport sizes.
+This project is licensed under the [MIT License](../LICENSE).

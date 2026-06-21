@@ -1,66 +1,51 @@
-# Trails Ninja Geospatial Apps
+# Trails Ninja Geospatial Projects
 
-This repository contains two small, static-friendly geospatial web apps plus repo-local agent skills for Google Maps Platform, environmental data, and frontend UX work.
+This repository contains lightweight, static-friendly geospatial web applications designed to explore routes and environmental data on interactive maps.
 
-## Apps
+## Projects
 
-### `strava-explorer/`
+*   **[Strava 3D Explorer](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/README.md)**: A Vite-powered web application to visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D with follow-camera animations.
+*   **[Hyperlocal AQI Map](file:///Users/ryanbaumann/projects/trails.ninja/aqi-map/README.md)**: A Browserify-powered 2D Mapbox GL map that interpolates real-time PurpleAir sensor data to render local air quality index (AQI) contours.
 
-Vite app for connecting to Strava, selecting recent activities, and exploring routes in Google Maps Platform Photorealistic 3D.
+## Getting Started
 
-Current focus areas:
-
-- Google Maps JavaScript API `weekly` channel with `maps3d`, 3D route polylines, 3D endpoint markers, 3D photo markers, popovers, Elevation, Geometry, and Core libraries.
-- Strava OAuth and activity/photo/stream data fetched in the browser, with a documented Cloud Run broker path for production OAuth token exchange.
-- Follow-camera flythrough UX with route/elevation pre-sampling, terrain-aware mesh clearance, multi-lookahead bearing smoothing, yaw-rate limiting, and user-adjustable pace/view controls.
-- Interactive photo billboards implemented as `Marker3DInteractiveElement` content. Custom 3D marker content must be wrapped in an `HTMLTemplateElement` or use `PinElement`; raw DOM nodes will trigger Maps 3D slot validation warnings.
-
-Common commands:
+Each project is self-contained. Navigate to the project's directory and follow its README:
 
 ```bash
+# To run the Strava 3D Explorer
 cd strava-explorer
 npm install
-npm run dev -- --host 0.0.0.0
-npm run build
-npm test
-```
+npm run dev
 
-### `aqi-map/`
-
-Browserify/Budo app for a Mapbox GL + PurpleAir hyperlocal AQI map.
-
-Current focus areas:
-
-- CommonJS `index.js` entry bundled with Browserify/esmify.
-- Mapbox GL map, geocoder, sensor points, popups, and D3/Turf AQI contour rendering.
-- Runtime configuration through browser-exposed `window.AQI_MAP_CONFIG`; never commit real Mapbox or PurpleAir credentials.
-- Future migration guidance lives in repo-local Google Maps Platform 2D and Environment API skills.
-
-Common commands:
-
-```bash
+# To run the Hyperlocal AQI Map
 cd aqi-map
 npm install
 npm start
-npm run build
-npm test
 ```
 
-## Repo workflow
+## Security Best Practices
 
-- Read the app-specific `README.md`, `AGENTS.md`, and `package.json` before editing an app.
-- Run commands from the app directory you modify; there is no root-level app package.
-- Prefer small, reviewable, app-scoped changes.
-- Use `rg`/`find` for discovery; avoid `ls -R` and recursive `grep`.
-- Never commit real API keys, OAuth secrets, access tokens, generated `.env.*` files, or private user/location logs.
-- For visible map or UI changes, run the relevant build and do browser/screenshot QA when credentials and environment allow it; otherwise document the limitation.
+To keep these projects clean and secure, adhere to the following best practices:
+*   **No Hardcoded Secrets**: Never commit API keys, client secrets, access tokens, or generated `.env.*` files. Use environment files locally (which are excluded via `.gitignore`).
+*   **Key Restrictions**: Always restrict Google Maps browser keys by referrer (e.g., `http://localhost:5173/*` and your production domain) and limit their API scope to only the services required.
+*   **Backend Broker**: For production deployment of the Strava Explorer, use the included Cloud Run OAuth broker so the Strava client secret remains safely server-side and is never exposed to the client browser.
 
-## Local skills
+## Terms of Service Compliance
 
-Durable implementation guidance lives under `.codex/skills/`:
+These projects integrate third-party APIs. By using them, you agree to comply with their respective Terms of Service:
+*   **Google Maps Platform**: Subject to the [Google Maps Platform Terms of Service](https://cloud.google.com/maps-platform/terms) and [Acceptable Use Policy](https://cloud.google.com/maps-platform/terms/aup). Users of applications using these features are also bound by the [Google Maps End User Additional Terms of Service](https://maps.google.com/help/terms_maps.html) and [Google Privacy Policy](https://policies.google.com/privacy).
+*   **Strava**: Subject to the [Strava Developer Agreement](https://www.strava.com/legal/api).
+*   **Mapbox**: Subject to the [Mapbox Terms of Service](https://www.mapbox.com/legal/tos).
+*   **PurpleAir**: Subject to the [PurpleAir Terms of Service](https://www.purpleair.com/terms-of-service).
 
-- `google-maps-platform` for broad Maps Platform loading, security, quota, and runtime behavior.
-- `google-maps-js-3d` for `strava-explorer` 3D Maps, camera, markers, popovers, altitude, and route flythroughs.
-- `google-maps-js-2d` for 2D Google Maps JavaScript API work and Mapbox-to-Google migration planning.
-- `google-maps-environment-apis` for Air Quality, Pollen, Solar, Weather, heatmap tiles, attribution, quota, and PurpleAir migration work.
-- `frontend-responsive-design` for responsive layout, accessibility, Tailwind/HTML structure, and visual QA.
+## Contributing
+
+Contributions are welcome! Please follow these guidelines:
+1. Fork the repository and create a feature branch.
+2. Ensure changes are localized to the specific project directory you are modifying.
+3. Keep changes simple, clean, and well-documented.
+4. Open a pull request describing the changes and testing completed.
+
+## License
+
+This repository is licensed under the [MIT License](LICENSE).

@@ -20,6 +20,7 @@ All notable changes to this project will be documented in this file.
 - **Floating HUD Share Button**: Added a beautiful glass-morphism "Share Tour" button with built-in clipboard copying and visual feedback.
 - **Compact UI Optimization**: Removed static debug HUD badge and tightened vertical padding between the sidebar title and the "Pick a route" section.
 - **Documentation Restructuring**: Cleaned up the root directory by renaming the cryptic `Hs.md` to [HOSTING.md](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/HOSTING.md), and resolved duplication of hosting instructions in [README.md](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/README.md) by replacing it with a concise reference to [HOSTING.md](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/HOSTING.md).
+- **README Simplification**: Restructured the user-facing README files across all three projects (root, `strava-explorer`, and `aqi-map`) to focus on basic, easy-to-follow overviews and standard open-source sections including terms of service compliance, security guidelines, and licensing.
 
 ### Fixed
 - **Security Hardening**: Untracked local `.env.development` and `.env.production` files to ensure they respect `.gitignore` and are not accidentally committed, and replaced an internal Googleplex redirect URI with a generic placeholder.
