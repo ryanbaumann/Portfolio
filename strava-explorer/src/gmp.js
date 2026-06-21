@@ -32,7 +32,7 @@ async function loadGoogleMapsApi(apiKey, libraries) {
     const loaderModule = GoogleMapsLoader.default ?? GoogleMapsLoader;
 
     if (typeof GoogleMapsLoader.setOptions === 'function' && typeof GoogleMapsLoader.importLibrary === 'function') {
-        GoogleMapsLoader.setOptions({ key: apiKey, v: 'weekly', libraries });
+        GoogleMapsLoader.setOptions({ key: apiKey, v: 'alpha', libraries });
         return GoogleMapsLoader.importLibrary;
     }
 
@@ -41,7 +41,7 @@ async function loadGoogleMapsApi(apiKey, libraries) {
     const LoaderClass = GoogleMapsLoader.Loader ?? loaderModule.Loader;
     const loader = new LoaderClass({
         apiKey,
-        version: 'weekly',
+        version: 'alpha',
         libraries,
     });
     await loader.load();
@@ -296,7 +296,8 @@ function addRouteEndpointMarkers(path) {
             glyphColor: '#ffffff',
             scale: 1.0,
         });
-        marker.append(pin);
+        const pinNode = pin instanceof HTMLElement ? pin : pin.element;
+        if (pinNode) marker.append(pinNode);
         map3d.append(marker);
         routeMarkers.push(marker);
     });
@@ -399,7 +400,8 @@ export async function displayPhotoMarkers(photosData) { // photosData = array fr
                 borderColor: '#e5e7eb',
                 glyphSrc: getMarkerPhotoUrl(photoThumbUrl)
             });
-            marker.append(pin);
+            const pinNode = pin instanceof HTMLElement ? pin : pin.element;
+            if (pinNode) marker.append(pinNode);
 
             // Create Popover
             const popover = new PopoverElement({
@@ -546,7 +548,8 @@ export function updateTrackingMarker(position, color = '#3b82f6') {
                 glyphColor: color, // hides the dot inside
                 scale: 1.2,
             });
-            trackingMarker.append(pin);
+            const pinNode = pin instanceof HTMLElement ? pin : pin.element;
+            if (pinNode) trackingMarker.append(pinNode);
             map3d.append(trackingMarker);
             console.log("[updateTrackingMarker] Created and appended trackingMarker singleton.");
         } catch (e) {
