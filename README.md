@@ -6,7 +6,7 @@ This repository contains lightweight, static-friendly geospatial web application
 
 *   **[Strava 3D Explorer](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/README.md)**: A Vite-powered web application to visualize Strava routes, endpoints, and photos in Google Maps Platform Photorealistic 3D with follow-camera animations.
 *   **[Hyperlocal AQI Map](file:///Users/ryanbaumann/projects/trails.ninja/aqi-map/README.md)**: A Browserify-powered 2D Mapbox GL map that interpolates real-time PurpleAir sensor data to render local air quality index (AQI) contours.
-*   **[ISOCros](isocros/README.md)**: A Vite + Node Google Maps Platform demo for analyzing delivery, commute, and response reachability with selectable Isochrones API polygons.
+*   **[Isochrones](isochrones/README.md)**: A Vite + Node Google Maps Platform demo for analyzing delivery, commute, and response reachability with selectable Isochrones API polygons.
 
 ## Getting Started
 
@@ -23,10 +23,11 @@ cd aqi-map
 npm install
 npm start
 
-# To run ISOCros
-cd isocros
+# To run the Isochrones Demo
+cd isochrones
 npm install
-VITE_GMP_API_KEY=YOUR_GOOGLE_MAPS_BROWSER_KEY npm run dev
+# Set up your .env file first (see isochrones/README.md)
+npm run dev
 ```
 
 ## Security Best Practices

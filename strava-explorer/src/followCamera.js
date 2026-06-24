@@ -667,11 +667,13 @@ export function updateCameraForProgress(progress, snapDirectly = false) {
         map3d.tilt = clamp(interpolatedCamera.tilt, 0, 85);
     }
 
-    // Synchronize the marker EXACTLY to the final camera center
+    // Synchronize the marker EXACTLY to the high-fidelity route line position
     if (typeof updateTrackingMarkerCb === 'function') {
+        const lat = typeof exactPoint.lat === 'function' ? exactPoint.lat() : exactPoint.lat;
+        const lng = typeof exactPoint.lng === 'function' ? exactPoint.lng() : exactPoint.lng;
         updateTrackingMarkerCb({
-            lat: interpolatedCamera.center.lat,
-            lng: interpolatedCamera.center.lng,
+            lat,
+            lng,
             altitude: 10
         });
     }

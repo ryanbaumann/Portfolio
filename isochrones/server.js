@@ -3,10 +3,18 @@ import { readFile } from 'node:fs/promises';
 import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer as createViteServer } from 'vite';
+import { loadEnvFile } from 'node:process';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)));
+
+try {
+  loadEnvFile(join(root, '.env'));
+} catch (e) {
+  // Ignore if .env is missing
+}
 
 const isDev = process.argv.includes('--dev');
 const port = Number(process.env.PORT || 5174);
-const root = resolve(dirname(fileURLToPath(import.meta.url)));
 const dist = join(root, 'dist');
 
 const mimeTypes = new Map([
@@ -53,9 +61,9 @@ function validateIsochroneBody(body) {
 }
 
 async function handleIsochrone(request, response) {
-  const apiKey = process.env.VITE_GMP_API_KEY;
+  const apiKey = process.env.GMP_SERVER_API_KEY || process.env.VITE_GMP_API_KEY;
   if (!apiKey) {
-    sendJson(response, 500, { error: 'Set VITE_GMP_API_KEY before running ISOCros.' });
+    sendJson(response, 500, { error: 'Set GMP_SERVER_API_KEY or VITE_GMP_API_KEY before running Isochrones.' });
     return;
   }
 
@@ -119,5 +127,5 @@ const server = createHttpServer(async (request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(`ISOCros running at http://localhost:${port}`);
+  console.log(`Isochrones running at http://localhost:${port}`);
 });

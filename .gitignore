@@ -5,10 +5,12 @@ node_modules/
 strava-explorer/.env.development
 strava-explorer/.env.production
 strava-explorer/.env
+isochrones/.env
 
 # Ignore build artifacts
 strava-explorer/build
 strava-explorer/dist
+isochrones/dist/
 
 # OS files
 .DS_Store

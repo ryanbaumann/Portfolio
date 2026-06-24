@@ -2,10 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2026-06-21
+## [Unreleased] - 2026-06-24
 
 ### Added
-- **ISOCros Isochrones Demo**: Added a new [isocros/](file:///Users/ryanbaumann/projects/trails.ninja/isocros/) Vite + Node demo that reuses `VITE_GMP_API_KEY`, proxies Isochrones API requests through a local server, and visualizes selectable reachability polygons for delivery, commute, and response-planning use cases.
+- **Isochrones Demo**: Added a new [isochrones/](file:///Users/ryanbaumann/projects/trails.ninja/isochrones/) Vite + Node demo that reuses `VITE_GMP_API_KEY`, proxies Isochrones API requests through a local server, and visualizes selectable reachability polygons for delivery, commute, and response-planning use cases.
 - **Premium Dark Mode UI**: Overhauled [index.html](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/index.html) with a premium glassmorphism theme, translucent control panels, custom telemetry grid, and custom-styled form controls (sliders, selects).
 - **Start/Finish 3D Pins**: Added custom green (`#4CAF50`) and red (`#F44336`) standard `PinElement` markers for the start and finish of Strava routes in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js).
 - **Dynamic Tour Timing**: The follow-camera fly-through duration now scales based on route length instead of a fixed time, improving the visual pacing on both short trails and long rides.
@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - **Overlapping Photo Clustering (Anti-Flicker)**: Implemented 10-meter spatial photo grouping in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js) that collapses overlapping photos into a single volumetric 3D marker with a dynamically drawn count badge and a paginated slide-show popover.
 
 ### Changed / Improved
+- **Isochrones Environment Configuration**: Configured the [isochrones/](file:///Users/ryanbaumann/projects/trails.ninja/isochrones/) demo to load `GMP_SERVER_API_KEY` (with `VITE_GMP_API_KEY` fallback) from a local `.env` file using Node's native `process.loadEnvFile()` in [server.js](file:///Users/ryanbaumann/projects/trails.ninja/isochrones/server.js), aligning it with key security best practices.
 - **Aspect-Ratio Thumbnail Rendering**: Updated `resizeImageToDataUrl` in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js) to preserve the source image's aspect ratio dynamically instead of forcing a square crop.
 - **Maps JS API Version**: Switched back to the `alpha` build channel in [gmp.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/gmp.js) to gain access to the fixed 3D custom element observer loop, allowing clean, non-deprecated usage of `PinElement`.
 - **Enhanced Camera Smoothing**: Blended multiple look-ahead route coordinates and implemented a frame-rate-aware yaw rate limit in [followCamera.js](file:///Users/ryanbaumann/projects/trails.ninja/strava-explorer/src/followCamera.js) to prevent sudden camera jumps or "rubber-banding" around switchbacks.
