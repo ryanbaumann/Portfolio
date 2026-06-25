@@ -81,19 +81,31 @@ async function handleIsochrone(request, response) {
     return;
   }
 
-  const upstream = await fetch('https://isochrones.googleapis.com/v1/isochrones:generate', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-goog-api-key': apiKey,
-      'x-goog-fieldmask': 'isochrone.geoJson',
-    },
-    body: JSON.stringify(body),
-  });
+  let upstream;
+  try {
+    upstream = await fetch('https://isochrones.googleapis.com/v1/isochrones:generate', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-goog-api-key': apiKey,
+        'x-goog-fieldmask': 'isochrone.geoJson',
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (error) {
+    console.error('Isochrones API connection error:', error);
+    sendJson(response, 502, { error: 'Failed to connect to Google Maps Isochrones API.' });
+    return;
+  }
 
-  const text = await upstream.text();
-  response.writeHead(upstream.status, { 'content-type': upstream.headers.get('content-type') || 'application/json' });
-  response.end(text);
+  try {
+    const text = await upstream.text();
+    response.writeHead(upstream.status, { 'content-type': upstream.headers.get('content-type') || 'application/json' });
+    response.end(text);
+  } catch (error) {
+    console.error('Failed to read response from Isochrones API:', error);
+    sendJson(response, 502, { error: 'Invalid response from Google Maps Isochrones API.' });
+  }
 }
 
 async function serveStatic(request, response) {
