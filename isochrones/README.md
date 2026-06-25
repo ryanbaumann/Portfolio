@@ -61,4 +61,4 @@ The app calls the Isochrones REST endpoint through `server.js` at `/api/isochron
 
 - Drive mode is capped at 60 minutes by the Isochrones API; the server validates this before proxying.
 - Coordinates are validated in the browser and server before rendering or sending requests.
-- The demo uses `DEMO_MAP_ID` for Advanced Marker support in local prototyping.
+- The demo uses Map ID `556022f677234497` for Advanced Marker support in local prototyping.

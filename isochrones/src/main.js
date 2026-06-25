@@ -217,7 +217,7 @@ async function initMap() {
   state.map = new Map(elements.map, {
     center: state.origin,
     zoom: 11,
-    mapId: 'DEMO_MAP_ID',
+    mapId: '556022f677234497',
     clickableIcons: false,
     mapTypeControl: false,
     streetViewControl: false,
