@@ -37,8 +37,8 @@ export default defineConfig(({ mode }) => {
                 const deauthFn = broker.handleDeauthorize || broker.deauthorize;
                 const proxyFn = broker.handlePhotoProxy || broker.handlePhotoProxy || broker.proxyPhoto;
 
-                const clientId = env.STRAVA_CLIENT_ID;
-                const clientSecret = env.STRAVA_CLIENT_SECRET;
+                const clientId = env.STRAVA_CLIENT_ID || env.VITE_STRAVA_CLIENT_ID;
+                const clientSecret = env.STRAVA_CLIENT_SECRET || env.VITE_STRAVA_CLIENT_SECRET;
                 const tokenUrl = 'https://www.strava.com/oauth/token';
                 const deauthorizeUrl = 'https://www.strava.com/oauth/deauthorize';
 
