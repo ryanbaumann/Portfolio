@@ -92,13 +92,19 @@ async function handleApi(request, response, pathname, searchParams) {
     return;
   }
 
-  const isProxyRoute = pathname.startsWith('/api/strava/') || pathname === '/api/isochrones' || pathname === '/api/purpleair/sensors';
+  // /api/photo-proxy is a compatibility alias for /api/strava/photo: the
+  // strava-explorer client (and its standalone Cloud Run broker in
+  // strava-explorer/server/) both speak /api/photo-proxy, so the gateway
+  // accepts both without requiring a client change.
+  const isStravaRoute = pathname.startsWith('/api/strava/') || pathname === '/api/photo-proxy';
+  const isProxyRoute = isStravaRoute || pathname === '/api/isochrones' || pathname === '/api/purpleair/sensors';
   if (isProxyRoute && !proxyRateLimiter.check(ip)) {
     sendJson(response, 429, { error: 'Too many requests. Please try again later.' });
     return;
   }
 
-  if (pathname.startsWith('/api/strava/')) {
+  if (isStravaRoute) {
+    const normalizedPathname = pathname === '/api/photo-proxy' ? '/api/strava/photo' : pathname;
     let body = {};
     if (request.method === 'POST') {
       try {
@@ -109,7 +115,7 @@ async function handleApi(request, response, pathname, searchParams) {
       }
     }
     const result = await handleStravaApi({
-      pathname,
+      pathname: normalizedPathname,
       method: request.method,
       body,
       authHeader: request.headers.authorization,
