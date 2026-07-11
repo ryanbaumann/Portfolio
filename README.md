@@ -14,14 +14,15 @@ Node gateway as a single Cloud Run container. See
 
 ## Quickstart: run the whole container locally
 
-This builds every app and boots the same gateway that runs in production,
-with no secrets required (proxy endpoints return a clear `503` instead of
-crashing when a key is unset):
+This builds every app and boots the same gateway that runs in production.
+First, run the interactive setup script to configure your local `.env` file with the required API keys:
 
 ```bash
+npm run setup                  # interactively generates your .env file
 node scripts/build-local.mjs   # builds each app, stages apps/<name>/ like the Dockerfile does
 node gateway/server.js         # or: npm start
 ```
+
 
 Then open `http://localhost:8080/`. To exercise it end-to-end (route
 liveness, asset resolution, OAuth URL shape, and a secret-leak scan over

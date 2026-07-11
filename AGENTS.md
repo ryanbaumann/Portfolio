@@ -53,6 +53,7 @@ Run commands from the app directory unless noted.
 
 ### Root / `gateway/` (container build, run this before checking in a container-facing change)
 
+- Generate a `.env` file interactively to load all local keys: `npm run setup`
 - Build every app and stage its static output under `apps/<name>/`, exactly
   like the Dockerfile's runtime stage does: `node scripts/build-local.mjs`
   (from the repo root; equivalent to `npm run build` if you've added the
