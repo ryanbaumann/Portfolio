@@ -11,6 +11,10 @@
 # keep the two in sync if app build commands change.
 
 FROM node:20-slim AS strava-explorer-builder
+ARG VITE_GMP_API_KEY
+ARG VITE_STRAVA_CLIENT_ID
+ENV VITE_GMP_API_KEY=$VITE_GMP_API_KEY
+ENV VITE_STRAVA_CLIENT_ID=$VITE_STRAVA_CLIENT_ID
 WORKDIR /src/strava-explorer
 COPY strava-explorer/package.json strava-explorer/package-lock.json ./
 RUN npm ci --no-audit --no-fund
@@ -26,6 +30,8 @@ COPY aqi-map/ ./
 RUN npm run build
 
 FROM node:20-slim AS isochrones-builder
+ARG VITE_GMP_API_KEY
+ENV VITE_GMP_API_KEY=$VITE_GMP_API_KEY
 WORKDIR /src/isochrones
 COPY isochrones/package.json isochrones/package-lock.json ./
 RUN npm ci --no-audit --no-fund

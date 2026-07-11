@@ -15,7 +15,7 @@
     "path": "/aqi-map/",
     "dev_build_dir": "aqi-map/build",
     "tags": ["air-quality", "mapbox", "purpleair"],
-    "preview": null
+    "preview": "/previews/aqi-map.jpg"
   },
   {
     "name": "isochrones",
@@ -24,6 +24,6 @@
     "path": "/isochrones/",
     "dev_build_dir": "isochrones/dist",
     "tags": ["isochrones", "routing", "google-maps-platform"],
-    "preview": null
+    "preview": "/previews/isochrones.jpg"
   }
 ]
