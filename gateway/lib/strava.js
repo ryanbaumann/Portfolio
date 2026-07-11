@@ -164,6 +164,20 @@ export function isStravaConfigured(env = process.env) {
   return Boolean(clientId && clientSecret);
 }
 
+// Mirrors the "missing X" checks inside exchangeCode/refreshToken/deauthorize
+// below, run before the isStravaConfigured() check so a malformed request
+// reliably 400s instead of 503ing just because the server happens to be
+// keyless (same reasoning as gateway/lib/isochrones.js).
+function missingFieldError(pathname, body, authHeader) {
+  if (pathname === '/api/strava/token' && !body?.code) return 'Missing authorization code.';
+  if (pathname === '/api/strava/refresh' && !body?.refresh_token) return 'Missing refresh token.';
+  if (pathname === '/api/strava/deauthorize') {
+    const token = body?.access_token || authHeader?.replace(/^Bearer\s+/i, '') || '';
+    if (!token) return 'Missing access token.';
+  }
+  return null;
+}
+
 /**
  * Dispatch a /api/strava/* request. Returns a plain result object the
  * caller writes to the response; never throws (all errors are turned into
@@ -175,6 +189,10 @@ export async function handleStravaApi({ pathname, method, body, authHeader, sear
   if (isTokenEndpoint) {
     if (method !== 'POST') {
       return { statusCode: 405, json: { error: 'Method not allowed' } };
+    }
+    const validationError = missingFieldError(pathname, body, authHeader);
+    if (validationError) {
+      return { statusCode: 400, json: { error: validationError } };
     }
     if (!isStravaConfigured(env)) {
       return { statusCode: 503, json: { error: 'Strava broker is not configured on this server.' } };

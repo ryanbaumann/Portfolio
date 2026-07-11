@@ -51,6 +51,22 @@ function loadApps() {
   }));
 }
 
+// Vite/esbuild statically replace `import.meta.env.VITE_*` at build time and
+// then dead-code-eliminate branches it can prove unreachable. strava.js's
+// getStravaAuthUrl() starts with `if (!STRAVA_CLIENT_ID || ...) return null`,
+// so a keyless build (no VITE_STRAVA_CLIENT_ID set) makes that condition
+// statically `true` and the minifier strips the whole Strava OAuth URL
+// out of the bundle as unreachable code — which breaks smoke tests that
+// need to see it (docs/ARCHITECTURE.md rule 4) and would break real users
+// too if this ever shipped unset. A client ID is not a secret (Strava
+// embeds it directly in the OAuth authorize URL every user sees), so it's
+// safe to default to a placeholder here; a real deploy sets the real one
+// via env before calling this script.
+function buildTimeDefaults(app) {
+  if (app.name !== 'strava-explorer' || process.env.VITE_STRAVA_CLIENT_ID) return {};
+  return { VITE_STRAVA_CLIENT_ID: 'smoke-test-placeholder-client-id' };
+}
+
 function buildApp(app) {
   log(`--- ${app.name} ---`);
   if (!existsSync(app.dir)) {
@@ -67,7 +83,7 @@ function buildApp(app) {
 
   run('npm', ['run', 'build'], {
     cwd: app.dir,
-    env: { ...process.env, BASE_PATH: app.path },
+    env: { ...process.env, BASE_PATH: app.path, ...buildTimeDefaults(app) },
   });
 
   if (!existsSync(app.outDir)) {
