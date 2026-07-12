@@ -2,9 +2,9 @@
 #
 # Multi-stage build for the trails.ninja single-container portfolio.
 # One builder stage per app (each gets its own npm install + npm run build,
-# including whatever devDependencies its build needs — e.g. aqi-map's
-# browserify/babel toolchain), then a slim runtime stage that only contains
-# the zero-dependency gateway and each app's static output.
+# including whatever devDependencies its build needs), then a slim runtime
+# stage that only contains the zero-dependency gateway and each app's
+# static output.
 #
 # scripts/build-local.mjs performs the equivalent arrangement without Docker
 # (useful in environments where Docker isn't available, and used by CI) —
@@ -23,11 +23,21 @@ ENV BASE_PATH=/strava-explorer/
 RUN npm run build
 
 FROM node:20-slim AS aqi-map-builder
+ARG VITE_GMP_API_KEY
+ENV VITE_GMP_API_KEY=$VITE_GMP_API_KEY
 WORKDIR /src/aqi-map
 COPY aqi-map/package.json aqi-map/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY aqi-map/ ./
+ENV BASE_PATH=/aqi-map/
 RUN npm run build
+
+# The portfolio's build is dependency-free (node build.mjs), so no npm ci.
+FROM node:20-slim AS portfolio-builder
+WORKDIR /src/portfolio
+COPY portfolio/ ./
+ENV BASE_PATH=/portfolio/
+RUN node build.mjs
 
 FROM node:20-slim AS isochrones-builder
 ARG VITE_GMP_API_KEY
@@ -45,8 +55,9 @@ WORKDIR /app
 COPY --chown=node:node gateway/ ./gateway/
 COPY --chown=node:node apps.json ./apps.json
 COPY --chown=node:node --from=strava-explorer-builder /src/strava-explorer/dist ./apps/strava-explorer
-COPY --chown=node:node --from=aqi-map-builder /src/aqi-map/build ./apps/aqi-map
+COPY --chown=node:node --from=aqi-map-builder /src/aqi-map/dist ./apps/aqi-map
 COPY --chown=node:node --from=isochrones-builder /src/isochrones/dist ./apps/isochrones
+COPY --chown=node:node --from=portfolio-builder /src/portfolio/dist ./apps/portfolio
 
 ENV NODE_ENV=production
 ENV APPS_ROOT=/app/apps
