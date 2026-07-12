@@ -193,3 +193,21 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   }
 }
 
+
+@supports (height: 100dvh) {
+  .h-screen { height: 100dvh !important; }
+}
+
+:root { --safe-area-bottom: env(safe-area-inset-bottom, 0px); }
+button, input, select, a { touch-action: manipulation; }
+
+@media (max-width: 767px) {
+  html, body { height: 100%; min-height: 100svh; overflow: hidden; overscroll-behavior: none; }
+  #map3d-host { height: 100svh; height: 100dvh; }
+  aside[aria-label="Strava activity controls"] { max-height: calc(100dvh - 1rem); min-height: 7rem; }
+  .sidebar-content { min-height: 0; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: max(0.75rem, env(safe-area-inset-bottom)); }
+  #bottom-sheet-drag { touch-action: none; }
+  #share-url-button span { display: none; }
+  #theater-pill { left: 0.5rem; right: 0.5rem; top: max(0.5rem, env(safe-area-inset-top)); justify-content: space-between; }
+  #theater-readout { min-width: 0; flex: 1; }
+}

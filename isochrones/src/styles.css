@@ -8,9 +8,13 @@
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; }
 button, input, select { font: inherit; }
+button, input, select, a { touch-action: manipulation; }
+button, select, input:not([type="range"]):not([type="checkbox"]) { min-height: 44px; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
 
 #app {
   min-height: 100vh;
+  min-height: 100svh;
   display: grid;
   grid-template-columns: minmax(330px, 400px) 1fr;
   background: radial-gradient(circle at top left, rgba(14, 165, 233, 0.24), transparent 34rem), #050816;
@@ -24,6 +28,7 @@ button, input, select { font: inherit; }
   padding: clamp(1rem, 3vw, 1.5rem);
   overflow-y: auto;
   max-height: 100vh;
+  max-height: 100svh;
   border-right: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(15, 23, 42, 0.88);
   backdrop-filter: blur(18px);
@@ -151,13 +156,22 @@ output { color: #38bdf8; font-weight: 700; }
 .credits a { color: #94a3b8; }
 .credits a:hover { color: #38bdf8; }
 
-.map-shell { position: relative; min-height: 100vh; }
+.map-shell { position: relative; min-height: 100vh; min-height: 100svh; }
 #map { position: absolute; inset: 0; min-height: 100%; }
 
 @media (max-width: 860px) {
-  #app { grid-template-columns: 1fr; }
-  .panel { max-height: none; border-right: 0; order: 2; }
-  .map-shell { min-height: 55vh; order: 1; }
+  body { overflow: auto; }
+  #app { grid-template-columns: 1fr; grid-template-rows: minmax(52svh, 56dvh) auto; }
+  .panel { max-height: none; border-right: 0; border-top: 1px solid rgba(148, 163, 184, 0.2); order: 2; padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+  .map-shell { min-height: 52svh; order: 1; position: sticky; top: 0; }
+  h1 { font-size: clamp(2rem, 13vw, 3rem); }
+  .scenario-grid { grid-template-columns: 1fr; }
+  .scenario { grid-template-columns: auto 1fr; justify-items: start; text-align: left; align-items: center; min-height: 52px; }
+  .scenario span:last-child { grid-column: 2; }
+  .insights-header { flex-direction: column; align-items: flex-start; }
+  .origin-label { text-align: left; }
+  .stat { grid-template-columns: auto 1fr; gap: 0.35rem 0.65rem; }
+  .stat-area, .stat-delta { grid-column: 2; text-align: left; }
 }
 
 @media (prefers-reduced-motion: no-preference) {

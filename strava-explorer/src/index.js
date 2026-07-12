@@ -35,7 +35,7 @@ let currentActivityData = null; // Caches full activity metadata
 let currentStreams = null; // Caches altitude, distance, latlng streams
 let theaterModeActive = false;
 let keyboardModalOpen = false;
-let currentSheetState = 'peek'; // 'peek', 'half', 'full'
+let currentSheetState = 'half'; // 'peek', 'half', 'full'
 
 // --- DOM Element References ---
 let cameraStatusEl, fitRouteButton, flyStartButton, flyFinishButton, orbitRouteButton;
@@ -566,11 +566,12 @@ function setupBottomSheet() {
     let isDragging = false;
 
     const getHeights = () => {
-        const vh = window.innerHeight;
+        const vh = window.visualViewport?.height || window.innerHeight;
+        const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom')) || 0;
         return {
-            peek: 96,
-            half: vh * 0.5,
-            full: vh - 24
+            peek: Math.max(112, vh * 0.18),
+            half: Math.max(320, vh * 0.56),
+            full: Math.max(360, vh - 16 - safeBottom)
         };
     };
 
@@ -596,13 +597,14 @@ function setupBottomSheet() {
 
     window.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
+        e.preventDefault();
         const currentY = e.touches[0].clientY;
         const deltaY = startY - currentY; // positive = dragging up
         const newHeight = startHeight + deltaY;
         const heights = getHeights();
         const clampedHeight = Math.max(heights.peek, Math.min(heights.full, newHeight));
         setHeight(clampedHeight);
-    }, { passive: true });
+    }, { passive: false });
 
     window.addEventListener('touchend', () => {
         if (!isDragging) return;

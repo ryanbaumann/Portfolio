@@ -76,3 +76,10 @@ Context: A public-readiness pass referenced a Google Doc for image and thumbnail
 Learning: The agent environment cannot use a private or account-gated Google Doc as an asset source, even when the URL is provided in the prompt. Public portfolio image passes should rely on checked-in assets, public direct image URLs, or exported files committed under `portfolio/static/`.
 Evidence: Opening `https://docs.google.com/document/d/1pkIYPenH9mrjlCg3EoBkBL1tYUZBwrnnCmqeRUkGtRs/edit?tab=t.mkssxc4q84rl` from the browsing tool returned no readable document content.
 Use next time: If a source doc contains real images, export or attach those assets before the implementation pass. Otherwise use existing real screenshots first and generated artifact cards only where no honest screenshot exists.
+
+## 2026-07-12: Mobile map demos need dynamic viewport units and explicit touch targets
+
+Context: A mobile-readiness pass found the demos used desktop-friendly `100vh` map shells and panels, plus mobile controls that were reachable but not reliably comfortable on browser UIs with collapsing address bars.
+Learning: Map demos should pair `100svh` or `100dvh` with safe-area padding, 44px touch targets, visible focus rings, and a clear mobile panel model. Bottom sheets should default to a useful state and prevent drag gestures from scrolling the page underneath.
+Evidence: Updating Strava Explorer's bottom sheet default to half-height, using `visualViewport`, and adding `touch-action`/safe-area CSS made the primary route and tour controls immediately reachable. Updating Air Quality and Isochrones mobile CSS gave the map a stable sticky viewport and made panel controls scroll independently below it.
+Use next time: For every new map demo, test the narrow layout first: map remains usable, controls remain reachable by touch and keyboard, panels account for safe areas, and no essential action depends on desktop hover.
