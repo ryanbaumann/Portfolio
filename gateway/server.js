@@ -2,7 +2,7 @@
 // gateway/server.js
 //
 // Zero-npm-dependency Node ES-module server that is the single entry point
-// for the trails.ninja container: it serves the portfolio site at the root
+// for the Ryan Baumann portfolio container: it serves the site at the root
 // path, every demo app's static build under its own path, and brokers all
 // secret-bearing API calls same-origin under /api/*. See
 // docs/ARCHITECTURE.md for the full picture.
@@ -241,7 +241,7 @@ const server = createServer(async (request, response) => {
 
 if (process.env.NODE_ENV !== 'test') {
   server.listen(PORT, () => {
-    console.log(`trails.ninja gateway listening on :${PORT}`);
+    console.log(`Ryan Baumann portfolio gateway listening on :${PORT}`);
     console.log(`Apps: ${publicApps.map((app) => `${app.name}${app.available ? '' : ' (unbuilt)'}`).join(', ') || '(none found in apps.json)'}`);
   });
 }

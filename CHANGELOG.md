@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Added — Planning
 - Added a detailed end-to-end portfolio overhaul plan covering Ryan-first branding, generic agent workflows, CMS hardening, copy/content enrichment, SEO/social sharing, responsive UX, gateway security/private demos/rate limits, Strava photo proxy fixes, CI/CD hardening, and final verification.
 
+### Changed — Brand direction
+- Re-centered public docs, package metadata, gateway logs, demo home links, and portfolio site metadata on the Ryan Baumann Portfolio brand and canonical `https://www.ryanbaumann-portfolio.com/` URL while preserving legacy `trails-ninja` service/repo references where renaming could affect deployment.
+
 ## [Unreleased] - 2026-07-12 — One site, one design
 
 ### Changed — The portfolio is now the site

@@ -33,8 +33,8 @@ picture.
   `--external <url>` for a link-out entry). Voice guidance:
   `portfolio/.claude/skills/writing/SKILL.md`.
 - **Regenerate demo screenshots:** `npm run previews` (uses
-  strava-explorer's Playwright; `BASE_URL=https://trails.ninja` to shoot
-  production).
+  strava-explorer's Playwright; `BASE_URL=https://www.ryanbaumann-portfolio.com`
+  to shoot production).
 
 Prefer small, reviewable changes. Keep app-specific code, commands, and dependencies inside the app directory you are modifying. Only use npm for dependency management (do not use yarn or other package managers).
 
