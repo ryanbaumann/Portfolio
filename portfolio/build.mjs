@@ -323,6 +323,12 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
   const nav = navItems
     .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
     .join('');
+  const headerCtas = [
+    { label: 'See demos', href: `${BASE}demos/` },
+    { label: 'Get in touch', href: `mailto:${site.links.email}` }
+  ]
+    .map((item) => `<a class="header-cta" href="${item.href}">${item.label}</a>`)
+    .join('');
 
   const resolvedCanonical = canonical || absoluteUrl('/');
   const resolvedImage = absoluteUrl(ogImage || site.defaultShareImage);
@@ -380,6 +386,7 @@ ${robotsTag ? robotsTag + '\n' : ''}${jsonLdTag ? jsonLdTag + '\n' : ''}<style>$
 <header class="site-header">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
   <nav aria-label="Site">${nav}</nav>
+  <div class="header-actions" aria-label="Primary actions">${headerCtas}</div>
 </header>
 <main id="main">
 ${content}
@@ -522,6 +529,7 @@ function demoCard(demo) {
     <h3>${escapeHtml(demo.title)}</h3>
     <p>${escapeHtml(demo.description || '')}</p>
     ${tags}
+    <span class="demo-action">Launch demo →</span>
   </div>
 </a>`;
 }
@@ -700,15 +708,12 @@ function buildHome(collections) {
 
   const heroLinks = [
     { label: 'Work', href: `${BASE}work/` },
-    { label: 'Writing', href: `${BASE}writing/` },
     ...(demos.length ? [{ label: 'Demos', href: `${BASE}demos/` }] : []),
+    { label: 'Writing', href: `${BASE}writing/` },
+    { label: 'Email', href: `mailto:${site.links.email}` },
     { label: 'GitHub', href: site.links.github, external: true },
     { label: 'LinkedIn', href: site.links.linkedin, external: true },
-    ...(site.links.x ? [{ label: 'X', href: site.links.x, external: true }] : []),
-    ...(site.links.substack ? [{ label: 'Substack', href: site.links.substack, external: true }] : []),
-    { label: 'Email', href: `mailto:${site.links.email}` },
   ];
-
   const demosSection = demos.length
     ? `
 <section>

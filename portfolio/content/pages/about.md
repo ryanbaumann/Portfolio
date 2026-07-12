@@ -1,20 +1,20 @@
 ---
 title: About
 eyebrow: Background
-summary: Ryan Baumann. Product and engineering leader with 15+ years building developer platforms at Google, Mapbox, and Instabase.
+summary: Ryan Baumann. Solution architecture, developer experience, and product growth leader with 15+ years building platforms at Google, Mapbox, Instabase, and Caterpillar.
 image: /previews/portfolio.jpg
 imageAlt: The home page of ryanbaumann-portfolio.com, the site this repo builds and serves
 ---
 
-Engineer, builder, tinkerer. I have spent 15+ years building developer platforms at Google, Mapbox, Instabase, and Caterpillar. I set strategy, and I stay in the work: I dogfood products, review traces, write evals, ship reference apps, and show up where developers are. The proof lives on this site. [The lab](/demos/) is a set of live apps I build and run myself.
+Engineer, builder, tinkerer. I have spent 15+ years building platforms at Google, Mapbox, Instabase, and Caterpillar. My lane is the seam between solution architecture, developer experience, and product growth. I set strategy, and I stay in the work: I dogfood products, review traces, write evals, ship reference apps, and show up where developers are. The proof lives on this site. [The lab](/demos/) is a set of live apps I build and run myself.
 
-My operating thesis: **developer experience is a growth discipline.** The platforms that win don't just write better docs. They work backwards from adoption and revenue goals to the product, context, distribution, and ecosystem investments that move them. That holds whether the platform sells maps, document AI, or anything else.
+My operating thesis: **developer experience is a growth discipline.** The platforms that win don't just write better docs. They work backwards from adoption and revenue goals to the product, architecture, context, distribution, and ecosystem investments that move them. That holds whether the platform sells maps, document AI, or anything else.
 
 ## Google, 2021 to present
 
 **Head of Developer Experience, Google Maps Platform** (2022 to present). I lead Developer Experience Engineering for a platform that powers over 10 million websites and apps. The team spans engineering, product management, technical writing, and developer relations, and operates as one unit with Product and Engineering.
 
-Our current focus is making AI agents first-class users of the platform: agent-ready documentation, curated context, portable skills, and evals that hold every launch to a measured bar. The launches I led with this team, [Code Assist](https://developers.google.com/maps/ai/code-assist), [agent skills](https://github.com/googlemaps/agent-skills), the agentic eval suite, and distribution into AI Studio, Replit, and Lovable, are detailed in [Work](/work/).
+A lot of the work is forward-deployed incubation: sit with the field, find the repeated architecture or adoption blocker, build the smallest real artifact, then scale it through product, docs, partners, and distribution. The launches I led with this team, [Code Assist](https://developers.google.com/maps/ai/code-assist), [agent skills](https://github.com/googlemaps/agent-skills), the agentic eval suite, the Geo Architecture Center, and distribution into AI Studio, Replit, and Lovable, are detailed in [Work](/work/).
 
 **Manufacturing Industry Solutions Manager, Google Cloud** (2021 to 2022). I led product and engineering for Google Cloud's first manufacturing industry solution, [Intelligent Product Essentials](https://cloud.google.com/blog/products/data-analytics/introducing-intelligent-products-essentials-for-manufacturers), from zero to launch with GE Appliances in nine months.
 

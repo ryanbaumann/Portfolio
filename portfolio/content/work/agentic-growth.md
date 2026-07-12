@@ -1,7 +1,7 @@
 ---
 title: Agentic Growth & AI-Native Distribution
 org: Google
-role: Growth strategy lead
+role: Product growth strategy lead
 period: 2024 – present
 summary: Platform tools shipped into the default connectors of AI Studio, Replit, and Lovable, plus OSS libraries that grew reach 300%+ with AI-native builders.
 tags: ["growth", "distribution", "open source"]
@@ -13,7 +13,7 @@ order: 4
 
 ## The goal
 
-Developer acquisition is moving from search-and-docs to agent-and-prompt. The goal: be present by default when someone prompts an agent to build something with a map in it, and measure whether that presence turns into adoption.
+Developer acquisition is moving from search-and-docs to agent-and-prompt. The goal: be present by default when someone prompts an agent to build something with a map in it, and measure whether that presence turns into adoption, not just awareness.
 
 ## What shipped
 

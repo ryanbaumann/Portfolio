@@ -1,9 +1,9 @@
 ---
 title: Google Maps Platform Code Assist
 org: Google
-role: Product & engineering lead
+role: Product incubation & engineering lead
 period: 2024 – present
-summary: An MCP server that grounds any AI coding agent in official Google Maps Platform docs and samples. Taken from a GitHub alpha to a Google-hosted remote service.
+summary: A product incubation that turned field demand for accurate AI-generated Maps code into a Google-hosted MCP service grounded in official docs and samples.
 tags: ["mcp", "applied ai", "developer platforms"]
 links: [{"label": "Docs", "url": "https://developers.google.com/maps/ai/code-assist"}, {"label": "Launch blog", "url": "https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/"}, {"label": "GitHub", "url": "https://github.com/googlemaps/platform-ai"}, {"label": "Video", "url": "https://youtu.be/L2V58kKIHvc"}]
 image: /img/work/code-assist.svg
@@ -14,7 +14,7 @@ order: 1
 
 ## The goal
 
-Developers increasingly let their agents read the docs for them. When an AI generates wrong Google Maps Platform code, the developer blames the platform, not the model. The goal: make AI coding agents generate correct, current platform code.
+Developers increasingly let their agents read the docs for them. When an AI generates wrong Google Maps Platform code, the developer blames the platform, not the model. The goal: make AI coding agents generate correct, current platform code, and turn that field pain into a product surface we could operate and improve.
 
 ## What shipped
 

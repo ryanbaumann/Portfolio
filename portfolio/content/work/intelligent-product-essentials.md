@@ -1,9 +1,9 @@
 ---
 title: Intelligent Product Essentials
 org: Google Cloud
-role: 0→1 product & engineering lead
+role: 0→1 industry solution product & engineering lead
 period: 2021 – 2022
-summary: Google Cloud's first manufacturing industry solution, edge AI plus cloud analytics for connected products, launched with GE Appliances in nine months.
+summary: Google Cloud's first manufacturing industry solution, using edge AI plus cloud analytics for connected products, launched with GE Appliances in nine months.
 tags: ["0→1", "iot", "industry solutions"]
 links: [{"label": "Launch blog", "url": "https://cloud.google.com/blog/products/data-analytics/introducing-intelligent-products-essentials-for-manufacturers"}]
 image: /img/work/intelligent-product-essentials.svg

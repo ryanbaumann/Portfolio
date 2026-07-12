@@ -3,7 +3,7 @@ title: Ryan Baumann Demo Lab
 org: Personal
 role: Builder
 period: ongoing
-summary: This site plus its live demo apps. One container, zero secrets in the browser, maintainable by agents by design.
+summary: This site plus its live demo apps. One container, zero secrets in the browser, and a reference architecture for agent-maintained portfolios.
 tags: ["side project", "self-hosted", "reference apps"]
 links: [{"label": "The demos", "url": "/demos/"}, {"label": "Source", "url": "https://github.com/ryanbaumann/ryanbaumann-portfolio"}]
 image: /previews/strava-explorer.jpg
