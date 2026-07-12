@@ -11,6 +11,35 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased] - 2026-07-12 — Ryan Baumann portfolio overhaul
 
+### Added — SEO, AEO, and Social Sharing
+- Extended portfolio generation to emit `<link rel="canonical">`, full `og:*` and `twitter:*` metadata, and JSON-LD structured data (`Person`, `WebSite`, `BlogPosting`).
+- Automated generation of `sitemap.xml` and `robots.txt`.
+- Added build-time metadata validation checks.
+- Implemented static share links without relying on client-side JS.
+
+### Added — UI/UX Polish
+- Reworked page layouts for mobile, narrow, and desktop views with responsive CSS `clamp()`.
+- Added an accessible, visually-hidden skip link for keyboard navigation.
+- Improved demo grids with a new 2-column intermediate breakpoint.
+- Added subtle hover states and optimized touch targets.
+
+### Added — Gateway Security and Private Demos
+- Introduced support for `visibility: public | unlisted | private` and `auth` config in `apps.json`.
+- Added a timing-safe, zero-dependency password gate using `node:crypto` HMAC session cookies.
+- Implemented route-aware rate limiting policies for API routes vs photos.
+- Filtered private apps from the `/api/apps` response to prevent disclosure.
+
+### Fixed — Strava Photo Proxy
+- Fixed Maps 3D WebGL CloudFront CORS errors by passing Strava popover photos through the gateway's `/api/photo-proxy`.
+- Added `Access-Control-Allow-Origin: *` and `Cross-Origin-Resource-Policy: cross-origin` headers to binary responses in the gateway without compromising validation policies.
+
+### Added — CI/CD Hardening
+- Hardened GitHub Actions to run package-level checks (`npm ci`, `lint`, `test`, `build`) concurrently via a matrix job.
+- Added Docker build verification and Gitleaks secret scanning.
+- Prevented deployment race conditions with `concurrency` groups.
+- Added explicit preflight checks for required GitHub variables and secrets.
+- Implemented a post-deploy smoke test against the live production URL.
+
 ### Added — Planning
 - Added a detailed end-to-end portfolio overhaul plan covering Ryan-first branding, generic agent workflows, CMS hardening, copy/content enrichment, SEO/social sharing, responsive UX, gateway security/private demos/rate limits, Strava photo proxy fixes, CI/CD hardening, and final verification.
 
