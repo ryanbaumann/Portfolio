@@ -12,12 +12,12 @@ order: 6
 
 ## The goal
 
-Google Cloud wanted a repeatable way into manufacturing — a vertical where it had strong infrastructure but no packaged product story. The bar: a real solution with a marquee launch customer and a revenue pipeline, not a reference architecture PDF.
+Google Cloud needed a repeatable entry into manufacturing — a vertical rich in infrastructure but lacking a packaged product story. The requirement: ship a real solution with a marquee launch customer and a hard revenue pipeline, not just a reference architecture PDF.
 
 ## What shipped
 
-Intelligent Product Essentials: edge AI plus cloud analytics for connected products, letting manufacturers ship smart, updatable, data-generating appliances. I led product and engineering from zero to launch in nine months, landing GE Appliances as the launch partner and driving a $10M+ launch pipeline with business development, sales, enablement, and partner teams.
+I led product and engineering from zero to launch in nine months, shipping Intelligent Product Essentials: edge AI and cloud analytics for connected products. This let manufacturers deploy smart, updatable, data-generating appliances. I secured GE Appliances as the launch partner and drove a $10M+ launch pipeline by aligning business development, sales, enablement, and partner teams.
 
 ## Why it matters
 
-This was vertical platform growth from the other direction: instead of growing an existing developer platform, packaging platform capabilities into a product a specific industry could adopt. Same discipline — work backwards from the adoption goal, ship the smallest thing that proves the motion, then scale it through partners.
+This represents vertical platform growth in reverse. Instead of expanding a generic developer platform, I packaged platform capabilities into a targeted product for immediate industry adoption. The discipline remains identical: work backwards from the adoption goal, ship the smallest artifact that proves the motion, and scale it through partners.

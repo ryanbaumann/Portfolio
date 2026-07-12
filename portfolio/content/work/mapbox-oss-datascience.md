@@ -13,14 +13,14 @@ order: 10
 
 ## The goal
 
-Mapbox's developer base was web and mobile engineers. Two enormous adjacent audiences — data scientists in Jupyter notebooks and analysts in Power BI — had location data and no good way to put it on a serious map.
+Mapbox’s developer base consisted exclusively of web and mobile engineers. Two massive adjacent audiences — data scientists in Jupyter notebooks and analysts in Power BI — held location data but lacked the tools to map it at scale.
 
 ## What shipped
 
-I wrote and shipped both bridges: **mapboxgl-jupyter**, bringing full Mapbox GL visualization into Python notebooks in a few lines of pandas-native code, and **mapboxgl-powerbi**, a custom visual putting Mapbox maps inside Power BI dashboards. Both were built as developer advocacy with a product spine — real libraries solving real workflow gaps, not demos.
+I authored and shipped both bridges. I built **mapboxgl-jupyter** to bring full Mapbox GL visualization into Python notebooks using pandas-native code. I built **mapboxgl-powerbi**, a custom visual rendering Mapbox maps natively inside Power BI dashboards. I executed both as developer advocacy backed by a hard product spine: shipping real libraries to solve workflow gaps, not throwaway demos.
 
 ![A Power BI dashboard analyzing NYC cyclist injuries on a Mapbox heatmap with the mapboxgl-powerbi custom visual](/img/work/mapboxgl-powerbi.jpg)
 
 ## Why it matters
 
-Meeting developers inside the tools they already use is the cheapest acquisition channel a platform has. These libraries turned two communities that had never written a line of Mapbox code into platform users — the same "go to where the builders are" motion I now run with AI agent harnesses instead of notebooks.
+Meeting developers inside the tools they already use is the cheapest acquisition channel a platform has. These libraries converted two entirely new communities into active platform users. This is the exact "go to where the builders are" motion I run today with AI agent harnesses instead of notebooks.

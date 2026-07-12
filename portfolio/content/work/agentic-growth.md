@@ -11,16 +11,16 @@ order: 4
 
 ## The goal
 
-Developer acquisition is moving from search-and-docs to agent-and-prompt. The goal: make sure that when the next ten million apps get built by people prompting agents, Google Maps Platform is the default choice — and prove it with a funnel the business can steer by.
+Developer acquisition has moved from search-and-docs to agent-and-prompt. The goal: ensure Google Maps Platform remains the default choice when the next ten million apps are built by prompted agents, and prove it with a measurable growth funnel.
 
 ## What shipped
 
-Three connected workstreams:
+I shipped three connected workstreams:
 
-- **Default distribution.** Google Maps Platform skills and MCP tools shipped into AI Studio, Replit, and Lovable's default Google connectors — so the platform is present the moment a builder starts, with zero discovery cost.
-- **The agentic funnel.** Pioneered measuring developer adoption through context usage in agents: which skills get invoked, which tools get called, and how that converts to platform reach and engagement. Agent-influenced adoption became a tracked growth funnel, not an anecdote.
-- **OSS as a growth vector.** Grew platform reach 300%+ through open-source libraries for AI-assisted building, with React and Compose as the two main growth vectors for vibe coding — now driving the hypothesis-and-experimentation framework for 2026 investments.
+- **Default distribution.** I shipped Google Maps Platform skills and MCP tools into the default connectors for AI Studio, Replit, and Lovable. The platform is now present the moment a builder starts, dropping discovery cost to zero.
+- **The agentic funnel.** I pioneered the measurement of developer adoption through agent context usage: tracking invoked skills and tool calls, and converting those signals into platform reach and engagement. Agent-influenced adoption is now a hard, tracked growth funnel.
+- **OSS as a growth vector.** I grew platform reach 300%+ through open-source libraries for AI-assisted building. React and Compose served as the primary vectors for vibe coding, establishing the hypothesis-and-experimentation framework for all 2026 investments.
 
 ## Why it matters
 
-This is the "beyond DevRel" thesis in practice: distribution deals, product integrations, and open source treated as one growth system, with developer experience as the connective tissue. The same playbook applies to any developer platform, in any vertical.
+This puts the "beyond DevRel" thesis into practice. Distribution deals, product integrations, and open source operate as a single growth system, unified by developer experience. This playbook drives adoption for any developer platform in any vertical.

@@ -20,12 +20,12 @@ out to the first `links` URL.
 
 ## The goal
 
-Start from the adoption, revenue, or reach goal the work served.
+State the business, adoption, revenue, or reach goal the work served. Focus on impact and outcomes immediately.
 
 ## What shipped
 
-What you actually built or led. Concrete artifacts, linked.
+Detail what you actually built or led. Use short sentences, active voice, and concrete nouns. Link to real, shipped artifacts.
 
 ## Why it matters
 
-The durable lesson — why this matters to a platform business beyond this one project.
+Deliver the durable lesson — explain why this matters to a platform business beyond this specific project. Cut the fluff.

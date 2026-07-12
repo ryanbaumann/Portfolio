@@ -13,12 +13,12 @@ order: 9
 
 ## The goal
 
-Uber's deck.gl and kepler.gl were becoming the default way data scientists and engineers visualized geospatial data at scale. Whoever rendered the basemap under those tools would be the default map for an entire generation of data-heavy applications.
+Uber's deck.gl and kepler.gl were rapidly becoming the default tools for data scientists and engineers visualizing geospatial data at scale. The platform that rendered the basemap under those tools would secure the default position for a generation of data-heavy applications.
 
 ## What shipped
 
-I led the OSS partnership with Uber that integrated Mapbox GL JS custom layers into deck.gl and kepler.gl — deep rendering integration, not a logo swap. Mapbox became the default basemap across the stack, with shared APIs that made the combination the path of least resistance. kepler.gl still ships on that architecture today.
+I led the OSS partnership with Uber that integrated Mapbox GL JS custom layers directly into deck.gl and kepler.gl. I drove deep rendering integration, avoiding a superficial logo swap. Mapbox became the default basemap across the stack, leveraging shared APIs that made the combination the absolute path of least resistance. kepler.gl continues to ship on that architecture today.
 
 ## Why it matters
 
-This is business development as developer experience: a focused engineering investment in someone else's open source turned into a durable default position across an ecosystem. Defaults compound — every kepler.gl tutorial, workshop, and fork since has onboarded developers onto Mapbox for free.
+This is business development executed as developer experience. A highly targeted engineering investment in external open source established a durable default position across an entire ecosystem. Defaults compound: every kepler.gl tutorial, workshop, and fork since has onboarded developers onto Mapbox for free.

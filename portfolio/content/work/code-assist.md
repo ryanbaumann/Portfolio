@@ -12,14 +12,14 @@ order: 1
 
 ## The goal
 
-Developers increasingly don't read docs — their agents do. If an AI coding assistant generates wrong or outdated Google Maps Platform code, the developer blames the platform, not the model. The growth goal: make every AI coding agent generate production-quality platform code, so the platform wins the developer at the moment of first code generation.
+Developers no longer read docs — their agents do. If an AI generates incorrect Google Maps Platform code, developers blame the platform. The goal: make every AI coding agent generate production-ready platform code, ensuring we win the developer at the moment of first code generation.
 
 ## What shipped
 
-Code Assist is an MCP server that grounds any AI coding agent in fresh, official Google Maps Platform documentation, code samples, and architecture content via retrieval. I led it from an alpha on GitHub and npm to a Google-hosted remote MCP service — now the primary connection method — that runs in Claude Code, Cursor, Antigravity, Gemini CLI, and any MCP client.
+I built and shipped Code Assist: an MCP server that grounds AI coding agents in official Google Maps Platform documentation, code samples, and architecture via retrieval. I led this from a GitHub alpha to a Google-hosted remote MCP service. It now runs natively in Claude Code, Cursor, Antigravity, Gemini CLI, and any MCP client. 
 
-Every non-trivial line an agent writes can be grounded in retrieved docs instead of training-data memory — which means correct API surface, current best practices, and fewer hallucinated parameters.
+Agents now ground every non-trivial line in retrieved docs instead of training-data memory — producing correct API surface usage, modern best practices, and eliminating hallucinated parameters.
 
 ## Why it matters
 
-This is developer experience as product, not content: the interface is a tool call, the quality bar is an eval suite, and the distribution channel is every agent harness a developer already uses. It's a template for how any developer platform earns adoption in an agent-mediated world.
+This is developer experience treated as product. The interface is a tool call, the quality bar is an eval suite, and the distribution channel is every agent harness a developer already uses. This provides the blueprint for how any developer platform earns adoption in an agent-mediated world.
