@@ -153,6 +153,8 @@ async function handleApi(request, response, pathname, searchParams) {
         'Content-Length': result.binary.body.byteLength,
         'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
         'Content-Security-Policy': 'sandbox',
+        'Access-Control-Allow-Origin': '*',
+        'Cross-Origin-Resource-Policy': 'cross-origin',
       });
       response.end(Buffer.from(result.binary.body));
       return;
