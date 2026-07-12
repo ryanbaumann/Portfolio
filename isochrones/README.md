@@ -2,11 +2,11 @@
 
 This is a small Vite + Node demo that showcases the Google Maps Platform Isochrones API on an interactive Google Map. It is designed around three common reachability workflows:
 
-- **Delivery promise**: compare 10/20/30+ minute service areas from a hub.
-- **Commute catchment**: flip travel direction to understand who can arrive at a destination within a target time.
-- **Response coverage**: inspect time-band gaps for field teams, clinics, or emergency-style service planning.
+- **Delivery**: compare service-area bands from a hub (default 30-minute radius).
+- **Commute**: flip travel direction to understand who can arrive at a destination within a target time.
+- **Response**: inspect time-band gaps for field teams, clinics, or emergency-style service planning.
 
-The visual design uses nested, selectable isochrone polygons with a drill-down statistics panel that reports approximate area in square kilometers for each time band.
+The demo is live-by-default: rings generate automatically on load and regenerate (debounced, in parallel) whenever the origin, scenario, or any setting changes. Set the origin by place search (`PlaceAutocompleteElement`), by clicking the map, or by dragging the pin. The results panel lists each time band with cumulative area and the incremental area added by that band; hovering a band highlights its ring on the map.
 
 ## Prerequisites
 
@@ -28,7 +28,7 @@ GMP_SERVER_API_KEY=YOUR_GOOGLE_MAPS_SERVER_KEY
 ```
 
 Make sure the Google Maps Platform products are enabled on the project(s) corresponding to your keys:
-- Maps JavaScript API (for the browser key)
+- Maps JavaScript API and Places API (for the browser key; the place-search box degrades gracefully if Places is not enabled)
 - Isochrones API (for the server key)
 
 ## Run locally
