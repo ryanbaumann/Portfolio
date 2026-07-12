@@ -16,6 +16,8 @@ steps:
       - '--build-arg'
       - 'VITE_GMP_API_KEY=${_VITE_GMP_API_KEY}'
       - '--build-arg'
+      - 'VITE_ISOCHRONES_GMP_API_KEY=${_VITE_ISOCHRONES_GMP_API_KEY}'
+      - '--build-arg'
       - 'VITE_STRAVA_CLIENT_ID=${_VITE_STRAVA_CLIENT_ID}'
       - '--tag'
       - '${_IMAGE}'
@@ -27,6 +29,7 @@ images:
 substitutions:
   _IMAGE: ''
   _VITE_GMP_API_KEY: ''
+  _VITE_ISOCHRONES_GMP_API_KEY: ''
   _VITE_STRAVA_CLIENT_ID: ''
 
 options:

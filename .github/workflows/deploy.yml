@@ -60,6 +60,10 @@ jobs:
             echo "::error::Missing required repository secret: VITE_GMP_API_KEY"
             MISSING=1
           fi
+          if [ -z "${{ secrets.VITE_ISOCHRONES_GMP_API_KEY }}" ]; then
+            echo "::error::Missing required repository secret: VITE_ISOCHRONES_GMP_API_KEY"
+            MISSING=1
+          fi
           if [ -z "${{ secrets.VITE_STRAVA_CLIENT_ID }}" ]; then
             echo "::error::Missing required repository secret: VITE_STRAVA_CLIENT_ID"
             MISSING=1
@@ -92,7 +96,7 @@ jobs:
           # so the VITE_* build args are threaded through cloudbuild.yaml via
           # substitutions instead (see that file's header comment).
           gcloud builds submit --project "$GCP_PROJECT_ID" --config cloudbuild.yaml \
-            --substitutions=_IMAGE="$IMAGE",_VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}",_VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}" .
+            --substitutions=_IMAGE="$IMAGE",_VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}",_VITE_ISOCHRONES_GMP_API_KEY="${{ secrets.VITE_ISOCHRONES_GMP_API_KEY }}",_VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}" .
 
       - name: Deploy to Cloud Run
         run: |

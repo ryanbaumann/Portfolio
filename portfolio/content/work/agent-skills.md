@@ -12,14 +12,14 @@ order: 2
 
 ## The goal
 
-Grounded retrieval (Code Assist) tells an agent *what's true*; it doesn't teach an agent *how to work*. The goal was a second layer of the developer experience: packaged, portable expertise that turns any agent into a competent platform engineer — and a new distribution surface for the platform itself.
+Grounded retrieval (Code Assist) tells an agent *what's true*; it doesn't teach an agent *how to work*. The goal: package portable expertise that turns any agent into a competent platform engineer, unlocking a new distribution surface for the platform.
 
 ## What shipped
 
-Google Maps Platform agent skills: skill modules for production-ready code across Web, Android, iOS, and Web Services. One install — `npx skills add googlemaps/agent-skills` — and it runs in AI Studio, Antigravity, Claude Code, and Replit; the same repo doubles as a Gemini CLI extension and installs into Lovable. I led the launch, the eval model that gates each skill, and the distribution mechanics — including remote skill hosting — to reach the most users with the least friction.
+I led the launch of Google Maps Platform agent skills: portable modules for shipping production-ready code across Web, Android, iOS, and Web Services. A single command — `npx skills add googlemaps/agent-skills` — installs the skill across AI Studio, Antigravity, Claude Code, and Replit. The repo doubles as a Gemini CLI extension and integrates into Lovable. I built the eval model that gates each skill and designed the remote hosting distribution mechanics to maximize reach with zero friction.
 
-Skills and Code Assist are designed as one system: skills teach the agent workflows through token-efficient progressive disclosure, while the MCP server grounds every non-trivial line in retrieved documentation.
+Skills and Code Assist run as one integrated system. Skills teach workflows through token-efficient progressive disclosure, while the MCP server grounds every line in retrieved documentation.
 
 ## Why it matters
 
-Skills turn platform expertise into a distributable artifact. Instead of hoping developers find the right guide, the platform ships its own senior engineer into every agent session. For a developer platform business, that changes the funnel: install-time is the new signup, and skill usage is a measurable leading indicator of adoption.
+Skills convert platform expertise into a distributable software artifact. Instead of hoping developers read a guide, the platform injects its own senior engineer into every agent session. For a developer platform, install-time becomes the new signup, and skill usage acts as a measurable leading indicator of adoption.
