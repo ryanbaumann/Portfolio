@@ -294,6 +294,7 @@ main > section { margin-bottom: clamp(3rem, 7vw, 4.5rem); }
 .demo-body { padding: 1.05rem 1.25rem 1.25rem; display: flex; flex-direction: column; }
 .demo-body p { margin: 0; }
 .demo-body .card-tags { margin-top: 0.85rem !important; }
+.demo-action { margin-top: 1rem; color: var(--accent-ink); font-size: 0.88rem; font-weight: 700; }
 
 /* ---- list rows (writing, talks) ---- */
 

@@ -529,6 +529,7 @@ function demoCard(demo) {
     <h3>${escapeHtml(demo.title)}</h3>
     <p>${escapeHtml(demo.description || '')}</p>
     ${tags}
+    <span class="demo-action">Launch demo →</span>
   </div>
 </a>`;
 }
@@ -707,15 +708,12 @@ function buildHome(collections) {
 
   const heroLinks = [
     { label: 'Work', href: `${BASE}work/` },
-    { label: 'Writing', href: `${BASE}writing/` },
     ...(demos.length ? [{ label: 'Demos', href: `${BASE}demos/` }] : []),
+    { label: 'Writing', href: `${BASE}writing/` },
+    { label: 'Email', href: `mailto:${site.links.email}` },
     { label: 'GitHub', href: site.links.github, external: true },
     { label: 'LinkedIn', href: site.links.linkedin, external: true },
-    ...(site.links.x ? [{ label: 'X', href: site.links.x, external: true }] : []),
-    ...(site.links.substack ? [{ label: 'Substack', href: site.links.substack, external: true }] : []),
-    { label: 'Email', href: `mailto:${site.links.email}` },
   ];
-
   const demosSection = demos.length
     ? `
 <section>

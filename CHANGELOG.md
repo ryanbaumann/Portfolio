@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-07-12: Deployed UI/UX polish pass
+
+- Audited the live site text rendering and demo pages, then tightened the local portfolio UI before the next deploy.
+- Removed a duplicate Demos hero chip and trimmed the homepage hero chips to the highest-intent actions.
+- Added an explicit Launch demo affordance to demo cards so visitors can tell the whole card opens the live app.
+
 ## 2026-07-12: Mobile demo reachability pass
 
 - Improved the Strava 3D Explorer mobile bottom sheet so the primary controls open at a useful half-height by default, respect dynamic viewport height and safe areas, and keep drag gestures from fighting page scroll.
