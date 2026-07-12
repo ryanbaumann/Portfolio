@@ -6,7 +6,7 @@
     "path": "/",
     "dev_build_dir": "portfolio/dist",
     "tags": [],
-    "preview": null
+    "preview": "/previews/portfolio.jpg"
   },
   {
     "name": "strava-explorer",

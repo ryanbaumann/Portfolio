@@ -1,9 +1,9 @@
 ---
 title: Geo Architecture Center
 org: Google
-role: Founder & principal author
+role: Founder, principal author, and solution architecture lead
 period: 2022 – present
-summary: 40+ published solution architectures showing developers how to build real systems on Google Maps Platform. Principal author on several.
+summary: 40+ published solution architectures that turn repeated enterprise questions into reusable system patterns for Google Maps Platform.
 tags: ["technical writing", "solution architecture"]
 links: [{"label": "Architecture Center", "url": "https://developers.google.com/maps/architecture"}]
 image: /img/work/geo-architecture-center.svg
@@ -13,7 +13,7 @@ order: 7
 
 ## The goal
 
-API reference docs answer "what does this endpoint do?" They don't answer "how do I build a fleet tracker, a store locator, or a logistics stack that scales?" Enterprise evaluations live and die on those system-level questions.
+API reference docs answer "what does this endpoint do?" They don't answer "how do I build a fleet tracker, a store locator, or a logistics stack that scales?" Enterprise evaluations live and die on those system-level questions, and so does product growth when the same architecture gap blocks many teams at once.
 
 ## What shipped
 

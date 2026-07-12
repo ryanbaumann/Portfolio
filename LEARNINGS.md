@@ -69,3 +69,10 @@ Context: After fixing the WIF attribute condition, the GitHub Actions token was 
 Learning: In Google Cloud Workload Identity Federation, authenticating as a WIF principal is only half the battle. That principal must also have the `roles/iam.workloadIdentityUser` role bound on the Service Account it needs to impersonate. If the repository is renamed, the mapped principal (e.g., `principalSet://.../attribute.repository/NEW_REPO`) changes, and the old IAM binding on the service account will no longer grant access.
 Evidence: The service account `github-actions-deployer` only allowed impersonation from `attribute.repository/ryanbaumann/trails.ninja`. Adding a new IAM policy binding for `attribute.repository/ryanbaumann/Portfolio` via `gcloud iam service-accounts add-iam-policy-binding` restored the GitHub Action's ability to impersonate the service account.
 Use next time: When renaming a repository that uses GCP WIF with Service Account Impersonation, you must update BOTH the WIF provider's attribute condition AND the Service Account's IAM policy bindings to allow the new mapped principal.
+
+## 2026-07-12: External planning docs need public access or exported assets
+
+Context: A public-readiness pass referenced a Google Doc for image and thumbnail source material.
+Learning: The agent environment cannot use a private or account-gated Google Doc as an asset source, even when the URL is provided in the prompt. Public portfolio image passes should rely on checked-in assets, public direct image URLs, or exported files committed under `portfolio/static/`.
+Evidence: Opening `https://docs.google.com/document/d/1pkIYPenH9mrjlCg3EoBkBL1tYUZBwrnnCmqeRUkGtRs/edit?tab=t.mkssxc4q84rl` from the browsing tool returned no readable document content.
+Use next time: If a source doc contains real images, export or attach those assets before the implementation pass. Otherwise use existing real screenshots first and generated artifact cards only where no honest screenshot exists.

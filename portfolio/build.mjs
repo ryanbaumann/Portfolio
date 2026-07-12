@@ -323,6 +323,12 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
   const nav = navItems
     .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
     .join('');
+  const headerCtas = [
+    { label: 'See demos', href: `${BASE}demos/` },
+    { label: 'Get in touch', href: `mailto:${site.links.email}` }
+  ]
+    .map((item) => `<a class="header-cta" href="${item.href}">${item.label}</a>`)
+    .join('');
 
   const resolvedCanonical = canonical || absoluteUrl('/');
   const resolvedImage = absoluteUrl(ogImage || site.defaultShareImage);
@@ -380,6 +386,7 @@ ${robotsTag ? robotsTag + '\n' : ''}${jsonLdTag ? jsonLdTag + '\n' : ''}<style>$
 <header class="site-header">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
   <nav aria-label="Site">${nav}</nav>
+  <div class="header-actions" aria-label="Primary actions">${headerCtas}</div>
 </header>
 <main id="main">
 ${content}

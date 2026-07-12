@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-12: Public-readiness copy and header CTA pass
+
+- Reworked the public README around the repository's actual job: a portfolio, demo lab, and runnable reference architecture in one Cloud Run container.
+- Updated the portfolio positioning to cover solution architecture, forward-deployed incubation, and product growth leadership alongside developer experience, while keeping claims tied to shipped work and measured proof points.
+- Added persistent header calls to action for demos and contact, and wired the portfolio app card to use the real checked-in portfolio preview image.
+- Refined work and about copy so Google Maps Platform incubation work, architecture artifacts, agent-ready platform work, and growth distribution show up across the site without overstating individual claims.
+
 All notable changes to this project will be documented in this file.
 
 ## 2026-07-12: Sticky nav, profile/social sync
