@@ -702,7 +702,7 @@ function buildDemosPage() {
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
   </div>
-  <p class="section-note">Every demo is open source — <a href="${site.links.github}/trails.ninja" rel="noopener">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
+  <p class="section-note">Every demo is open source. <a href="${site.links.github}/ryanbaumann-portfolio" rel="noopener">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
