@@ -2,36 +2,40 @@ import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import './styles.css';
 
 const API_KEY = import.meta.env.VITE_GMP_API_KEY;
-const RING_COLORS = ['#00c2ff', '#7c3aed', '#f97316', '#ef4444'];
+const RING_COLORS = ['#38bdf8', '#818cf8', '#c084fc', '#f472b6'];
 const DEFAULT_ORIGIN = { lat: 37.7749, lng: -122.4194 };
+const REGENERATE_DEBOUNCE_MS = 350;
+
 const SCENARIOS = {
-  delivery: { mode: 'DRIVE', direction: 'FROM', maxMinutes: 30, label: 'Delivery promise' },
-  commute: { mode: 'DRIVE', direction: 'TO', maxMinutes: 45, label: 'Commute catchment' },
-  response: { mode: 'DRIVE', direction: 'FROM', maxMinutes: 20, label: 'Response coverage' },
+  delivery: { mode: 'DRIVE', direction: 'FROM', maxMinutes: 30, label: 'delivery radius' },
+  commute: { mode: 'DRIVE', direction: 'TO', maxMinutes: 45, label: 'commute catchment' },
+  response: { mode: 'DRIVE', direction: 'FROM', maxMinutes: 20, label: 'response coverage' },
 };
 
 const state = {
   map: null,
   origin: { ...DEFAULT_ORIGIN },
+  originName: '',
   marker: null,
-  polygons: [],
+  rings: [], // { minutes, color, polygons, squareKm }
   selectedMinutes: null,
   activeScenario: 'delivery',
+  generation: 0, // increments to invalidate in-flight generations
+  debounceTimer: null,
 };
 
 const elements = {
   map: document.querySelector('#map'),
   status: document.querySelector('#status'),
   stats: document.querySelector('#stats'),
-  latInput: document.querySelector('#lat-input'),
-  lngInput: document.querySelector('#lng-input'),
+  originLabel: document.querySelector('#origin-label'),
+  searchSlot: document.querySelector('#search-slot'),
   modeSelect: document.querySelector('#mode-select'),
   directionSelect: document.querySelector('#direction-select'),
   routingSelect: document.querySelector('#routing-select'),
   durationInput: document.querySelector('#duration-input'),
   durationLabel: document.querySelector('#duration-label'),
   smoothInput: document.querySelector('#smooth-input'),
-  generateButton: document.querySelector('#generate'),
 };
 
 function setStatus(message, tone = 'neutral') {
@@ -39,47 +43,20 @@ function setStatus(message, tone = 'neutral') {
   elements.status.dataset.tone = tone;
 }
 
-function validateCoordinates(lat, lng) {
-  return Number.isFinite(lat) && lat >= -90 && lat <= 90 && Number.isFinite(lng) && lng >= -180 && lng <= 180;
-}
-
-function syncOriginInputs() {
-  elements.latInput.value = state.origin.lat.toFixed(5);
-  elements.lngInput.value = state.origin.lng.toFixed(5);
-}
-
 function minutesToDurations(maxMinutes) {
-  const steps = maxMinutes <= 20 ? [5, 10, maxMinutes] : [10, 20, 30, maxMinutes];
-  return [...new Set(steps.filter((minutes) => minutes > 0 && minutes <= maxMinutes))];
+  // Four evenly spaced bands ending at maxMinutes, e.g. 30 -> [7.5→8, 15, 23, 30].
+  const bands = 4;
+  const durations = [];
+  for (let step = 1; step <= bands; step += 1) {
+    const minutes = Math.round((maxMinutes * step) / bands);
+    if (!durations.includes(minutes) && minutes > 0) durations.push(minutes);
+  }
+  return durations;
 }
 
-async function requestIsochrone(minutes) {
-  const body = {
-    travelDuration: `${minutes * 60}s`,
-    travelMode: elements.modeSelect.value,
-    travelDirection: elements.directionSelect.value,
-    routingPreference: elements.routingSelect.value,
-    enableSmoothing: elements.smoothInput.checked,
-    polygonFidelity: 'MEDIUM',
-    location: {
-      latitude: state.origin.lat,
-      longitude: state.origin.lng,
-    },
-  };
-
-  // Absolute path: this app is mounted at /isochrones/ inside the gateway
-  // container, so a relative 'api/isochrones' would resolve under that
-  // prefix instead of the gateway's top-level /api/isochrones route.
-  const response = await fetch('/api/isochrones', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const payload = await response.json();
-  if (!response.ok) throw new Error(payload.error?.message || payload.error || 'Isochrone request failed.');
-  return payload.isochrone.geoJson;
-}
-
+// ---------------------------------------------------------------------------
+// Geometry helpers
+// ---------------------------------------------------------------------------
 
 function getPolygons(geoJson) {
   const geometry = geoJson.type === 'Feature' ? geoJson.geometry : geoJson;
@@ -129,82 +106,220 @@ function geoJsonToPaths(geoJson) {
 function fitGeoJson(geoJson) {
   const [west, south, east, north] = getGeoJsonBounds(geoJson);
   const bounds = new google.maps.LatLngBounds({ lat: south, lng: west }, { lat: north, lng: east });
-  state.map.fitBounds(bounds, { top: 80, right: 80, bottom: 260, left: 420 });
+  const desktop = window.matchMedia('(min-width: 861px)').matches;
+  state.map.fitBounds(bounds, desktop
+    ? { top: 60, right: 60, bottom: 60, left: 60 }
+    : { top: 40, right: 40, bottom: 40, left: 40 });
 }
 
-function clearPolygons() {
-  state.polygons.forEach(({ polygons }) => polygons.forEach((polygon) => polygon.setMap(null)));
-  state.polygons = [];
+// ---------------------------------------------------------------------------
+// API
+// ---------------------------------------------------------------------------
+
+async function requestIsochrone(minutes) {
+  const body = {
+    travelDuration: `${minutes * 60}s`,
+    travelMode: elements.modeSelect.value,
+    travelDirection: elements.directionSelect.value,
+    routingPreference: elements.routingSelect.value,
+    enableSmoothing: elements.smoothInput.checked,
+    polygonFidelity: 'MEDIUM',
+    location: {
+      latitude: state.origin.lat,
+      longitude: state.origin.lng,
+    },
+  };
+
+  // Absolute path: this app is mounted at /isochrones/ inside the gateway
+  // container, so a relative 'api/isochrones' would resolve under that
+  // prefix instead of the gateway's top-level /api/isochrones route.
+  const response = await fetch('/api/isochrones', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const payload = await response.json();
+  if (!response.ok) throw new Error(payload.error?.message || payload.error || 'Isochrone request failed.');
+  return payload.isochrone.geoJson;
+}
+
+// ---------------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------------
+
+function clearRings() {
+  state.rings.forEach(({ polygons }) => polygons.forEach((polygon) => polygon.setMap(null)));
+  state.rings = [];
   state.selectedMinutes = null;
 }
 
-function selectRing(minutes) {
+function highlightRing(minutes) {
   state.selectedMinutes = minutes;
-  state.polygons.forEach(({ polygons, minutes: ringMinutes }) => {
-    polygons.forEach((polygon) => {
-      polygon.setOptions({ strokeWeight: ringMinutes === minutes ? 4 : 2, fillOpacity: ringMinutes === minutes ? 0.34 : 0.2 });
+  state.rings.forEach((ring) => {
+    const selected = ring.minutes === minutes;
+    ring.polygons.forEach((polygon) => {
+      polygon.setOptions({
+        strokeWeight: selected ? 3.5 : 1.75,
+        fillOpacity: selected ? 0.3 : 0.16,
+      });
     });
   });
-  renderStats();
+  elements.stats.querySelectorAll('.stat').forEach((button) => {
+    button.classList.toggle('is-selected', Number(button.dataset.minutes) === minutes);
+  });
 }
 
 function renderStats() {
-  if (!state.polygons.length) {
-    elements.stats.innerHTML = '<p class="empty">Generate an isochrone set to compare reachable area bands.</p>';
+  if (!state.rings.length) {
+    elements.stats.innerHTML = '<p class="empty">Rings appear here as they generate.</p>';
     return;
   }
 
-  const rows = state.polygons.map(({ minutes, squareKm }, index) => {
-    const selected = state.selectedMinutes === minutes ? ' is-selected' : '';
-    return `<button class="stat${selected}" type="button" data-minutes="${minutes}">
-      <span class="swatch" style="background:${RING_COLORS[index % RING_COLORS.length]}"></span>
-      <strong>${minutes} min</strong>
-      <span>${squareKm.toLocaleString(undefined, { maximumFractionDigits: 1 })} km²</span>
+  const sorted = [...state.rings].sort((a, b) => a.minutes - b.minutes);
+  const rows = sorted.map((ring, index) => {
+    const previous = index > 0 ? sorted[index - 1].squareKm : 0;
+    const delta = ring.squareKm - previous;
+    const selected = state.selectedMinutes === ring.minutes ? ' is-selected' : '';
+    return `<button class="stat${selected}" type="button" data-minutes="${ring.minutes}">
+      <span class="swatch" style="background:${ring.color}"></span>
+      <span class="stat-minutes">${ring.minutes} min</span>
+      <span class="stat-area">${ring.squareKm.toLocaleString(undefined, { maximumFractionDigits: 0 })} km²</span>
+      <span class="stat-delta">${index > 0 ? `+${delta.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '&nbsp;'}</span>
     </button>`;
   });
 
   elements.stats.innerHTML = rows.join('');
   elements.stats.querySelectorAll('.stat').forEach((button) => {
-    button.addEventListener('click', () => selectRing(Number(button.dataset.minutes)));
+    const minutes = Number(button.dataset.minutes);
+    button.addEventListener('click', () => highlightRing(minutes));
+    button.addEventListener('mouseenter', () => highlightRing(minutes));
   });
 }
 
-async function generateIsochrones() {
-  clearPolygons();
-  const maxMinutes = Number(elements.durationInput.value);
-  const durations = minutesToDurations(maxMinutes);
-  elements.generateButton.disabled = true;
-  setStatus(`Generating ${durations.length} ${SCENARIOS[state.activeScenario].label.toLowerCase()} rings…`);
+function drawRing(geoJson, minutes, color, zIndex) {
+  const polygons = geoJsonToPaths(geoJson).map((paths) => {
+    const polygon = new google.maps.Polygon({
+      paths,
+      map: state.map,
+      strokeColor: color,
+      strokeOpacity: 0.95,
+      strokeWeight: 1.75,
+      fillColor: color,
+      fillOpacity: 0.16,
+      zIndex,
+    });
+    polygon.addListener('click', () => highlightRing(minutes));
+    return polygon;
+  });
+  return { minutes, color, polygons, squareKm: approximateGeoJsonAreaSquareKm(geoJson) };
+}
 
+// ---------------------------------------------------------------------------
+// Generation
+// ---------------------------------------------------------------------------
+
+async function generateIsochrones() {
+  if (!state.map) return;
+  const generation = ++state.generation;
+  clearRings();
+  renderStats();
+
+  const durations = minutesToDurations(Number(elements.durationInput.value));
+  const scenarioLabel = SCENARIOS[state.activeScenario].label;
+  setStatus(`Mapping ${scenarioLabel}… 0/${durations.length}`);
+
+  let completed = 0;
   try {
-    for (const [index, minutes] of durations.entries()) {
+    // All bands fire in parallel; each draws the moment it lands.
+    const results = await Promise.all(durations.map(async (minutes, index) => {
       const geoJson = await requestIsochrone(minutes);
-      const polygons = geoJsonToPaths(geoJson).map((paths) => {
-        const polygon = new google.maps.Polygon({
-          paths,
-          map: state.map,
-          strokeColor: RING_COLORS[index % RING_COLORS.length],
-          strokeOpacity: 0.95,
-          strokeWeight: 2,
-          fillColor: RING_COLORS[index % RING_COLORS.length],
-          fillOpacity: 0.2,
-          zIndex: durations.length - index,
-        });
-        polygon.addListener('click', () => selectRing(minutes));
-        return polygon;
-      });
-      state.polygons.push({ polygons, minutes, squareKm: approximateGeoJsonAreaSquareKm(geoJson), geoJson });
-      fitGeoJson(geoJson);
+      if (generation !== state.generation) return null;
+      completed += 1;
+      setStatus(`Mapping ${scenarioLabel}… ${completed}/${durations.length}`);
+      const ring = drawRing(geoJson, minutes, RING_COLORS[index % RING_COLORS.length], durations.length - index);
+      state.rings.push(ring);
       renderStats();
-    }
-    selectRing(durations.at(-1));
-    setStatus('Isochrones ready. Select a ring for drill-down.', 'success');
+      return geoJson;
+    }));
+
+    if (generation !== state.generation) return;
+    const largest = results.filter(Boolean).at(-1);
+    if (largest) fitGeoJson(largest);
+    highlightRing(durations.at(-1));
+    setStatus('Hover a band to compare. Drag the pin or click the map to move the origin.', 'success');
   } catch (error) {
+    if (generation !== state.generation) return;
     setStatus(error.message, 'error');
     renderStats();
-  } finally {
-    elements.generateButton.disabled = false;
   }
+}
+
+function scheduleGenerate() {
+  clearTimeout(state.debounceTimer);
+  state.debounceTimer = setTimeout(generateIsochrones, REGENERATE_DEBOUNCE_MS);
+}
+
+function setOrigin(latLng, name = '') {
+  state.origin = latLng;
+  state.originName = name;
+  elements.originLabel.textContent = name || `${latLng.lat.toFixed(4)}, ${latLng.lng.toFixed(4)}`;
+  if (state.marker) state.marker.position = latLng;
+  scheduleGenerate();
+}
+
+// ---------------------------------------------------------------------------
+// UI
+// ---------------------------------------------------------------------------
+
+function applyScenario(scenarioKey) {
+  const scenario = SCENARIOS[scenarioKey];
+  state.activeScenario = scenarioKey;
+  elements.modeSelect.value = scenario.mode;
+  elements.directionSelect.value = scenario.direction;
+  elements.durationInput.value = String(scenario.maxMinutes);
+  elements.durationLabel.textContent = String(scenario.maxMinutes);
+  document.querySelectorAll('.scenario').forEach((button) => {
+    const active = button.dataset.scenario === scenarioKey;
+    button.classList.toggle('is-active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  scheduleGenerate();
+}
+
+async function attachPlaceSearch() {
+  try {
+    const { PlaceAutocompleteElement } = await importLibrary('places');
+    const autocomplete = new PlaceAutocompleteElement();
+    autocomplete.id = 'place-search';
+    elements.searchSlot.append(autocomplete);
+    autocomplete.addEventListener('gmp-select', async ({ placePrediction }) => {
+      const place = placePrediction.toPlace();
+      await place.fetchFields({ fields: ['location', 'displayName'] });
+      if (!place.location) return;
+      const latLng = { lat: place.location.lat(), lng: place.location.lng() };
+      state.map.panTo(latLng);
+      setOrigin(latLng, place.displayName || '');
+    });
+  } catch (error) {
+    // Search is additive; click/drag still work without the Places API.
+    console.warn('Place search unavailable:', error);
+    elements.searchSlot.textContent = 'Place search unavailable for this key — click the map instead.';
+  }
+}
+
+function bindUi() {
+  document.querySelectorAll('.scenario').forEach((button) => {
+    button.addEventListener('click', () => applyScenario(button.dataset.scenario));
+  });
+  elements.durationInput.addEventListener('input', () => {
+    elements.durationLabel.textContent = elements.durationInput.value;
+  });
+  elements.durationInput.addEventListener('change', scheduleGenerate);
+  elements.modeSelect.addEventListener('change', scheduleGenerate);
+  elements.directionSelect.addEventListener('change', scheduleGenerate);
+  elements.routingSelect.addEventListener('change', scheduleGenerate);
+  elements.smoothInput.addEventListener('change', scheduleGenerate);
+  renderStats();
 }
 
 async function initMap() {
@@ -221,63 +336,33 @@ async function initMap() {
     center: state.origin,
     zoom: 11,
     mapId: '556022f677234497',
+    colorScheme: 'DARK',
     clickableIcons: false,
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
   });
 
-  const pin = new PinElement({ background: '#111827', borderColor: '#ffffff', glyphText: 'ISO', glyphColor: '#ffffff' });
-  state.marker = new AdvancedMarkerElement({ map: state.map, position: state.origin, gmpDraggable: true, title: 'Isochrone origin' });
+  const pin = new PinElement({ background: '#38bdf8', borderColor: '#0c4a6e', glyphColor: '#0c4a6e' });
+  state.marker = new AdvancedMarkerElement({
+    map: state.map,
+    position: state.origin,
+    gmpDraggable: true,
+    title: 'Isochrone origin (drag me)',
+  });
   state.marker.append(pin);
   state.marker.addListener('dragend', ({ latLng }) => {
-    state.origin = { lat: latLng.lat(), lng: latLng.lng() };
-    syncOriginInputs();
+    setOrigin({ lat: latLng.lat(), lng: latLng.lng() });
   });
   state.map.addListener('click', ({ latLng }) => {
-    state.origin = { lat: latLng.lat(), lng: latLng.lng() };
-    state.marker.position = state.origin;
-    syncOriginInputs();
+    setOrigin({ lat: latLng.lat(), lng: latLng.lng() });
   });
-}
 
-function applyScenario(scenarioKey) {
-  const scenario = SCENARIOS[scenarioKey];
-  state.activeScenario = scenarioKey;
-  elements.modeSelect.value = scenario.mode;
-  elements.directionSelect.value = scenario.direction;
-  elements.durationInput.value = String(scenario.maxMinutes);
-  elements.durationLabel.textContent = String(scenario.maxMinutes);
-  document.querySelectorAll('.scenario').forEach((button) => {
-    const active = button.dataset.scenario === scenarioKey;
-    button.classList.toggle('is-active', active);
-    button.setAttribute('aria-pressed', String(active));
-  });
-  renderStats();
-}
-
-function bindUi() {
-  syncOriginInputs();
-  renderStats();
-  document.querySelectorAll('.scenario').forEach((button) => {
-    button.addEventListener('click', () => applyScenario(button.dataset.scenario));
-  });
-  elements.durationInput.addEventListener('input', () => {
-    elements.durationLabel.textContent = elements.durationInput.value;
-  });
-  document.querySelector('#set-origin').addEventListener('click', () => {
-    const lat = Number(elements.latInput.value);
-    const lng = Number(elements.lngInput.value);
-    if (!validateCoordinates(lat, lng)) {
-      setStatus('Enter latitude -90 to 90 and longitude -180 to 180.', 'error');
-      return;
-    }
-    state.origin = { lat, lng };
-    state.marker.position = state.origin;
-    state.map.panTo(state.origin);
-    setStatus('Origin updated. Generate rings when ready.', 'success');
-  });
-  elements.generateButton.addEventListener('click', generateIsochrones);
+  attachPlaceSearch();
+  elements.originLabel.textContent = 'San Francisco, CA';
+  // Draw the default scenario immediately so the first paint shows the
+  // product, not an empty map.
+  scheduleGenerate();
 }
 
 bindUi();

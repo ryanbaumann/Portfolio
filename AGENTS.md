@@ -2,18 +2,22 @@
 
 ## Project Overview
 
-This repository contains three geospatial demo apps, served together behind
-one zero-dependency Node gateway as a single Cloud Run container. See
-[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full picture.
+This repository contains Ryan Baumann's demo apps and portfolio, served
+together behind one zero-dependency Node gateway as a single Cloud Run
+container. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full
+picture.
 
+- `portfolio/`: zero-dependency static site generator over a flat-file
+  markdown CMS (`content/`). Staged for extraction into its own repo; it has
+  its own `.claude/skills/` for content, writing, design, and presenting.
 - `strava-explorer/`: Vite app for exploring Strava activities on Google Maps Platform 3D Maps.
-- `aqi-map/`: Browserify/Budo app for a Mapbox GL + PurpleAir hyperlocal AQI map.
+- `aqi-map/`: Vite app rendering Air Quality API heatmap tiles and point conditions on a 2D Google map.
 - `isochrones/`: Vite + Node app for reachability analysis using Google Maps Platform Isochrones.
-- `gateway/`: zero-npm-dependency Node server that serves the portfolio
-  landing page (`gateway/public/`), every app's static build (routed via the
-  root `apps.json` manifest), and same-origin `/api/*` proxies for every
-  secret-bearing call (Strava OAuth, Isochrones, PurpleAir). This is what
-  actually runs in production; the per-app dev servers above are for local
+- `gateway/`: zero-npm-dependency Node server that serves the landing page
+  (`gateway/public/`), every app's static build (routed via the root
+  `apps.json` manifest), and same-origin `/api/*` proxies for every
+  secret-bearing call (Strava OAuth, Isochrones). This is what actually
+  runs in production; the per-app dev servers above are for local
   development only.
 
 Prefer small, reviewable changes. Keep app-specific code, commands, and dependencies inside the app directory you are modifying. Only use npm for dependency management (do not use yarn or other package managers).
@@ -42,8 +46,15 @@ Run commands from the app directory unless noted.
 ### `aqi-map/`
 
 - Install: `npm install`.
-- Dev server: `npm start`.
+- Dev server: `npm run dev`.
 - Production build: `npm run build`.
+
+### `portfolio/`
+
+- No install needed (zero dependencies).
+- Build: `node build.mjs` (or `npm run build`); `BASE_PATH=/portfolio/` for the container mount.
+- Preview: `node serve.mjs` (after building).
+- Content, voice, design, and presentation standards live in `portfolio/.claude/skills/`.
 
 ### `isochrones/`
 
@@ -79,18 +90,15 @@ Run commands from the app directory unless noted.
 - If you encounter hard-coded credentials or tokens, prefer moving them to documented environment variables and note required API restrictions in the PR.
 - For Google Maps Platform browser keys, document required API restrictions, HTTP referrer restrictions, billing/quota expectations, and local development origins.
 - The gateway's server-side secrets are non-`VITE_` env vars read directly
-  by Node: `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
-  `PURPLEAIR_API_KEY`, `MAPBOX_PUBLIC_TOKEN`, `MAPBOX_STYLE_URL`. Every
-  `/api/*` proxy endpoint returns `503` with a JSON error (never a crash)
-  when its secret is unset, so the gateway always boots and smoke-tests
-  keyless. Only `MAPBOX_PUBLIC_TOKEN` is designed to reach the browser (via
-  `/api/config/aqi-map`) — it's a referrer-restricted public token, the same
-  category as the `VITE_` browser keys above, not a server secret.
+  by Node: `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`.
+  Every `/api/*` proxy endpoint returns `503` with a JSON error (never a
+  crash) when its secret is unset, so the gateway always boots and
+  smoke-tests keyless.
 
 ## Code Style
 
-- Use modern JavaScript modules in `strava-explorer/src/`; preserve the existing no-framework Vite architecture unless explicitly asked to migrate.
-- Keep `aqi-map/index.js` compatible with its current CommonJS/Browserify pipeline unless migrating the build system is the task.
+- Use modern JavaScript modules in `strava-explorer/src/`, `aqi-map/src/`, and `isochrones/src/`; preserve the existing no-framework Vite architecture unless explicitly asked to migrate.
+- Keep `portfolio/` dependency-free: its build is `node build.mjs` and its pages ship zero client-side JavaScript (see `portfolio/.claude/skills/design/SKILL.md`).
 - Use descriptive names for geospatial values: `lat`, `lng`, `altitude`, `bounds`, `coordinates`, `polyline`, `featureCollection`.
 - Avoid broad rewrites, hidden formatting churn, and unrelated dependency upgrades.
 - Do not add `try`/`catch` blocks around imports.
@@ -125,8 +133,7 @@ just adding a folder plus a manifest entry. No gateway code changes needed.
    config inside `my-demo/` only.
 2. If the app needs a secret-bearing API call, do not call the third-party
    API directly from the browser — add a proxy module under `gateway/lib/`
-   (follow the pattern in `gateway/lib/isochrones.js` or
-   `gateway/lib/purpleair.js`: validate input, read the secret from a
+   (follow the pattern in `gateway/lib/isochrones.js`: validate input, read the secret from a
    non-`VITE_` env var, return `503` with a JSON error if it's unset, add a
    10s upstream timeout) and wire a route for it in `gateway/server.js`.
 3. Add an entry to the root `apps.json`:

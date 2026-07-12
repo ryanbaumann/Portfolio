@@ -2,16 +2,21 @@ aqi-map/node_modules
 strava-explorer/node_modules
 node_modules/
 
+.env
 strava-explorer/.env.development
 strava-explorer/.env.production
 strava-explorer/.env
 isochrones/.env
+aqi-map/.env
 
 # Ignore build artifacts
 strava-explorer/build
 strava-explorer/dist
 isochrones/dist/
 isochrones/node_modules
+aqi-map/dist/
+portfolio/dist/
+portfolio/node_modules
 gateway/node_modules
 
 # scripts/build-local.mjs staging output (mirrors the Dockerfile's runtime

@@ -2,7 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased] - 2026-07-11
+## [Unreleased] - 2026-07-12
+
+### Added — Portfolio app (staged for its own `portfolio` repo)
+- **`portfolio/`**: Ryan's full portfolio — work case studies, writing
+  (blog placeholder designed and routed), talks, and an About subpage —
+  built as a zero-dependency static site generator (`build.mjs`) over a
+  flat-file markdown CMS (`content/` + front matter). Zero client-side
+  JavaScript, single-request pages, light/dark themes. Self-contained with
+  its own README, `.gitignore`, and `.claude/skills/` (content, writing,
+  design, presenting) so it can be lifted into a standalone `portfolio`
+  GitHub repo unchanged. Mounted at `/portfolio/` via `apps.json` and a new
+  Dockerfile stage; the landing page hero now links to it.
+
+### Changed — AQI map rebuilt on Google Maps Platform
+- **`aqi-map/`** rewritten from a Browserify/Mapbox GL/PurpleAir contour
+  app to a Vite app on a 2D Google map: Air Quality API heatmap tiles
+  (Universal AQI / US AQI / PM2.5, with legend + opacity control),
+  click-to-inspect `currentConditions:lookup` (AQI, category, dominant
+  pollutant, concentrations), and Places `PlaceAutocompleteElement` search.
+  Runs entirely on the referrer-restricted `VITE_GMP_API_KEY` browser key —
+  no server proxy needed. Removed the gateway's `/api/purpleair/sensors`
+  proxy and `/api/config/aqi-map` endpoint plus `PURPLEAIR_API_KEY`,
+  `MAPBOX_PUBLIC_TOKEN`, and `MAPBOX_STYLE_URL` env vars everywhere
+  (gateway, setup script, smoke tests, CI/deploy docs).
+
+### Changed — Isochrones UX overhaul
+- **`isochrones/`**: live-by-default rings (auto-generate on load and on
+  any origin/scenario/setting change, debounced, generation-tokened),
+  parallel band requests instead of serial, place search for the origin,
+  compact scenario chips with a collapsible "Fine-tune" panel, per-band
+  stats with cumulative area + incremental delta, hover-to-highlight
+  between the list and the map, and dark map styling.
 
 ### Added — Single-container portfolio gateway
 - **`gateway/`**: a zero-npm-dependency Node >=20 ES-module server

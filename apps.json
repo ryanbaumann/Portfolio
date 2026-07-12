@@ -1,5 +1,14 @@
 [
   {
+    "name": "portfolio",
+    "title": "Portfolio",
+    "description": "Ryan Baumann — work, writing, and talks. Developer experience as a growth engine.",
+    "path": "/portfolio/",
+    "dev_build_dir": "portfolio/dist",
+    "tags": ["portfolio", "writing", "talks"],
+    "preview": "/previews/portfolio.jpg"
+  },
+  {
     "name": "strava-explorer",
     "title": "Strava 3D Explorer",
     "description": "Fly through Strava routes and photos in Google Maps Platform Photorealistic 3D.",
@@ -10,11 +19,11 @@
   },
   {
     "name": "aqi-map",
-    "title": "Hyperlocal AQI Map",
-    "description": "Realtime PurpleAir sensor contours interpolated onto a Mapbox GL globe.",
+    "title": "Air Quality Map",
+    "description": "Live air-quality heatmap and click-to-inspect conditions from the Air Quality API on a 2D Google map.",
     "path": "/aqi-map/",
-    "dev_build_dir": "aqi-map/build",
-    "tags": ["air-quality", "mapbox", "purpleair"],
+    "dev_build_dir": "aqi-map/dist",
+    "tags": ["air-quality", "google-maps-platform"],
     "preview": "/previews/aqi-map.jpg"
   },
   {
