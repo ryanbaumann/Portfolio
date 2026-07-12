@@ -190,7 +190,9 @@ const server = createServer(async (request, response) => {
     // to the same page at the root path.
     if (pathname === '/portfolio' || pathname.startsWith('/portfolio/')) {
       applySecurityHeaders(response);
-      const target = pathname.slice('/portfolio'.length) || '/';
+      // Collapse leading slashes so /portfolio//host can't become a
+      // protocol-relative ("//host") open redirect.
+      const target = pathname.slice('/portfolio'.length).replace(/^\/+/, '/') || '/';
       response.writeHead(308, { Location: target + requestUrl.search });
       response.end();
       return;
