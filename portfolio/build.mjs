@@ -29,7 +29,7 @@ const BASE = (process.env.BASE_PATH || '/').endsWith('/')
 // entries with a body get their own page at /<name>/<slug>/.
 const COLLECTIONS = [
   { name: 'work', label: 'Work', listPage: true, detailPages: true },
-  { name: 'writing', label: 'Writing', listPage: true, detailPages: true },
+  { name: 'writing', label: 'Field Notes', listPage: true, detailPages: true },
   { name: 'talks', label: 'Talks', listPage: true, detailPages: true },
 ];
 
@@ -951,9 +951,25 @@ function buildCollectionIndex(collection, entries) {
   <p>This section is designed, built, and waiting for its first entry. Drop a markdown file into <code>content/${collection.name}/</code> and rebuild.</p>
 </div>`;
 
-  const body = collection.name === 'work'
-    ? `<div class="grid">${entries.map(workCard).join('\n')}</div>`
-    : `<ul class="rows">${entries.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>`;
+  let body;
+  if (collection.name === 'work') {
+    body = `<div class="grid">${entries.map(workCard).join('\n')}</div>`;
+  } else if (collection.name === 'writing') {
+    const owned = entries.filter((entry) => !entry.meta.external);
+    const elsewhere = entries.filter((entry) => entry.meta.external);
+    body = `<div class="collection-group">
+  <h2>Essays</h2>
+  <p>Canonical ideas published here first, with evidence and a practical next move.</p>
+  <ul class="rows">${owned.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>
+</div>
+${elsewhere.length ? `<div class="collection-group">
+  <h2>Elsewhere</h2>
+  <p>Launch notes and experiments published with the teams and communities behind the work.</p>
+  <ul class="rows">${elsewhere.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>
+</div>` : ''}`;
+  } else {
+    body = `<ul class="rows">${entries.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>`;
+  }
 
   const intro = site.sectionIntros?.[collection.name]
     ? `<p class="lede">${escapeHtml(site.sectionIntros[collection.name])}</p>`
