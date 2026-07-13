@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-13: DevX and FDE content strategy
+
+- Repositioned the portfolio around Developer Experience, Forward Deployed Engineering, and AI-native platform growth with approved 20+, 300%, approximately 200%, and 1M+ proof points.
+- Published three owned cornerstone essays covering DevX as a growth discipline, agent sessions as a platform interface, and evals as an operating system.
+- Rewrote About, Resume, Contact, and flagship work claims with team attribution, qualified language, and no current consulting or advisory availability.
+- Added a durable evidence ledger with claim status, approved wording, public sources, retrieval dates, and private-artifact exclusions.
+
 ## 2026-07-13: Demo source organization
 
 - Moved the Strava, Air Quality, and Isochrones source packages under `demos/` while preserving their public routes and container staging paths.
