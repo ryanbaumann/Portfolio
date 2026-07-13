@@ -167,17 +167,6 @@ main > section { margin-bottom: clamp(2rem, 5vw, 3.5rem); }
   font-size: 0.9rem;
 }
 .footer-links { display: flex; gap: 0.75rem 1.25rem; flex-wrap: wrap; }
-.analytics-settings {
-  border: 0;
-  padding: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-decoration: underline;
-  text-decoration-color: var(--faint);
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
 @media (max-width: 480px) {
   .site-header {
     align-items: start;
@@ -769,35 +758,6 @@ html[data-theme="dark"] {
 .compact-rows .row { padding-block: 1rem; }
 .field-note { margin: -0.25rem 0 0; color: var(--muted); font-size: 0.88rem; }
 .contact-form select { appearance: auto; }
-.consent-banner {
-  position: fixed;
-  z-index: 50;
-  right: 1rem;
-  bottom: 1rem;
-  width: min(32rem, calc(100% - 2rem));
-  padding: 1rem;
-  border: 1px solid var(--line);
-  border-radius: 0.8rem;
-  background: var(--surface);
-  box-shadow: 0 1rem 3rem rgb(0 0 0 / 18%);
-}
-.consent-banner p { margin-bottom: 0.75rem; }
-.consent-banner p:last-child { margin-bottom: 0; }
-.consent-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
-.analytics-dialog {
-  width: min(34rem, calc(100% - 2rem));
-  padding: 1.25rem;
-  border: 1px solid var(--line);
-  border-radius: 0.8rem;
-  background: var(--surface);
-  color: var(--ink);
-}
-.analytics-dialog::backdrop { background: rgb(3 7 18 / 55%); }
-.analytics-settings {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-}
 .writer-banner {
   padding: 0.5rem 1rem;
   background: var(--ink);
