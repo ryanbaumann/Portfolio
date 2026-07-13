@@ -863,3 +863,14 @@ html[data-theme="dark"] {
   .header-cta { font-size: 0; width: 44px; padding: 0; }
   .header-cta::after { content: "Build"; font-size: 0.72rem; }
 }
+
+@media (min-width: 640px) and (max-width: 1024px) {
+  .demo-body p,
+  .card p,
+  .row-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
