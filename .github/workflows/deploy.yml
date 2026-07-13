@@ -75,8 +75,8 @@ jobs:
             echo "Ensure the following runtime secrets are also configured directly on the Cloud Run service:"
             echo "- STRAVA_CLIENT_SECRET"
             echo "- GMP_SERVER_API_KEY"
-            echo "- RESEND_API_KEY"
-            echo "- CONTACT_TO_EMAIL"
+            echo "- RESEND_API_KEY (optional)"
+            echo "- CONTACT_TO_EMAIL (optional)"
             exit 1
           fi
 
@@ -146,8 +146,6 @@ jobs:
             'STRAVA_CLIENT_ID',
             'STRAVA_CLIENT_SECRET',
             'GMP_SERVER_API_KEY',
-            'RESEND_API_KEY',
-            'CONTACT_TO_EMAIL',
           ];
           const missing = required.filter((name) => !configured.has(name));
           if (missing.length) {
