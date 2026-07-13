@@ -46,7 +46,7 @@ function fixture() {
   return { root, content, staticDir, dist, manifest };
 }
 
-function build(paths) {
+function build(paths, env = {}) {
   return spawnSync(process.execPath, [BUILD_SCRIPT], {
     encoding: 'utf8',
     env: {
@@ -55,9 +55,68 @@ function build(paths) {
       PORTFOLIO_STATIC_DIR: paths.staticDir,
       PORTFOLIO_DIST_DIR: paths.dist,
       PORTFOLIO_APPS_MANIFEST: paths.manifest,
+      ...env,
     },
   });
 }
+
+test('build keeps drafts and future writing out of public output', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'draft.md'), `---\ntitle: Draft essay\nsummary: Private draft\ndate: 2026-07-13\ndraft: true\nnoindex: true\n---\nDraft.`);
+  write(join(paths.content, 'writing', 'scheduled.md'), `---\ntitle: Scheduled essay\nsummary: Future essay\ndate: 2026-07-14\npublishAt: 2026-07-14T12:00:00Z\n---\nScheduled.`);
+  const result = build(paths, { PORTFOLIO_BUILD_TIME: '2026-07-13T12:00:00Z' });
+  assert.equal(result.status, 0, result.stderr);
+  const writing = readFileSync(join(paths.dist, 'writing', 'index.html'), 'utf8');
+  const feed = readFileSync(join(paths.dist, 'feed.xml'), 'utf8');
+  const sitemap = readFileSync(join(paths.dist, 'sitemap.xml'), 'utf8');
+  assert.doesNotMatch(writing, /Draft essay|Scheduled essay/);
+  assert.doesNotMatch(feed, /Draft essay|Scheduled essay/);
+  assert.doesNotMatch(sitemap, /writing\/(draft|scheduled)/);
+  assert.throws(() => readFileSync(join(paths.dist, 'writing', 'draft', 'index.html')), /ENOENT/);
+  assert.throws(() => readFileSync(join(paths.dist, 'writing', 'scheduled', 'index.html')), /ENOENT/);
+});
+
+test('writer build previews drafts and future writing with a noindex dashboard', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'draft.md'), `---\ntitle: Draft essay\nsummary: Private draft\ndate: 2026-07-13\ndraft: true\nnoindex: true\n---\n## Draft section\nDraft.`);
+  write(join(paths.content, 'writing', 'scheduled.md'), `---\ntitle: Scheduled essay\nsummary: Future essay\ndate: 2026-07-14\npublishAt: 2026-07-14T12:00:00Z\n---\nScheduled.`);
+  const result = build(paths, {
+    BASE_PATH: '/writer/',
+    PORTFOLIO_WRITER_MODE: 'true',
+    PORTFOLIO_BUILD_TIME: '2026-07-13T12:00:00Z',
+  });
+  assert.equal(result.status, 0, result.stderr);
+  const dashboard = readFileSync(join(paths.dist, 'index.html'), 'utf8');
+  const draft = readFileSync(join(paths.dist, 'writing', 'draft', 'index.html'), 'utf8');
+  assert.match(dashboard, /Writer dashboard/);
+  assert.match(dashboard, /Draft essay/);
+  assert.match(dashboard, /Scheduled essay/);
+  assert.match(dashboard, /name="publishAt"/);
+  assert.match(dashboard, /name="sourceSlug" value="draft"/);
+  assert.ok(dashboard.indexOf('value="draft"') < dashboard.indexOf('value="publish-now"'));
+  assert.match(dashboard, /window\.confirm\('Publish this essay now\?/);
+  assert.match(draft, /<meta name="robots" content="noindex, nofollow"/);
+});
+
+test('build publishes scheduled writing once its timestamp is due', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'scheduled.md'), `---\ntitle: Scheduled essay\nsummary: Due essay\ndate: 2026-07-14\npublishAt: 2026-07-14T12:00:00Z\n---\nScheduled.`);
+  const result = build(paths, { PORTFOLIO_BUILD_TIME: '2026-07-14T12:00:01Z' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(readFileSync(join(paths.dist, 'writing', 'index.html'), 'utf8'), /Scheduled essay/);
+  assert.match(readFileSync(join(paths.dist, 'feed.xml'), 'utf8'), /Scheduled essay/);
+});
+
+test('markdown headings get stable deep-link ids and explicit ids are preserved', () => {
+  const paths = fixture();
+  write(join(paths.content, 'writing', 'anchors.md'), `---\ntitle: Anchors\nsummary: Heading links\ndate: 2026-07-13\n---\n## Hello, World!\n\n## Custom heading {#chosen-id}\n\n| Option | Result |\n| --- | --- |\n| A | Works |`);
+  const result = build(paths);
+  assert.equal(result.status, 0, result.stderr);
+  const html = readFileSync(join(paths.dist, 'writing', 'anchors', 'index.html'), 'utf8');
+  assert.match(html, /<h2 id="hello-world"><a class="heading-anchor" href="#hello-world"/);
+  assert.match(html, /<h2 id="chosen-id"><a class="heading-anchor" href="#chosen-id"/);
+  assert.match(html, /<table><thead><tr><th>Option<\/th><th>Result<\/th>/);
+});
 
 test('build lists public demos without disclosing private demos', () => {
   const paths = fixture();

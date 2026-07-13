@@ -1,19 +1,19 @@
 {
   "name": "Ryan Baumann",
-  "role": "Developer Experience and Forward Deployed Engineering leader",
-  "tagline": "DEVX \u00b7 FORWARD DEPLOYED ENGINEERING \u00b7 AI-NATIVE PLATFORMS",
+  "role": "Developer Experience Engineering and product lead",
+  "tagline": "BUILDER PLATFORMS \u00b7 DEVELOPER TOOLS \u00b7 AI CODING AGENTS",
   "location": "San Francisco, CA",
-  "heroHeadline": "I build the teams and systems that make developer platforms grow.",
-  "intro": "I lead Developer Experience and forward-deployed engineering from field signal to shipped product: context, tools, evals, distribution, and the teams behind them.",
-  "headline": "Developer experience is a growth system. AI makes it a product surface.",
-  "description": "Ryan Baumann leads Developer Experience and Forward Deployed Engineering for AI-native platforms, turning field signal into tools, evals, distribution, and growth.",
-  "categoryDefinition": "AI Developer Experience is the product, context, evals, and distribution system that lets developers and their agents succeed with a platform.",
-  "aboutTeaser": "I lead a 20+ person Developer Experience Engineering organization at Google Maps Platform. We turn repeated field friction into products, context, evals, and distribution that help developers and their agents succeed.",
+  "heroHeadline": "I build platforms that get developers and agents to working code.",
+  "intro": "I lead Developer Experience Engineering and product work across tools, evals, open source, and the workflows where builders make decisions.",
+  "headline": "The best developer experience ends in working code.",
+  "description": "Ryan Baumann leads Developer Experience Engineering and product work for builder platforms, with a focus on developer tools, evals, open source, and AI coding agents.",
+  "categoryDefinition": "Developer experience is the product, tools, documentation, and feedback loop that help builders reach a working result.",
+  "aboutTeaser": "I lead Developer Experience Engineering and product work, and stay close to the code by reviewing traces, writing evals, and shipping reference apps.",
   "sectionIntros": {
-    "work": "The operating system behind AI Developer Experience: find the signal, ship the tool, evaluate the experience, distribute it into the workflow, and measure growth.",
-    "writing": "Field notes on Developer Experience, forward-deployed engineering, evals, and building platforms for developers and their agents.",
-    "talks": "Demo-first talks about what shipped, how the team built it, and why it matters for developer platforms.",
-    "demos": "Working maps that keep me close to the developer experience: real APIs, real constraints, and the architecture choices behind them."
+    "work": "Shipped tools, open-source libraries, and product experiments, with the problem and result behind each one.",
+    "writing": "Notes on builder platforms, AI coding agents, evals, open source, and the developer workflows behind them.",
+    "talks": "Demo-first talks about developer tools, AI-assisted development, and the checks that make generated code more reliable.",
+    "demos": "Working demos built with real APIs, real constraints, and public source."
   },
   "links": {
     "github": "https://github.com/ryanbaumann",
@@ -25,13 +25,13 @@
   "canonicalHost": "www.ryanbaumann-portfolio.com",
   "analyticsMeasurementId": "",
   "brand": "Ryan Baumann Portfolio",
-  "positioning": "Developer Experience, Forward Deployed Engineering, and AI-native platforms.",
+  "positioning": "Developer Experience Engineering, product, and AI coding agents.",
   "defaultShareImage": "/social/home.png",
   "socialHandle": "@ryanbaumann",
   "proofPoints": [
     {
-      "label": "20+",
-      "text": "person organization"
+      "label": "40+",
+      "text": "solution architectures"
     },
     {
       "label": "300%",
@@ -42,11 +42,11 @@
       "text": "API-engagement growth"
     },
     {
-      "label": "1M+",
+      "label": "1.5M",
       "text": "weekly React-library downloads"
     }
   ],
-  "answerEngineSummary": "Ryan Baumann leads Developer Experience and Forward Deployed Engineering for Google Maps Platform. He leads a 20+ person organization that turns field signal into products, context, evals, distribution, and measurable platform growth.",
+  "answerEngineSummary": "Ryan Baumann is a Developer Experience Engineering and product lead who builds tools, evals, open-source libraries, and workflows for developers and AI coding agents. His current work at Google Maps Platform includes Code Assist, agent skills, and an agentic eval suite.",
   "profileImage": "/img/ryan-baumann-profile.jpg",
   "profileImageAlt": "Ryan Baumann profile image"
 }

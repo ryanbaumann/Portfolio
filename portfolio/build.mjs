@@ -22,6 +22,12 @@ const DIST_DIR = `${OUTPUT_DIR}.building-${process.pid}`;
 const BASE = (process.env.BASE_PATH || '/').endsWith('/')
   ? (process.env.BASE_PATH || '/')
   : `${process.env.BASE_PATH}/`;
+const WRITER_MODE = process.env.PORTFOLIO_WRITER_MODE === 'true';
+const BUILD_TIME = new Date(process.env.PORTFOLIO_BUILD_TIME || Date.now());
+
+if (Number.isNaN(BUILD_TIME.valueOf())) {
+  throw new Error('PORTFOLIO_BUILD_TIME must be a valid ISO-8601 timestamp.');
+}
 
 // Each collection is a folder of markdown files. Files starting with "_"
 // (templates, drafts) are skipped. `listPage` controls whether the
@@ -45,6 +51,28 @@ function isValidIsoDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00Z`);
   return !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function isValidIsoTimestamp(value) {
+  if (typeof value !== 'string') return false;
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?Z$/);
+  if (!match) return false;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.valueOf())) return false;
+  const [, year, month, day, hour, minute, second = '0', fraction = '0'] = match;
+  return parsed.getUTCFullYear() === Number(year)
+    && parsed.getUTCMonth() + 1 === Number(month)
+    && parsed.getUTCDate() === Number(day)
+    && parsed.getUTCHours() === Number(hour)
+    && parsed.getUTCMinutes() === Number(minute)
+    && parsed.getUTCSeconds() === Number(second)
+    && parsed.getUTCMilliseconds() === Number(fraction.padEnd(3, '0'));
+}
+
+function isPublished(entry) {
+  if (entry.meta.draft === true) return false;
+  if (!entry.meta.publishAt) return true;
+  return new Date(entry.meta.publishAt).valueOf() <= BUILD_TIME.valueOf();
 }
 
 function isValidUrl(value) {
@@ -108,6 +136,7 @@ function validateEntry(collection, entry, seenSlugs) {
   if (meta.draft !== undefined && typeof meta.draft !== 'boolean') failValidation(`${id}: draft must be a boolean`);
   if (meta.noindex !== undefined && typeof meta.noindex !== 'boolean') failValidation(`${id}: noindex must be a boolean`);
   if (meta.draft === true && meta.noindex !== true) failValidation(`${id}: drafts must set noindex: true`);
+  if (meta.publishAt && !isValidIsoTimestamp(meta.publishAt)) failValidation(`${id}: publishAt must be a UTC ISO-8601 timestamp ending in Z`);
   if (meta.draft !== true && meta.noindex === true && meta.canonical) failValidation(`${id}: published noindex entries should not also set canonical`);
   if (collection.name === 'writing' && !isValidIsoDate(meta.date)) failValidation(`${id}: writing date must be YYYY-MM-DD`);
   for (const field of ['external', 'canonical']) {
@@ -265,11 +294,26 @@ function markdownToHtml(markdown) {
   const lines = markdown.split('\n');
   const out = [];
   let index = 0;
+  const headingIds = new Set();
+
+  function headingId(rawHeading) {
+    const explicit = rawHeading.match(/\s+\{#([a-z][a-z0-9-]*)\}\s*$/i);
+    const label = explicit ? rawHeading.slice(0, explicit.index).trim() : rawHeading.trim();
+    const base = explicit?.[1].toLowerCase()
+      || label.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/[\s-]+/g, '-')
+      || 'section';
+    let id = base;
+    let suffix = 2;
+    while (headingIds.has(id)) id = `${base}-${suffix++}`;
+    headingIds.add(id);
+    return { id, label };
+  }
 
   while (index < lines.length) {
     const line = lines[index];
 
     if (line.startsWith('```')) {
+      const language = line.slice(3).trim().replace(/[^a-z0-9_-]/gi, '');
       const code = [];
       index += 1;
       while (index < lines.length && !lines[index].startsWith('```')) {
@@ -277,14 +321,15 @@ function markdownToHtml(markdown) {
         index += 1;
       }
       index += 1;
-      out.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
+      out.push(`<pre><code${language ? ` class="language-${language}"` : ''}>${escapeHtml(code.join('\n'))}</code></pre>`);
       continue;
     }
 
     const heading = line.match(/^(#{1,4})\s+(.*)$/);
     if (heading) {
-      const level = Math.min(heading[1].length + 1, 5); // page h1 is the title
-      out.push(`<h${level}>${inlineMd(heading[2])}</h${level}>`);
+      const level = Math.min(Math.max(heading[1].length, 2), 5); // page h1 is the title
+      const { id, label } = headingId(heading[2]);
+      out.push(`<h${level} id="${id}"><a class="heading-anchor" href="#${id}" aria-label="Link to this section">${inlineMd(label)}</a></h${level}>`);
       index += 1;
       continue;
     }
@@ -292,6 +337,19 @@ function markdownToHtml(markdown) {
     if (/^(-{3,}|\*{3,})$/.test(line.trim())) {
       out.push('<hr />');
       index += 1;
+      continue;
+    }
+
+    if (line.includes('|') && /^\s*\|?\s*:?-{3,}/.test(lines[index + 1] || '')) {
+      const cells = (value) => value.trim().replace(/^\||\|$/g, '').split('|').map((cell) => cell.trim());
+      const headers = cells(line);
+      index += 2;
+      const rows = [];
+      while (index < lines.length && lines[index].includes('|') && lines[index].trim()) {
+        rows.push(cells(lines[index]));
+        index += 1;
+      }
+      out.push(`<div class="table-scroll"><table><thead><tr>${headers.map((cell) => `<th>${inlineMd(cell)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((_, cellIndex) => `<td>${inlineMd(row[cellIndex] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
       continue;
     }
 
@@ -385,6 +443,8 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
     { href: `${BASE}writing/`, label: 'Field Notes', key: 'writing' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Lab', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
+    { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
+    { href: `${BASE}contact/`, label: 'Contact', key: 'contact' },
   ];
   const nav = navItems
     .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
@@ -430,7 +490,9 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
       ].filter(Boolean).join('\n')
     : '';
 
-  const robotsTag = robots ? `<meta name="robots" content="${escapeHtml(robots)}" />` : '';
+  const robotsTag = WRITER_MODE
+    ? '<meta name="robots" content="noindex, nofollow" />'
+    : robots ? `<meta name="robots" content="${escapeHtml(robots)}" />` : '';
 
   const jsonLdTag = jsonLd ? `<script type="application/ld+json">${JSON.stringify(jsonLd)}</script>` : '';
   const contactDeliveryTag = contactDelivery ? `<meta name="contact-delivery" content="${escapeHtml(contactDelivery)}" />` : '';
@@ -458,12 +520,12 @@ ${robotsTag ? robotsTag + '\n' : ''}${contactDeliveryTag ? contactDeliveryTag + 
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
+${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview. Nothing here is indexed.</div>' : ''}
 <header class="site-header">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
   <nav aria-label="Site">${nav}</nav>
   <div class="header-actions">
-    <button class="theme-toggle" type="button">System</button>
-    <a class="header-cta" href="${BASE}contact/?intent=team">Build with Ryan</a>
+    <button class="theme-toggle" type="button" aria-label="Color theme: system. Activate to use light."><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg></span></button>
   </div>
 </header>
 <main id="main">
@@ -484,13 +546,14 @@ ${content}
   </p>
 </footer>
 ${analyticsMarkup()}
-<script>(()=>{const b=document.querySelector('.theme-toggle');if(!b)return;const states=['system','light','dark'];const sync=()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];b.textContent=current[0].toUpperCase()+current.slice(1);b.setAttribute('aria-label','Color theme: '+current+'. Activate to use '+next+'.')};b.addEventListener('click',()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];if(next==='system'){delete document.documentElement.dataset.theme;localStorage.removeItem('theme')}else{document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)}sync()});sync()})();</script>
+<script>(()=>{const b=document.querySelector('.theme-toggle');if(!b)return;const states=['system','light','dark'];const icons={system:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>',light:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>',dark:'<svg viewBox="0 0 24 24"><path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5a8.5 8.5 0 1 0 10.6 10.6Z"></path></svg>'};const sync=()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];b.querySelector('span').innerHTML=icons[current];b.setAttribute('aria-label','Color theme: '+current+'. Activate to use '+next+'.')};b.addEventListener('click',()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];if(next==='system'){delete document.documentElement.dataset.theme;localStorage.removeItem('theme')}else{document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)}sync()});sync()})();</script>
 </body>
 </html>
 `;
 }
 
 function analyticsMarkup() {
+  if (WRITER_MODE) return '';
   const measurementId = String(process.env.ANALYTICS_MEASUREMENT_ID || site.analyticsMeasurementId || '');
   const canonicalHost = String(site.canonicalHost || '');
   return `<div class="consent-banner" hidden role="region" aria-label="Analytics choice">
@@ -682,12 +745,15 @@ function jsonLdPerson() {
     url: absoluteUrl('/'),
     description: site.answerEngineSummary || site.description,
     knowsAbout: [
-      'Google Maps Platform',
+      'developer platforms',
       'developer experience',
+      'developer experience engineering',
+      'developer product leadership',
       'agent-ready documentation',
       'model context protocol',
       'agentic evals',
       'AI-native developer tools',
+      'Google Maps Platform',
       'geospatial applications',
     ],
     sameAs: [
@@ -823,14 +889,58 @@ function detailPage(collection, entry, activeKey) {
   }));
 }
 
+function writerDashboard(entries) {
+  const unpublished = entries.filter((entry) => !isPublished(entry));
+  const rows = unpublished.map((entry) => {
+    const status = entry.meta.draft === true ? 'Draft' : `Scheduled ${entry.meta.publishAt}`;
+    return `<article class="writer-entry">
+  <div>
+    <p class="eyebrow">${escapeHtml(status)}</p>
+    <h2><a href="${BASE}writing/${entry.slug}/">${escapeHtml(entry.meta.title)}</a></h2>
+    <p>${escapeHtml(entry.meta.summary)}</p>
+  </div>
+  <form class="writer-form" method="post" action="/api/writer/publish" data-writer-form>
+    <input type="hidden" name="sourceSlug" value="${escapeHtml(entry.sourceSlug)}" />
+    <input type="hidden" name="publishAt" value="${escapeHtml(entry.meta.publishAt || '')}" />
+    <label>Publish time in your timezone
+      <input type="datetime-local" name="publishAtLocal" data-publish-at="${escapeHtml(entry.meta.publishAt || '')}" />
+    </label>
+    <div class="writer-actions">
+      <button class="button" type="submit" name="action" value="draft">Keep draft</button>
+      <button class="button" type="submit" name="action" value="schedule">Schedule</button>
+      <button class="button" type="submit" name="action" value="publish-now">Publish now</button>
+    </div>
+  </form>
+</article>`;
+  }).join('\n');
+
+  const content = `<section class="writer-dashboard">
+  <p class="eyebrow">Private publishing</p>
+  <h1>Writer dashboard</h1>
+  <p class="lede">Preview unfinished essays, publish immediately, or choose a publish time. Publishing creates a focused commit on <code>main</code>; the scheduled deploy makes due essays public within an hour.</p>
+  <p class="writer-status" hidden role="status"></p>
+  ${rows || '<p class="empty-state">No drafts or scheduled essays.</p>'}
+</section>
+<script>(()=>{const updated=new URLSearchParams(location.search).get('updated');const status=document.querySelector('.writer-status');if(updated&&status){status.textContent='Saved '+updated+'. GitHub is starting the next deploy.';status.hidden=false}const localValue=(iso)=>{if(!iso)return'';const d=new Date(iso);const part=(value)=>String(value).padStart(2,'0');return d.getFullYear()+'-'+part(d.getMonth()+1)+'-'+part(d.getDate())+'T'+part(d.getHours())+':'+part(d.getMinutes())};document.querySelectorAll('[data-writer-form]').forEach((form)=>{const field=form.elements.publishAtLocal;field.value=localValue(field.dataset.publishAt);form.addEventListener('submit',(event)=>{const action=event.submitter?.value;if(action==='publish-now'&&!window.confirm('Publish this essay now? This commits directly to the publishing branch.')){event.preventDefault();return}if(action!=='schedule')return;const local=field.value;if(!local){event.preventDefault();field.focus();return}const scheduled=new Date(local);if(Number.isNaN(scheduled.valueOf())||scheduled.valueOf()<=Date.now()){event.preventDefault();field.setCustomValidity('Choose a future publish time.');field.reportValidity();return}field.setCustomValidity('');form.elements.publishAt.value=scheduled.toISOString()})})})();</script>`;
+
+  writePage('index.html', layout({
+    title: `Writer dashboard — ${site.name}`,
+    description: 'Private draft and scheduled essay administration.',
+    content,
+    active: 'writing',
+    canonical: absoluteUrl('/writer/'),
+    robots: 'noindex, nofollow',
+  }));
+}
+
 function buildHome(collections) {
   const bySlug = (collection, slug) => collections[collection].find((entry) => entry.slug === slug);
   const operatingSteps = [
-    ['Field signal', 'Find repeated friction', 'voice-of-developer'],
-    ['Ship the tool', 'Turn the pattern into product', 'code-assist'],
-    ['Evaluate', 'Compare against a baseline', 'agentic-evals'],
-    ['Distribute', 'Meet builders in their workflow', 'agent-skills'],
-    ['Grow', 'Measure adoption and reach', 'agentic-growth'],
+    ['Find the failure', 'Start with a repeated developer problem', 'voice-of-developer'],
+    ['Build the fix', 'Turn the pattern into a useful tool', 'code-assist'],
+    ['Test the task', 'Compare the result against a baseline', 'agentic-evals'],
+    ['Ship the workflow', 'Put the tool where developers work', 'agent-skills'],
+    ['Measure use', 'Check whether adoption actually moved', 'agentic-growth'],
   ].map(([label, text, slug]) => ({ label, text, entry: bySlug('work', slug) })).filter((step) => step.entry);
   const writingEntries = collections.writing.slice(0, 3);
   const talkEntries = collections.talks.slice(0, 3);
@@ -858,32 +968,22 @@ function buildHome(collections) {
     : '';
   const content = `
 <section class="hero">
+  ${site.profileImage ? `<img class="profile-image" src="${rebase(site.profileImage)}" alt="${escapeHtml(site.profileImageAlt || site.name)}" width="460" height="460" />` : ''}
   <p class="eyebrow">${escapeHtml(site.tagline)}</p>
   <h1>${escapeHtml(site.heroHeadline || site.name)}</h1>
   <p class="lede">${escapeHtml(site.intro)}</p>
-  <p class="hero-actions"><a class="button button-primary" href="${BASE}contact/?intent=team">Build with me</a><a class="button" href="#operating-system">See the operating system</a></p>
+  <p class="hero-actions"><a class="button button-primary" href="${BASE}work/">See the work</a></p>
 </section>
 ${proofPoints}
 
 <section id="operating-system" class="operating-system">
-  ${sectionHeader('The operating system', site.headline, `${BASE}work/`, 'See the work')}
+  ${sectionHeader('How I work', site.headline, `${BASE}work/`, 'See the work')}
   <p class="section-note">${escapeHtml(site.categoryDefinition || '')}</p>
   <ol class="operating-steps">
     ${operatingSteps.map((step) => `<li><a href="${entryUrl('work', step.entry)}"><span>${escapeHtml(step.label)}</span><strong>${escapeHtml(step.text)}</strong><small>${escapeHtml(step.entry.meta.title)}</small></a></li>`).join('\n')}
   </ol>
 </section>
 
-<section class="build-section">
-  <div>
-    <p class="eyebrow">Build with Ryan</p>
-    <h2>Do the work that defines the next developer platform.</h2>
-  </div>
-  <div>
-    <p>I recruit principal builders who want to move from field signal to product, write the eval, ship the artifact, and measure whether developers succeed.</p>
-    <p>You will own real platform problems, work across product and engineering, and leave behind systems that scale beyond one customer or launch.</p>
-    <p class="hero-actions"><a class="button button-primary" href="${BASE}contact/?intent=team">Build with Ryan</a><a class="text-link" href="${BASE}contact/?intent=executive">Discuss an executive opportunity</a></p>
-  </div>
-</section>
 ${demosSection}
 <section>
   ${sectionHeader('Field Notes', 'Ideas you can use', `${BASE}writing/`, 'All field notes')}
@@ -906,9 +1006,8 @@ ${demosSection}
 
 <section class="personal-close">
   <p class="eyebrow">Still in the work</p>
-  <h2>I lead the system and keep my hands on the tools.</h2>
+  <h2>I lead the work and keep my hands on the tools.</h2>
   <p class="lede">I started as an engineer, raced bikes professionally, and still build maps to understand the developer experience from the inside.</p>
-  <p class="hero-actions"><a class="button button-primary" href="${BASE}contact/?intent=team">Build with Ryan</a><a class="text-link" href="${BASE}contact/?intent=speaking">Speaking or media</a></p>
 </section>
 `;
 
@@ -999,7 +1098,7 @@ function pageImage(meta) {
   return `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt)}" loading="lazy" width="${width}" height="${height}" />`;
 }
 
-function resumePageContent(meta) {
+function resumePageContent(meta, body) {
   return `<section class="resume-shell">
   <div class="resume-header">
     <div>
@@ -1009,45 +1108,28 @@ function resumePageContent(meta) {
     </div>
     <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" rel="noopener">LinkedIn</a> · <a href="${site.links.github}" rel="noopener">GitHub</a></p>
   </div>
-  ${pageImage(meta)}
-  <div class="resume-section"><h2>Focus</h2><p>${escapeHtml(site.answerEngineSummary || site.description)}</p></div>
-  <div class="resume-section"><h2>Experience</h2>
-    <article><h3>Google Maps Platform</h3><p class="resume-meta">Developer Experience, solution architecture, product incubation · 2022 – present</p><p>Lead developer experience and forward-deployed platform work across Code Assist, agent skills, evals, AI-native distribution, and the Geo Architecture Center.</p></article>
-    <article><h3>Google Cloud</h3><p class="resume-meta">0→1 industry solution product and engineering lead · 2021 – 2022</p><p>Led Intelligent Product Essentials from zero to launch with GE Appliances in nine months.</p></article>
-    <article><h3>Mapbox</h3><p class="resume-meta">Customer engineering, product, partnerships · 2015 – 2020</p><p>Grew customer engineering from 1 to 15 as Mapbox crossed $100M ARR. Took Boundaries and Atlas to their first $5M ARR and led OSS partnerships with Uber's visualization stack.</p></article>
-    <article><h3>Instabase and Caterpillar</h3><p class="resume-meta">Solution architecture and industrial IoT</p><p>Led solution architecture at Series-B Instabase. Earlier, built industrial IoT systems at Caterpillar with 3 US patents.</p></article>
-  </div>
-  <div class="resume-section"><h2>Selected proof</h2><ul>${(site.proofPoints || []).map((point) => `<li><strong>${escapeHtml(point.label)}</strong>: ${escapeHtml(point.text)}</li>`).join('')}</ul></div>
-  <p class="chips"><a class="chip" href="${BASE}work/">Work</a><a class="chip" href="${BASE}contact/">Contact</a></p>
+  <div class="resume-body">${markdownToHtml(body)}</div>
 </section>`;
 }
 
 function contactPageContent(meta) {
   return `<section class="contact-shell">
   <p class="eyebrow">Contact</p>
-  <h1>What are you trying to build?</h1>
-  <p class="lede">Start with the developer experience that is breaking down. Choose an intent so the first reply can be useful.</p>
+  <h1>Start a conversation.</h1>
+  <p class="lede">Choose what you want to discuss, then share enough context for a useful first reply.</p>
   <form id="contact-form" class="contact-form" action="${BASE}api/contact" method="post">
-    <label>What is this about?
-      <select name="intent" required>
-        <option value="">Choose an intent</option>
-        <option value="Build or join an exceptional team">Build or join an exceptional team</option>
-        <option value="Executive opportunity">Executive opportunity</option>
-        <option value="Speaking or media">Speaking or media</option>
-        <option value="Future advisory or board conversation">Future advisory or board conversation</option>
-        <option value="Other">Other</option>
-      </select>
-    </label>
-    <p class="field-note">I am not taking outside consulting or advisory work while employed at Google. The future category keeps the longer-term door open.</p>
-    <label>What are you trying to build, and where is the developer experience breaking down?
-      <textarea name="message" rows="6" required minlength="20" maxlength="5000" placeholder="Share the product surface, the developer, and the outcome you want to change."></textarea>
+    <fieldset class="intent-options"><legend>What is this about?</legend>
+      ${['Consulting', 'Content collaboration', 'Speaking opportunity', 'Other'].map((intent) => `<label><input type="radio" name="intent" value="${intent}" required /> <span>${intent}</span></label>`).join('')}
+    </fieldset>
+    <label>What would you like to discuss?
+      <textarea name="message" rows="6" required minlength="20" maxlength="5000" placeholder="A few sentences about the idea, audience, timing, and useful next step."></textarea>
     </label>
     <label>Name <input name="name" autocomplete="name" maxlength="120" required /></label>
     <label>Email <input name="email" type="email" autocomplete="email" maxlength="200" required /></label>
     <button class="button" type="submit">Send note</button>
   </form>
   <p class="section-note">The server uses your details only to deliver the note and reply. See <a href="${BASE}privacy/">Privacy</a>.</p>
-  <script>(()=>{const value=new URLSearchParams(location.search).get('intent');const intents={team:'Build or join an exceptional team',executive:'Executive opportunity',speaking:'Speaking or media',future:'Future advisory or board conversation',other:'Other'};const select=document.querySelector('select[name="intent"]');if(select&&intents[value])select.value=intents[value]})();</script>
+  <script>(()=>{const value=new URLSearchParams(location.search).get('intent');const intents={consulting:'Consulting',content:'Content collaboration',speaking:'Speaking opportunity',other:'Other'};const selected=intents[value];if(!selected)return;const input=[...document.querySelectorAll('input[name="intent"]')].find((item)=>item.value===selected);if(input)input.checked=true})();</script>
 </section>`;
 }
 
@@ -1060,7 +1142,7 @@ function buildStandalonePages() {
     const slug = file.replace(/\.md$/, '');
     const { meta, body } = parseFrontMatter(readFileSync(join(dir, file), 'utf8'));
     pages.push({ slug, meta, body });
-    const customContent = slug === 'resume' ? resumePageContent(meta) : slug === 'contact' ? contactPageContent(meta) : null;
+    const customContent = slug === 'resume' ? resumePageContent(meta, body) : slug === 'contact' ? contactPageContent(meta) : null;
     const content = customContent || `<article class="prose">
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
@@ -1068,7 +1150,7 @@ function buildStandalonePages() {
     if (!meta.image) return '';
     const imagePath = meta.image.startsWith('/') ? join(STATIC_DIR, meta.image.slice(1)) : join(CONTENT_DIR, 'pages', meta.image);
     const { width, height } = getImageDimensions(imagePath);
-    return `<img class="article-hero" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
+    return `<img class="article-hero${slug === 'about' ? ' profile-portrait' : ''}" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`;
   })()}
   ${markdownToHtml(body)}
 </article>`;
@@ -1238,7 +1320,7 @@ const collections = {};
 const allCollections = {};
 for (const collection of COLLECTIONS) {
   const allEntries = loadCollection(collection.name);
-  const entries = allEntries.filter((entry) => entry.meta.draft !== true);
+  const entries = WRITER_MODE ? allEntries : allEntries.filter(isPublished);
   allCollections[collection.name] = allEntries;
   collections[collection.name] = entries;
   buildCollectionIndex(collection, entries);
@@ -1249,7 +1331,8 @@ for (const collection of COLLECTIONS) {
   }
 }
 
-buildHome(collections);
+if (WRITER_MODE) writerDashboard(allCollections.writing);
+else buildHome(collections);
 buildDemosPage();
 buildStandalonePages();
 

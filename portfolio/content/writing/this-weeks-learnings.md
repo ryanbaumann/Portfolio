@@ -1,6 +1,6 @@
 ---
 title: #ThisWeeksLearnings
-summary: The weekly series where I share what leading developer experience, applied AI, and platform growth work taught me that week: traces read, evals written, products dogfooded, opinions revised.
+summary: Weekly notes from traces reviewed, evals written, products dogfooded, and opinions revised.
 date: 2026-07-12
 canonical: https://www.linkedin.com/in/ryanbaumann/recent-activity/all/
 tags: ["developer experience", "weekly notes", "applied ai"]

@@ -1,7 +1,7 @@
 ---
 title: AI-Driven Voice of Developer
 org: Google
-role: Product signal program lead
+role: Creator and program lead
 period: 2023 – present
 summary: An AI-driven product signal program that turns unstructured developer friction from Discord, Stack Overflow, issues, and support into ranked roadmap priorities.
 tags: ["product", "applied ai", "developer research"]
@@ -23,4 +23,4 @@ It extends the Voice of Customer program I built at Mapbox. The operating decisi
 
 ## What I learned
 
-Working backwards from growth requires an honest picture of demand. The friction that caps adoption rarely arrives as a clean roadmap request. Build a repeatable way to find it, then keep a human responsible for the decision.
+Repeated developer friction rarely arrives as a clean feature request. Group the evidence, then keep a human responsible for the decision.

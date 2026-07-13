@@ -10,7 +10,7 @@ noindex: true
 order: 99
 ---
 
-Files starting with `_` are skipped by the build — copy to `<slug>.md` to
+Files starting with `_` are skipped by the build. Copy to `<slug>.md` to
 publish. `type` is free-form and shows in the list row: `video`, `deck`,
 `talk`, `workshop`, `series`, whatever fits.
 

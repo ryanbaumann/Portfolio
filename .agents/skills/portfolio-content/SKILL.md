@@ -5,8 +5,7 @@ description: How to add or update content on this site — work entries, blog po
 
 # Updating content
 
-The CMS is `content/` + `build.mjs`. No database, no admin UI: add a markdown
-file, run `node build.mjs`, done. Every collection folder has a
+The CMS is `content/` + `build.mjs`. Add a markdown file and rebuild. Every collection folder has a
 `_TEMPLATE.md` (underscore-prefixed files are skipped by the build).
 
 ## Front matter
@@ -22,13 +21,14 @@ string. Common keys:
 | `featured` | work | `true` puts the entry on the home page |
 | `org`, `role`, `period`, `tags`, `links` | work | Card + case-study header |
 | `date`, `external` | writing | `external: <url>` = outbound link, no page |
+| `draft`, `noindex`, `publishAt` | writing | Drafts stay private to `/writer/`; `publishAt` is an explicit UTC timestamp gate |
 | `venue`, `type`, `links` | talks | Row metadata; `type` is free-form |
 | `eyebrow` | pages | Label above the page title |
 
 ## Where things go
 
 - **Work case study** → `content/work/<slug>.md`. Body renders at `/work/<slug>/`; no body = card links out to the first `links` URL.
-- **Blog post** → `content/writing/<slug>.md` (or `npm run new:post -- "Title"` from the repo root). This is the blog: the section is already designed and routed; posts appear at `/writing/<slug>/` the moment the first file lands. Use the writing skill for voice.
+- **Blog post** → `content/writing/<slug>.md` (or `npm run new:post -- "Title"` from the repo root). New posts are drafts. Use `--publish` or `--schedule 2026-07-14T16:00:00Z` deliberately. Use the writing skill for voice.
 - **Talk / presentation** → `content/talks/<slug>.md`, decks in `static/decks/` (see the presenting skill).
 - **Standalone page** → `content/pages/<slug>.md` → `/<slug>/`. Add it to the nav in `build.mjs` `layout()` if it should be globally reachable.
 - **Any static asset** (images, PDFs, files) → `static/`, copied verbatim into the site root.
@@ -36,6 +36,16 @@ string. Common keys:
 
 Internal links in content are written root-relative (`/work/`, `/decks/x.pdf`);
 the build rebases them if the site is mounted under a subpath.
+
+## Drafts and schedules
+
+- `draft: true` + `noindex: true` never enters public HTML, RSS, or sitemap.
+- `draft: false` with no `publishAt` publishes on the next deploy.
+- `draft: false` + `publishAt: <UTC ISO timestamp>` publishes on the first scheduled deploy at or after that time.
+- `/writer/` is a separate password-protected build with preview and publishing controls. It needs server-only writer and GitHub credentials; see `docs/WRITER_WORKFLOW.md`.
+- The repository is public. Committed Markdown and `static/` assets are not confidential even when the rendered route is protected.
+
+Markdown headings receive stable fragment IDs. Authors may pin one with `## Heading {#stable-id}`. Tables, fenced code language labels, blockquotes, images, lists, emphasis, and links are supported.
 
 ## Adding a new content type
 
@@ -48,5 +58,6 @@ the build rebases them if the site is mounted under a subpath.
 
 ```bash
 node build.mjs   # prints the page count
+BASE_PATH=/writer/ PORTFOLIO_WRITER_MODE=true PORTFOLIO_DIST_DIR=writer-dist node build.mjs
 node serve.mjs   # preview at http://localhost:4000
 ```

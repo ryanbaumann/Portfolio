@@ -19,7 +19,7 @@ function request(port, path, headers = {}) {
   });
 }
 
-function postForm(port, path, form) {
+function postForm(port, path, form, extraHeaders = {}) {
   const body = new URLSearchParams(form).toString();
   return new Promise((resolve, reject) => {
     const req = http.request({
@@ -30,6 +30,7 @@ function postForm(port, path, form) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': Buffer.byteLength(body),
+        ...extraHeaders,
       },
     }, (res) => {
       const chunks = [];
@@ -73,6 +74,52 @@ test('server includes CORS headers on photo proxy binary response', async () => 
   }
 });
 
+test('writer publishing requires the private writer session and same-origin form', async () => {
+  const originalByPath = [...appsByPathLength];
+  const originalFetch = globalThis.fetch;
+  const previous = {
+    PORTFOLIO_WRITER_PASSWORD: process.env.PORTFOLIO_WRITER_PASSWORD,
+    GITHUB_CONTENT_TOKEN: process.env.GITHUB_CONTENT_TOKEN,
+  };
+  const writer = {
+    name: 'portfolio-writer', title: 'Writer', description: 'Writer', path: '/writer/',
+    visibility: 'private', auth: { type: 'password', envVar: 'PORTFOLIO_WRITER_PASSWORD' },
+    dir: null, available: false,
+  };
+  appsByPathLength.splice(0, appsByPathLength.length, writer, ...originalByPath);
+  process.env.PORTFOLIO_WRITER_PASSWORD = 'writer-secret';
+  process.env.GITHUB_CONTENT_TOKEN = 'github-test-token';
+  const essay = `---\ntitle: Draft\nsummary: Test\ndate: 2026-07-13\ndraft: true\nnoindex: true\n---\nBody.`;
+  globalThis.fetch = async (_url, options) => options.method === 'PUT'
+    ? { ok: true, json: async () => ({}) }
+    : { ok: true, json: async () => ({ sha: 'abc123', content: Buffer.from(essay).toString('base64') }) };
+  server.listen(0);
+  const port = server.address().port;
+  const form = { sourceSlug: 'draft', action: 'publish-now', publishAt: '' };
+
+  try {
+    assert.equal((await postForm(port, '/api/writer/publish', form)).res.statusCode, 401);
+    const cookieResponse = { setHeader(_name, value) { this.value = value; } };
+    setAuthCookie(cookieResponse, 'portfolio-writer', 'writer-secret');
+    const cookie = cookieResponse.value[0].split(';', 1)[0];
+    assert.equal((await postForm(port, '/api/writer/publish', form, { Cookie: cookie })).res.statusCode, 403);
+    const result = await postForm(port, '/api/writer/publish', form, {
+      Cookie: cookie,
+      Origin: `http://localhost:${port}`,
+    });
+    assert.equal(result.res.statusCode, 303);
+    assert.equal(result.res.headers.location, '/writer/?updated=draft');
+  } finally {
+    globalThis.fetch = originalFetch;
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+    appsByPathLength.splice(0, appsByPathLength.length, ...originalByPath);
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
 test('server enforces public, unlisted, and private manifest behavior before static serving', async () => {
   const root = mkdtempSync(join(tmpdir(), 'gateway-visibility-'));
   const makeApp = (name, visibility, auth) => {
@@ -109,7 +156,10 @@ test('server enforces public, unlisted, and private manifest behavior before sta
     setAuthCookie(cookieResponse, 'private-demo', 'test-secret');
     const cookie = cookieResponse.value[0].split(';', 1)[0];
     assert.ok(cookie.startsWith(`${AUTH_COOKIE_NAME}=`));
-    assert.equal((await request(port, '/private-demo/asset.js', { Cookie: cookie })).res.statusCode, 200);
+    const privateAsset = await request(port, '/private-demo/asset.js', { Cookie: cookie });
+    assert.equal(privateAsset.res.statusCode, 200);
+    assert.equal(privateAsset.res.headers['cache-control'], 'private, no-store');
+    assert.equal(privateAsset.res.headers['x-robots-tag'], 'noindex, nofollow, noarchive');
 
     delete process.env.TEST_PRIVATE_DEMO_PASSWORD;
     assert.equal((await request(port, '/private-demo/')).res.statusCode, 503);
@@ -151,7 +201,7 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     assert.match(missingIntent.body, /role="alert"/);
     assert.doesNotMatch(missingIntent.body, /data-contact-delivery="success"/);
 
-    const invalidIntent = await postForm(port, '/api/contact', { ...valid, intent: 'Consulting' });
+    const invalidIntent = await postForm(port, '/api/contact', { ...valid, intent: 'Executive opportunity' });
     assert.equal(invalidIntent.res.statusCode, 400);
     assert.doesNotMatch(invalidIntent.body, /data-contact-delivery="success"/);
 
@@ -166,19 +216,19 @@ test('contact delivery validates intent and marks only provider-confirmed succes
 
     const success = await postForm(port, '/api/contact', {
       ...valid,
-      intent: 'Executive opportunity',
+      intent: 'Consulting',
     });
     assert.equal(success.res.statusCode, 303);
     assert.equal(success.res.headers.location, '/contact-success/?delivered=1');
     assert.equal(success.body, '');
     assert.equal(delivered.length, 1);
-    assert.equal(delivered[0].subject, '[Executive opportunity] Portfolio contact from Ada Lovelace');
-    assert.match(delivered[0].text, /^Intent: Executive opportunity\nName: Ada Lovelace\nEmail: ada@example\.com\n\n/);
+    assert.equal(delivered[0].subject, '[Consulting] Portfolio contact from Ada Lovelace');
+    assert.match(delivered[0].text, /^Intent: Consulting\nName: Ada Lovelace\nEmail: ada@example\.com\n\n/);
 
     globalThis.fetch = async () => ({ ok: false, status: 500 });
     const rejected = await postForm(port, '/api/contact', {
       ...valid,
-      intent: 'Speaking or media',
+      intent: 'Speaking opportunity',
     });
     assert.equal(rejected.res.statusCode, 502);
     assert.match(rejected.body, /data-contact-delivery="failure"/);

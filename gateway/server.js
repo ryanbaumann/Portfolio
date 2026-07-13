@@ -20,15 +20,15 @@ import {
 } from './lib/auth.js';
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
+import { publishWritingUpdate } from './lib/writer.js';
 
 const PORT = Number(process.env.PORT || 8080);
 const JSON_BODY_LIMIT_BYTES = 16 * 1024;
 const FORM_BODY_LIMIT_BYTES = 32 * 1024;
 const CONTACT_INTENTS = Object.freeze([
-  'Build or join an exceptional team',
-  'Executive opportunity',
-  'Speaking or media',
-  'Future advisory or board conversation',
+  'Consulting',
+  'Content collaboration',
+  'Speaking opportunity',
   'Other',
 ]);
 
@@ -204,6 +204,50 @@ async function handleContactRequest(request, response) {
   response.end();
 }
 
+async function handleWriterPublishRequest(request, response) {
+  if (request.method !== 'POST') {
+    sendJson(response, 405, { error: 'Method not allowed' });
+    return;
+  }
+  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
+  const secret = writerApp?.auth?.envVar ? process.env[writerApp.auth.envVar] : null;
+  if (!writerApp || !secret || !verifyAuthCookie(request, writerApp.name, secret)) {
+    sendJson(response, 401, { error: 'Writer authentication required.' });
+    return;
+  }
+  try {
+    const origin = new URL(String(request.headers.origin || ''));
+    if (origin.host !== request.headers.host) throw new Error('origin mismatch');
+  } catch {
+    sendJson(response, 403, { error: 'Invalid request origin.' });
+    return;
+  }
+
+  let params;
+  try {
+    const rawBody = await readTextBody(request);
+    params = new URLSearchParams(rawBody);
+  } catch (error) {
+    sendJson(response, error.statusCode || 400, { error: error.message });
+    return;
+  }
+  try {
+    const result = await publishWritingUpdate({
+      sourceSlug: String(params.get('sourceSlug') || ''),
+      action: String(params.get('action') || ''),
+      publishAt: String(params.get('publishAt') || ''),
+    });
+    applySecurityHeaders(response);
+    response.writeHead(303, {
+      Location: `/writer/?updated=${encodeURIComponent(result.sourceSlug)}`,
+      'Cache-Control': 'no-store',
+    });
+    response.end();
+  } catch (error) {
+    sendJson(response, error.statusCode || 502, { error: error.message });
+  }
+}
+
 function readJsonBody(request) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -261,6 +305,11 @@ async function handleApi(request, response, pathname, searchParams) {
 
   if (pathname === '/api/contact') {
     await handleContactRequest(request, response);
+    return;
+  }
+
+  if (pathname === '/api/writer/publish') {
+    await handleWriterPublishRequest(request, response);
     return;
   }
 
@@ -414,7 +463,7 @@ const server = createServer(async (request, response) => {
       }
 
       const subPath = pathname.slice(app.path.length - 1);
-      if (serveFromDir(app.dir, subPath, response)) return;
+      if (serveFromDir(app.dir, subPath, response, { private: appVisibility(app) === 'private' })) return;
       applySecurityHeaders(response);
       response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       response.end('Not found.');

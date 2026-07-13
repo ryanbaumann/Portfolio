@@ -10,6 +10,20 @@
     "preview": "/previews/portfolio.jpg"
   },
   {
+    "name": "portfolio-writer",
+    "title": "Writer preview",
+    "description": "Private draft previews and publishing controls.",
+    "path": "/writer/",
+    "dev_build_dir": "portfolio/writer-dist",
+    "visibility": "private",
+    "auth": {
+      "type": "password",
+      "envVar": "PORTFOLIO_WRITER_PASSWORD"
+    },
+    "tags": [],
+    "preview": null
+  },
+  {
     "name": "strava-explorer",
     "title": "Strava 3D Explorer",
     "description": "Fly your Strava routes in Photorealistic 3D with follow-camera animation, an elevation profile, and your ride photos on the path.",

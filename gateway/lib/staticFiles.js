@@ -95,7 +95,7 @@ export function safeResolve(baseDir, subPath) {
  * given request subPath. Returns true if a response was sent, false if the
  * caller should fall through (e.g. to a 404 handler).
  */
-export function serveFromDir(baseDir, subPath, response) {
+export function serveFromDir(baseDir, subPath, response, options = {}) {
   let filePath = safeResolve(baseDir, subPath || '/');
   if (!filePath) {
     response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
@@ -118,7 +118,8 @@ export function serveFromDir(baseDir, subPath, response) {
   response.writeHead(200, {
     'Content-Type': mimeTypeFor(filePath),
     'Content-Length': stat.size,
-    'Cache-Control': cacheControlFor(filePath),
+    'Cache-Control': options.private ? 'private, no-store' : cacheControlFor(filePath),
+    ...(options.private ? { 'X-Robots-Tag': 'noindex, nofollow, noarchive' } : {}),
   });
   createReadStream(filePath).pipe(response);
   return true;

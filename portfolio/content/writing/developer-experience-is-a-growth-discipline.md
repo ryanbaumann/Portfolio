@@ -35,18 +35,14 @@ Google Maps Platform approached open source, agent context, and product integrat
 
 Those metrics describe the system, not a claim that one integration caused all of the growth. That distinction matters. Distribution creates opportunity. Measurement tells you whether developers reached the platform and used it.
 
-## Treat DevX like a product portfolio
+## Ship the missing artifact
 
 A growth discipline has a goal, a set of investments, and a way to decide what happens next. Developer experience should have the same structure.
 
-The portfolio can include open-source libraries, documentation, samples, architecture guidance, agent context, partner integrations, and field engineering. Each investment needs a job. Some reduce time to first working result. Some make an enterprise architecture credible. Some carry the platform into a new workflow. Some turn repeated field work into a reusable product.
+The missing artifact can be an open-source library, documentation, a sample, architecture guidance, agent context, or a product integration. Each one should address a specific failure. Some reduce time to the first working result. Some answer a repeated architecture question. Some put the platform inside a workflow developers already use.
 
-This is why forward-deployed engineering belongs inside the DevX system. Field teams see the repeated blocker early. Product and engineering can turn it into an artifact. Distribution can carry that artifact beyond the original customer. Measurement can show whether the constraint moved.
+Field teams often see a repeated blocker early. Product and engineering can turn it into a reusable artifact. Measurement can show whether that artifact changed the result.
 
-## What to do next
+## Try this on one developer failure
 
-If you are a CPO, give developer experience an adoption goal and a product portfolio, not a support charter. Review the field signals, shipped artifacts, distribution surfaces, and growth measures together.
-
-If you are a VP Engineering, organize the work so engineers can follow repeated developer friction from trace to tool to measured result. Give the team room to build reusable products, not only answer individual escalations.
-
-If you are a principal builder, pick one recurring developer failure and make it observable. Ship the smallest artifact that changes the outcome, instrument it, and bring the result back to the roadmap.
+Pick one failure you can observe: an outdated API, a setup step developers repeat, or a question support answers every week. Ship the smallest artifact that changes the result, whether that is a library, sample, tool call, or architecture guide. Instrument it, then bring the evidence back to the roadmap.

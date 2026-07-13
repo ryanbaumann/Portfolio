@@ -14,7 +14,7 @@ noindex: true
 order: 99
 ---
 
-Files starting with `_` are skipped by the build — copy this file to
+Files starting with `_` are skipped by the build. Copy this file to
 `<slug>.md` to publish. The body below becomes the case-study page at
 `/work/<slug>/`; delete the body entirely for a card-only entry that links
 out to the first `links` URL.

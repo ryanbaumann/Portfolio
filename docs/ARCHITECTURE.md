@@ -16,17 +16,20 @@ secrets ever reach the browser.
 │       ├── /                → site (portfolio)                      │
 │       │    /work/ /writing/ /talks/ /demos/ …                      │
 │       │    built static by portfolio/build.mjs                     │
+│       ├── /writer/         → private draft preview + controls       │
 │       ├── /strava-explorer/→ static dist                           │
 │       ├── /aqi-map/        → static dist                           │
 │       ├── /isochrones/     → static dist                           │
 │       ├── /portfolio/*     → 308 redirect to /*                    │
 │       └── /api/*           → secret proxy layer                    │
 │            ├── /api/strava/*      (OAuth broker + photo proxy)     │
-│            └── /api/isochrones    (GMP server)                     │
+│            ├── /api/isochrones    (GMP server)                     │
+│            └── /api/writer/publish (authenticated GitHub update)   │
 └────────────────────────────────────────────────────────────────────┘
                   ▲
   secrets via Cloud Run env / Secret Manager:
-  STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY
+  STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, PORTFOLIO_WRITER_PASSWORD,
+  GITHUB_CONTENT_TOKEN
 ```
 
 Routing is manifest-driven: `apps.json` at the repo root lists every app
@@ -76,7 +79,8 @@ plain-HTTP gateway development URL.
    grep over every built asset. No Playwright required; must pass keyless.
 5. **CI never hands secrets to forks.** PR jobs build + smoke with dummy env
    only. Deploy runs on `main` pushes via Workload Identity Federation.
-6. **The portfolio stays extractable.** `portfolio/` is a self-contained,
+6. **Scheduled publishing rebuilds.** Public content is immutable static output. A future `publishAt` stays out of detail pages, lists, RSS, and sitemap until an hourly deploy rebuilds at or after that timestamp. `/writer/` is a separate private static build; its publishing endpoint can only update known writing files after the private cookie and same-origin checks pass.
+7. **The portfolio stays extractable.** `portfolio/` is a self-contained,
    zero-dependency static site (flat-file markdown CMS, zero client JS).
    Its only tie to this repo is optional: when `../apps.json` exists, the
    build renders the Demos section and nav item; when it doesn't, they
@@ -105,9 +109,11 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 | secret  | `VITE_STRAVA_CLIENT_ID` | Strava OAuth client ID (public)      |
 | var     | `GCP_PROJECT_ID`        | Target project                       |
 | var     | `GCP_REGION`            | Cloud Run region                     |
+| var     | `ANALYTICS_MEASUREMENT_ID` | Optional public GA4 `G-...` stream ID |
 
 Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
-`RESEND_API_KEY`, and `CONTACT_TO_EMAIL`) are set on the Cloud Run service
+`RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `PORTFOLIO_WRITER_PASSWORD`, and
+`GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
 as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
 is optional non-secret sender configuration and must use a sender accepted by
 the mail provider.
@@ -118,6 +124,7 @@ the mail provider.
 |---|---|
 | Add a demo app | `npm run new:demo -- my-demo --title "My Demo"` |
 | Add a blog post | `npm run new:post -- "Post title"` |
+| Schedule a blog post | `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z` |
 | Add a work entry / talk | copy the `_TEMPLATE.md` in `portfolio/content/<collection>/` |
 | Regenerate demo screenshots | `npm run previews` (or `BASE_URL=https://www.ryanbaumann-portfolio.com npm run previews`) |
 | Verify everything | `npm run build && npm run smoke` |

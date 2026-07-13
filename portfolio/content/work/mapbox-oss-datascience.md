@@ -23,4 +23,4 @@ I wrote both libraries. **mapboxgl-jupyter** brought Mapbox GL visualization int
 
 ## What I learned
 
-Meeting developers inside the tools they already use is the cheapest acquisition channel a platform has. It's the same motion I run today with AI agent harnesses instead of notebooks.
+The shortest path to adoption was putting the map inside notebooks and dashboards developers already used.

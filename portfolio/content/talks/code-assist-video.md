@@ -18,6 +18,6 @@ An AI coding agent can produce convincing Maps code that uses an outdated API or
 
 This walkthrough shows [Code Assist](https://developers.google.com/maps/ai/code-assist) inside a real agent session. The demo follows the tool call from developer intent to retrieved Google Maps Platform documentation and current code samples. It then explains how the team turned a GitHub alpha into a Google-hosted remote MCP service.
 
-The business argument is simple: developer experience now reaches into the agent. Platforms need to ship current context into that interface, evaluate the result, and measure whether builders reach a working product.
+The developer-facing lesson is simple: developer experience now reaches into the agent. Platforms need to ship current context into that interface, evaluate the result, and measure whether builders reach a working product.
 
-[Watch the walkthrough](https://youtu.be/L2V58kKIHvc) or [invite Ryan to speak](/contact/?intent=speaking).
+[Watch the walkthrough](https://youtu.be/L2V58kKIHvc).

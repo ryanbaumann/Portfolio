@@ -31,3 +31,19 @@ test('--publish creates an indexable post', () => {
   assert.match(post, /draft: false/);
   assert.match(post, /noindex: false/);
 });
+
+test('--schedule creates a future indexable post with an explicit UTC gate', () => {
+  const { writingDir, result } = scaffold('A Scheduled Post', '--schedule', '2099-07-14T16:00:00Z');
+  assert.equal(result.status, 0, result.stderr);
+  const post = readFileSync(join(writingDir, 'a-scheduled-post.md'), 'utf8');
+  assert.match(post, /draft: false/);
+  assert.match(post, /noindex: false/);
+  assert.match(post, /publishAt: 2099-07-14T16:00:00Z/);
+});
+
+test('--schedule rejects local timestamps and cannot be combined with --publish', () => {
+  assert.notEqual(scaffold('Bad Local Time', '--schedule', '2026-07-14T16:00').result.status, 0);
+  assert.notEqual(scaffold('Impossible Date', '--schedule', '2099-02-30T16:00:00Z').result.status, 0);
+  assert.notEqual(scaffold('Past Time', '--schedule', '2020-07-14T16:00:00Z').result.status, 0);
+  assert.notEqual(scaffold('Two States', '--publish', '--schedule', '2026-07-14T16:00:00Z').result.status, 0);
+});

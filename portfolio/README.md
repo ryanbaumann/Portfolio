@@ -39,7 +39,7 @@ gateway's app manifest) when it exists — in a standalone deployment of this
 folder they simply disappear.
 
 Each collection folder has a `_TEMPLATE.md` showing its front-matter
-schema. Underscore-prefixed files are ignored; `draft: true` entries are also skipped by the build, which makes work-in-progress files safe to commit.
+schema. Underscore-prefixed files are ignored; `draft: true` entries are excluded from every public output. A separate password-protected writer build previews drafts and scheduled essays. Because the repository is public, committed source is not confidential.
 
 ## Updating the site
 
@@ -49,9 +49,12 @@ Adding anything is: copy the template, write markdown, `node build.mjs`. New blo
 npm run new:post -- "Developer experience is a growth engine" --summary "Why developer experience should be managed like a growth channel."
 npm run new:post -- "External launch" --external https://example.com/launch
 npm run new:post -- "Ready to publish" --publish
+npm run new:post -- "Publish tomorrow" --schedule 2026-07-14T16:00:00Z
 ```
 
-New posts are drafts with `noindex: true` by default. Review the generated copy and use `--publish` only when the entry is ready. The build validates content before it writes a deployable site: required titles and summaries, exact ISO dates for writing, valid URLs, duplicate slugs, image alt text, missing static assets, broken internal links, and unsafe `draft` / `noindex` combinations. Published writing entries also appear in `/feed.xml`, so adding or editing a post is edit → build → deploy → CDN cache refresh.
+New posts are drafts with `noindex: true` by default. Review them at `/writer/`, publish immediately, or set an explicit UTC `publishAt`. The build validates content before it writes a deployable site: required titles and summaries, exact dates and schedule timestamps, valid URLs, duplicate slugs, image alt text, missing static assets, broken internal links, and unsafe draft combinations. Published writing also appears in `/feed.xml`. See [`docs/WRITER_WORKFLOW.md`](../docs/WRITER_WORKFLOW.md).
+
+Markdown supports stable heading fragments, explicit `{#custom-id}` heading IDs, tables, fenced code language labels, blockquotes, images, lists, emphasis, and links. The Markdown source remains portable for syndication.
 
 The repo ships generic agent skills that encode the standards, so any AI coding
 agent can maintain the site in the same voice and style:

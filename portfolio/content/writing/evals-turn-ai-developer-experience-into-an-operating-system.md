@@ -1,19 +1,19 @@
 ---
-title: Evals Turn AI Developer Experience Into an Operating System
-summary: Task-based evals connect field failures, context changes, and launch decisions for AI developer products.
+title: Evals Are How You Know an AI Developer Tool Got Better
+summary: Task-based evals show whether a context, tool, or prompt improved the developer's actual job.
 date: 2026-07-13
 canonical: https://www.ryanbaumann-portfolio.com/writing/evals-turn-ai-developer-experience-into-an-operating-system/
 image: /img/work/agentic-evals.svg
 imageAlt: An evaluation loop moving from developer task to agent run, scored result, and launch decision
 socialImage: /social/evals-turn-ai-developer-experience-into-an-operating-system.png
-shareTitle: Evals Turn AI Developer Experience Into an Operating System
-shareSummary: Connect field failures, context changes, and launch decisions.
-shareImageAlt: Evals Turn AI Developer Experience Into an Operating System beside an evaluation-loop artifact
-tags: ["evals", "ai developer experience", "operating systems"]
+shareTitle: Evals Are How You Know an AI Developer Tool Got Better
+shareSummary: Test whether a context, tool, or prompt improved the developer's actual job.
+shareImageAlt: Evals Are How You Know an AI Developer Tool Got Better beside an evaluation-loop artifact
+tags: ["evals", "ai developer experience", "developer tools"]
 order: 3
 ---
 
-Evals turn AI developer experience into an operating system. Without them, a team can ship context, prompts, tools, and skills, but it cannot tell whether an agent became better at the developer's task.
+Evals show whether an AI developer tool got better. Without them, a team can ship context, prompts, tools, and skills, but it cannot tell whether an agent became better at the developer's task.
 
 A polished demo is evidence that one path worked once. A task-based evaluation makes the result repeatable, comparable, and useful for a launch decision.
 
@@ -50,18 +50,14 @@ Use deterministic checks where possible. Compile generated code. Validate requir
 
 Trust deltas more than absolute scores. Model behavior, agent harnesses, and adaptive graders move. A stable baseline and a focused metric make the before-and-after comparison useful even when the surrounding system changes.
 
-## Turn the suite into a management system
+## Make the eval the shared quality gate
 
-The eval suite becomes an operating system when several teams can use it to make the same kind of decision.
+A useful eval lets product, documentation, and engineering test changes against the same developer task.
 
-Product can define which developer tasks matter. Field teams can contribute repeated failures. Engineers can test context and tool changes. Documentation teams can see where official guidance is missing. Leaders can set a launch bar and decide where the next investment goes.
+The same tasks can test a documentation update, retrieval change, or tool release. Everyone can inspect which failures moved and which did not.
 
 That shared mechanism reduces opinion-driven debate. It also keeps AI Developer Experience connected to product growth. If a change improves a task in evals, the team can ship it into a real distribution surface and then measure whether adoption changes. The eval is not the business outcome. It is the quality gate between field signal and scaled distribution.
 
-## What to do next
+## Start with ten real tasks
 
-If you are a CPO, choose one developer task that matters to adoption and make its eval delta part of the product review. Ask what failure it represents and what decision the score will change.
-
-If you are a VP Engineering, separate the evaluator from the team or system proposing the optimization. Require a baseline, a focused metric, failure analysis, and a named launch threshold.
-
-If you are a principal builder, start with ten real tasks, not a giant benchmark. Run them with no added context, inspect the failures, and make one targeted change. Then run the same tasks again and let the delta decide the next move.
+Choose ten failures from issues, support, community questions, or traces. Run them with no added context. Inspect the failures, make one targeted change, and run the same tasks again. Let the delta decide what to fix next.

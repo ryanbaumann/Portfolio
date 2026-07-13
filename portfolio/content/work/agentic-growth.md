@@ -1,7 +1,7 @@
 ---
 title: OSS client libraries grew active reach 300% in one year
 org: Google
-role: Product growth & distribution lead
+role: Open-source and distribution lead
 period: 2024 – present
 summary: From March 2025 to March 2026, our open-source client libraries grew unique active users 300% and API engagement approximately 200%.
 tags: ["growth", "distribution", "open source"]

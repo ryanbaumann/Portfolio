@@ -21,4 +21,4 @@ I led the OSS partnership with Uber that integrated Mapbox GL JS custom layers d
 
 ## What I learned
 
-Defaults compound. A targeted engineering investment in someone else's open source bought a durable position across an entire ecosystem: every kepler.gl tutorial and workshop since has onboarded developers onto Mapbox for free.
+Deep integration made the correct rendering path the default, and that default survived after the launch.

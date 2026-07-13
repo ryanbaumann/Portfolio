@@ -36,6 +36,13 @@ async function main() {
   const CONTACT_TO_EMAIL = await ask('   Contact destination email');
   const CONTACT_FROM_EMAIL = await ask('   Verified sender', 'Portfolio Contact <onboarding@resend.dev>');
 
+  console.log('\n4. Private writer (optional for local development)');
+  const PORTFOLIO_WRITER_PASSWORD = await ask('   Writer preview password');
+  const GITHUB_CONTENT_TOKEN = await ask('   Fine-grained GitHub Contents token');
+
+  console.log('\n5. Analytics (optional; public configuration)');
+  const ANALYTICS_MEASUREMENT_ID = await ask('   GA4 Measurement ID (G-...)');
+
   rl.close();
 
   const envContent = formatEnv({
@@ -47,6 +54,9 @@ async function main() {
     RESEND_API_KEY,
     CONTACT_TO_EMAIL,
     CONTACT_FROM_EMAIL,
+    PORTFOLIO_WRITER_PASSWORD,
+    GITHUB_CONTENT_TOKEN,
+    ANALYTICS_MEASUREMENT_ID,
   });
 
   writeFileSync(ENV_PATH, envContent + '\n');
@@ -70,6 +80,13 @@ VITE_ISOCHRONES_GMP_API_KEY=${values.VITE_ISOCHRONES_GMP_API_KEY}
 RESEND_API_KEY=${values.RESEND_API_KEY}
 CONTACT_TO_EMAIL=${values.CONTACT_TO_EMAIL}
 CONTACT_FROM_EMAIL=${values.CONTACT_FROM_EMAIL}
+
+# Private writer
+PORTFOLIO_WRITER_PASSWORD=${values.PORTFOLIO_WRITER_PASSWORD || ''}
+GITHUB_CONTENT_TOKEN=${values.GITHUB_CONTENT_TOKEN || ''}
+
+# Analytics (public Measurement ID)
+ANALYTICS_MEASUREMENT_ID=${values.ANALYTICS_MEASUREMENT_ID || ''}
 `.trim();
 }
 

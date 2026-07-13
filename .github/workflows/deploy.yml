@@ -7,7 +7,7 @@ name: Deploy to Cloud Run
 # Cloud Run service. There is no GCS step anymore.
 #
 # Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY,
-# CONTACT_TO_EMAIL) and public
+# CONTACT_TO_EMAIL, PORTFOLIO_WRITER_PASSWORD, GITHUB_CONTENT_TOKEN) and public
 # config (STRAVA_CLIENT_ID) are set once on the Cloud Run
 # service, not passed through this workflow on every deploy — see the
 # comment above the `gcloud run deploy` step for the one-time setup
@@ -19,6 +19,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    # Rebuild immutable static output so due publishAt timestamps go live.
+    - cron: '17 * * * *'
   workflow_dispatch: {}
 
 jobs:
@@ -77,6 +80,8 @@ jobs:
             echo "- GMP_SERVER_API_KEY"
             echo "- RESEND_API_KEY (optional)"
             echo "- CONTACT_TO_EMAIL (optional)"
+            echo "- PORTFOLIO_WRITER_PASSWORD (required for /writer/)"
+            echo "- GITHUB_CONTENT_TOKEN (required for writer publishing)"
             exit 1
           fi
 
@@ -99,7 +104,7 @@ jobs:
           # so the VITE_* build args are threaded through cloudbuild.yaml via
           # substitutions instead (see that file's header comment).
           gcloud builds submit --project "$GCP_PROJECT_ID" --config cloudbuild.yaml \
-            --substitutions=_IMAGE="$IMAGE",_VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}",_VITE_ISOCHRONES_GMP_API_KEY="${{ secrets.VITE_ISOCHRONES_GMP_API_KEY }}",_VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}" .
+            --substitutions=_IMAGE="$IMAGE",_VITE_GMP_API_KEY="${{ secrets.VITE_GMP_API_KEY }}",_VITE_ISOCHRONES_GMP_API_KEY="${{ secrets.VITE_ISOCHRONES_GMP_API_KEY }}",_VITE_STRAVA_CLIENT_ID="${{ secrets.VITE_STRAVA_CLIENT_ID }}",_ANALYTICS_MEASUREMENT_ID="${{ vars.ANALYTICS_MEASUREMENT_ID }}" .
 
       - name: Deploy to Cloud Run
         run: |
@@ -121,6 +126,8 @@ jobs:
           #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
           #     --update-secrets=RESEND_API_KEY=resend-api-key:latest \
           #     --update-secrets=CONTACT_TO_EMAIL=contact-to-email:latest \
+          #     --update-secrets=PORTFOLIO_WRITER_PASSWORD=portfolio-writer-password:latest \
+          #     --update-secrets=GITHUB_CONTENT_TOKEN=github-content-token:latest \
           #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,CONTACT_FROM_EMAIL=<verified sender>
           #
           # STRAVA_CLIENT_ID isn't secret on its own (it's public in the
@@ -146,6 +153,8 @@ jobs:
             'STRAVA_CLIENT_ID',
             'STRAVA_CLIENT_SECRET',
             'GMP_SERVER_API_KEY',
+            'PORTFOLIO_WRITER_PASSWORD',
+            'GITHUB_CONTENT_TOKEN',
           ];
           const missing = required.filter((name) => !configured.has(name));
           if (missing.length) {

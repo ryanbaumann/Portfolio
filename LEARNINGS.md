@@ -118,3 +118,30 @@ Context: A mobile-readiness pass found the demos used desktop-friendly `100vh` m
 Learning: Map demos should pair `100svh` or `100dvh` with safe-area padding, 44px touch targets, visible focus rings, and a clear mobile panel model. Bottom sheets should default to a useful state and prevent drag gestures from scrolling the page underneath.
 Evidence: Updating Strava Explorer's bottom sheet default to half-height, using `visualViewport`, and adding `touch-action`/safe-area CSS made the primary route and tour controls immediately reachable. Updating Air Quality and Isochrones mobile CSS gave the map a stable sticky viewport and made panel controls scroll independently below it.
 Use next time: For every new map demo, test the narrow layout first: map remains usable, controls remain reachable by touch and keyboard, panels account for safe areas, and no essential action depends on desktop hover.
+## 2026-07-13: Scheduled static content still needs a rebuild
+
+Context: Essays needed an explicit future publication time while the portfolio remained an immutable static build in one Cloud Run image.
+Learning: A timestamp can safely exclude future content at build time, but a running static revision cannot make detail pages, indexes, RSS, and sitemap appear together. Freeze one build time, filter every output consumer with it, and schedule a rebuild after the timestamp.
+Evidence: Fixed-time fixtures now prove future essays are absent from every public output, present in the private writer build, and public at the first build after `publishAt`; the deploy workflow rebuilds hourly.
+Use next time: Treat scheduled publication as a build/deploy concern unless the application has a real runtime content store and renderer.
+
+## 2026-07-13: A protected preview does not make a public-repo draft confidential
+
+Context: The new writer route protects rendered draft pages with a server-side password, signed cookie, no-store caching, and noindex headers.
+Learning: Route protection only covers the rendered site. Markdown committed to a public repository and assets copied from a public static directory remain readable outside the preview.
+Evidence: The writer workflow documents the boundary explicitly, keeps preview analytics off, and reserves this path for unfinished but non-confidential writing.
+Use next time: Put embargoed content and draft-only assets in a private source before claiming confidentiality; do not rely on a password in front of a build derived from public source.
+
+## 2026-07-13: Docker ignore patterns can silently erase a flat-file CMS
+
+Context: The container context ignored `*.md`, while the portfolio builder treats missing collection directories as empty and can still complete successfully.
+Learning: A broad Docker ignore pattern matches nested content too. For a Markdown-backed static site, scope root-document exclusions explicitly and verify a known content route after staging or deployment.
+Evidence: Changing the pattern to `/*.md` keeps root documentation out of the context while `portfolio/content/**/*.md` remains available; the smoke suite checks `/about/` and the other generated sections.
+Use next time: When build inputs are content files, test both build success and expected content presence; an empty successful build is not a valid release.
+
+## 2026-07-13: Private generated output needs an explicit ignore rule
+
+Context: The writer build emits rendered drafts to `portfolio/writer-dist/`, but only the public `dist/` directory was ignored.
+Learning: A new output directory containing non-public previews is a disclosure risk even when its deployed route is authenticated.
+Evidence: `portfolio/.gitignore` now ignores `writer-dist/`, and `git check-ignore` verifies the generated dashboard is excluded before commits.
+Use next time: Add ignore coverage in the same change that introduces any generated preview, export, or private build directory.

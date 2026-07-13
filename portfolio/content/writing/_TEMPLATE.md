@@ -13,10 +13,12 @@ shareImageAlt: A literal description of the social preview image
 tags: ["developer experience"]
 draft: true
 noindex: true
+# For scheduling, set draft/noindex false and add a UTC timestamp:
+# publishAt: 2026-07-14T16:00:00Z
 order: 99
 ---
 
-State the claim in the first paragraph. Explain why a CPO, VP Engineering, or principal builder should care now.
+State the claim in the first paragraph and explain what a developer can do differently after reading.
 
 ## The evidence
 
@@ -34,4 +36,4 @@ Files starting with `_` are skipped by the build. Copy this file to `<slug>.md` 
 
 For a hosted post, write the body below the front matter. It renders at `/writing/<slug>/`. Publish here first, then syndicate to LinkedIn or Substack with the portfolio URL as canonical where the platform permits it.
 
-For an external entry, add `external: https://...` to the front matter and leave the body empty. Drafts are safe by default. Set `draft: false` or remove it before publishing.
+For an external entry, add `external: https://...` to the front matter and leave the body empty. Drafts are safe by default. Use `npm run new:post -- "Title" --publish` for immediate publication or `--schedule 2026-07-14T16:00:00Z` for the next scheduled deploy after that UTC time.

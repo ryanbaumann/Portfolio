@@ -1,7 +1,7 @@
 ---
 title: Google Maps Platform Agent Skills
 org: Google
-role: Product, GTM & engineering lead
+role: Launch and engineering lead
 period: 2025 – present
 summary: Portable skill modules that teach AI agents how to build with the platform across Web, Android, iOS, and Web Services. Installed with one command.
 tags: ["agent skills", "applied ai", "distribution"]
@@ -24,4 +24,4 @@ Skills and Code Assist run as one system: skills teach the workflow, the MCP ser
 
 ## What I learned
 
-Skills turn platform expertise into a distributable artifact. Instead of hoping developers read a guide, the platform ships its know-how into the agent session itself. Install counts and skill invocations then become adoption signals you can actually measure.
+A skill is executable documentation: versioned, installable, and testable against a real task.

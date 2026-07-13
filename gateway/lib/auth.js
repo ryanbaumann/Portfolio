@@ -161,9 +161,9 @@ body{font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:fle
 h1{font-size:1.2rem;margin-bottom:.5rem;color:#fff}
 p.desc{font-size:.85rem;color:#888;margin-bottom:1.5rem}
 label{display:block;font-size:.85rem;margin-bottom:.4rem;color:#aaa}
-input[type=password]{width:100%;padding:.6rem .75rem;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#e0e0e0;font-size:1rem;outline:none}
+input[type=password]{width:100%;min-height:44px;padding:.6rem .75rem;border:1px solid #333;border-radius:6px;background:#0a0a0a;color:#e0e0e0;font-size:1rem;outline:none}
 input[type=password]:focus{border-color:#4a9eff}
-button{width:100%;margin-top:1rem;padding:.65rem;border:none;border-radius:6px;background:#2563eb;color:#fff;font-size:.95rem;cursor:pointer}
+button{width:100%;min-height:44px;margin-top:1rem;padding:.65rem;border:none;border-radius:6px;background:#2563eb;color:#fff;font-size:.95rem;cursor:pointer}
 button:hover{background:#1d4ed8}
 .error{color:#f87171;font-size:.85rem;margin-bottom:1rem;padding:.5rem;border:1px solid #7f1d1d;border-radius:6px;background:#1a0505}
 </style>

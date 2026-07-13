@@ -18,4 +18,4 @@ A prompt can produce a map quickly. The hard part is getting from a plausible pr
 
 This GeoMob talk uses three working demos to show the full path from idea to map. The architecture section covers the context, tools, and verification steps behind each result. The close turns those experiments into a practical platform lesson: make the correct path available inside the builder's workflow, then measure where the agent still gets stuck.
 
-[Open the slides](https://docs.google.com/presentation/d/1CNP2_Mj3LE1E3crLCKFv9ISWeQ-gQvFFFWP6v5FMWx0/edit) or [invite Ryan to speak](/contact/?intent=speaking).
+[Open the slides](https://docs.google.com/presentation/d/1CNP2_Mj3LE1E3crLCKFv9ISWeQ-gQvFFFWP6v5FMWx0/edit).

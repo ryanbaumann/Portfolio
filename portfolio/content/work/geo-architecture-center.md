@@ -1,7 +1,7 @@
 ---
 title: Geo Architecture Center
 org: Google
-role: Founder, principal author, and solution architecture lead
+role: Founder and principal author
 period: 2022 – present
 summary: A public catalog that turns repeated enterprise questions into reusable system patterns for Google Maps Platform.
 tags: ["technical writing", "solution architecture"]

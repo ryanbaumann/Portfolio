@@ -19,6 +19,8 @@ steps:
       - 'VITE_ISOCHRONES_GMP_API_KEY=${_VITE_ISOCHRONES_GMP_API_KEY}'
       - '--build-arg'
       - 'VITE_STRAVA_CLIENT_ID=${_VITE_STRAVA_CLIENT_ID}'
+      - '--build-arg'
+      - 'ANALYTICS_MEASUREMENT_ID=${_ANALYTICS_MEASUREMENT_ID}'
       - '--tag'
       - '${_IMAGE}'
       - '.'
@@ -31,6 +33,7 @@ substitutions:
   _VITE_GMP_API_KEY: ''
   _VITE_ISOCHRONES_GMP_API_KEY: ''
   _VITE_STRAVA_CLIENT_ID: ''
+  _ANALYTICS_MEASUREMENT_ID: ''
 
 options:
   logging: CLOUD_LOGGING_ONLY

@@ -78,6 +78,13 @@ async function main() {
     if (!html.includes(`<link rel="canonical" href="${site.siteUrl}"`)) throw new Error(`missing canonical ${site.siteUrl}`);
   });
 
+  await check('writer dashboard is closed without an authenticated session', async () => {
+    const response = await fetch(`${baseUrl}/writer/`, { redirect: 'manual' });
+    const html = await response.text();
+    if (response.status !== 401) throw new Error(`expected 401, got ${response.status}`);
+    if (html.includes('Writer dashboard')) throw new Error('unauthenticated response disclosed the writer dashboard');
+  });
+
   await check('served assets contain no server-secret markers', async () => {
     const combined = servedText.join('\n');
     for (const pattern of [/client_secret/i, /-----BEGIN [A-Z ]*PRIVATE KEY-----/, /sk_live_[0-9A-Za-z]+/]) {

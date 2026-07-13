@@ -21,5 +21,5 @@ npm-debug.log*
 .DS_Store
 **/.DS_Store
 
-*.md
+/*.md
 !README.md

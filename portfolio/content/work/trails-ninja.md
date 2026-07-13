@@ -21,7 +21,7 @@ You're on it right now. This portfolio and its [live demo apps](/demos/) ship fr
 
 ## What shipped
 
-I don't believe you can lead developer experience from a slide deck. Running real apps, with real OAuth flows, API quotas, key restrictions, cold starts, and CI/CD, keeps my judgment calibrated to actual developer friction. The platform opinions I bring to work get debugged here first.
+These demos are where I test OAuth flows, API quotas, key restrictions, cold starts, and CI/CD against real apps. The platform opinions I bring to work get debugged here first.
 
 ## What I learned
 

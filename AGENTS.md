@@ -34,6 +34,7 @@ picture.
 - **Add a blog post:** `npm run new:post -- "Post title"` (add
   `--external <url>` for a link-out entry). Voice guidance:
   `.agents/skills/portfolio-writing/SKILL.md`.
+- **Schedule an essay:** `npm run new:post -- "Post title" --schedule 2026-07-14T16:00:00Z`. Preview and manage drafts at the private `/writer/` app. See `docs/WRITER_WORKFLOW.md`; public-repo drafts are not confidential.
 - **Regenerate demo screenshots:** `npm run previews` (uses
   strava-explorer's Playwright; `BASE_URL=https://www.ryanbaumann-portfolio.com`
   to shoot production).

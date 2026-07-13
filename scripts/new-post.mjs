@@ -10,6 +10,7 @@
 //   npm run new:post -- "Launch post" --external https://example.com/launch
 //   npm run new:post -- "My post" --summary "One-line summary for lists."
 //   npm run new:post -- "Ready to publish" --publish
+//   npm run new:post -- "Publish later" --schedule 2026-07-14T16:00:00Z
 //
 // Voice and structure guidance: .agents/skills/portfolio-writing/SKILL.md
 
@@ -23,7 +24,7 @@ const WRITING_DIR = resolve(process.env.PORTFOLIO_WRITING_DIR || join(REPO_ROOT,
 const args = process.argv.slice(2);
 const title = args[0];
 if (!title || title.startsWith('-')) {
-  console.error('[new-post] usage: npm run new:post -- "Post title" [--summary "..."] [--external <url>]');
+  console.error('[new-post] usage: npm run new:post -- "Post title" [--summary "..."] [--external <url>] [--publish | --schedule <UTC timestamp>]');
   process.exit(1);
 }
 
@@ -34,7 +35,31 @@ function flag(name, fallback) {
 
 const summary = flag('summary', 'One sentence: the claim and why the reader should care.');
 const external = flag('external', null);
-const draft = !args.includes('--publish');
+const publishNow = args.includes('--publish');
+const publishAt = flag('schedule', null);
+if (publishNow && publishAt) {
+  console.error('[new-post] choose either --publish or --schedule, not both');
+  process.exit(1);
+}
+function validFutureTimestamp(value) {
+  const match = value?.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?Z$/);
+  if (!match) return false;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.valueOf()) || parsed.valueOf() <= Date.now()) return false;
+  const [, year, month, day, hour, minute, second = '0', fraction = '0'] = match;
+  return parsed.getUTCFullYear() === Number(year)
+    && parsed.getUTCMonth() + 1 === Number(month)
+    && parsed.getUTCDate() === Number(day)
+    && parsed.getUTCHours() === Number(hour)
+    && parsed.getUTCMinutes() === Number(minute)
+    && parsed.getUTCSeconds() === Number(second)
+    && parsed.getUTCMilliseconds() === Number(fraction.padEnd(3, '0'));
+}
+if (publishAt && !validFutureTimestamp(publishAt)) {
+  console.error('[new-post] --schedule must be a valid future UTC ISO-8601 timestamp ending in Z');
+  process.exit(1);
+}
+const draft = !publishNow && !publishAt;
 const tags = flag('tags', 'developer experience');
 
 const slug = title
@@ -76,7 +101,7 @@ imageAlt: Ryan Baumann Portfolio preview card
 tags: ${JSON.stringify(tagList)}
 draft: ${draft}
 noindex: ${draft}
-${external ? `external: ${external}\n` : ''}---${body}`);
+${publishAt ? `publishAt: ${publishAt}\n` : ''}${external ? `external: ${external}\n` : ''}---${body}`);
 
 console.log(`[new-post] created portfolio/content/writing/${slug}.md`);
 console.log('[new-post] preview:  cd portfolio && node build.mjs && node serve.mjs');

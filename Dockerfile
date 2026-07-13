@@ -36,11 +36,16 @@ RUN npm run build
 # It is mounted at the site root ("/") and reads ../apps.json to render the
 # demos section + nav, so the manifest is copied in alongside it.
 FROM node:20-slim AS portfolio-builder
+ARG ANALYTICS_MEASUREMENT_ID
 WORKDIR /src/portfolio
 COPY portfolio/ ./
 COPY apps.json /src/apps.json
 ENV BASE_PATH=/
-RUN node build.mjs
+ENV ANALYTICS_MEASUREMENT_ID=$ANALYTICS_MEASUREMENT_ID
+RUN BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)" && \
+    PORTFOLIO_BUILD_TIME="$BUILD_TIME" node build.mjs && \
+    BASE_PATH=/writer/ PORTFOLIO_WRITER_MODE=true PORTFOLIO_DIST_DIR=writer-dist \
+      PORTFOLIO_BUILD_TIME="$BUILD_TIME" node build.mjs
 
 FROM node:20-slim AS isochrones-builder
 ARG VITE_ISOCHRONES_GMP_API_KEY
@@ -61,6 +66,7 @@ COPY --chown=node:node --from=strava-explorer-builder /src/strava-explorer/dist 
 COPY --chown=node:node --from=aqi-map-builder /src/aqi-map/dist ./apps/aqi-map
 COPY --chown=node:node --from=isochrones-builder /src/isochrones/dist ./apps/isochrones
 COPY --chown=node:node --from=portfolio-builder /src/portfolio/dist ./apps/portfolio
+COPY --chown=node:node --from=portfolio-builder /src/portfolio/writer-dist ./apps/portfolio-writer
 
 ENV NODE_ENV=production
 ENV APPS_ROOT=/app/apps

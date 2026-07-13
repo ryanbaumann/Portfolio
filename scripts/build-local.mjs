@@ -27,6 +27,7 @@ const PUBLIC_BUILD_ENV_KEYS = new Set([
   'VITE_STRAVA_API_BASE_URL',
   'VITE_STRAVA_AUTH_BASE_URL',
   'VITE_STRAVA_REDIRECT_URI',
+  'ANALYTICS_MEASUREMENT_ID',
 ]);
 const SAFE_INHERITED_ENV_KEYS = new Set([
   'PATH', 'HOME', 'USER', 'LOGNAME', 'SHELL',
@@ -114,6 +115,12 @@ export function resolveAppPaths(entry, repoRoot = REPO_ROOT) {
 // safe to default to a placeholder here; a real deploy sets the real one
 // via env before calling this script.
 export function buildTimeOverrides(app, env) {
+  if (app.name === 'portfolio-writer') {
+    return {
+      PORTFOLIO_WRITER_MODE: 'true',
+      PORTFOLIO_DIST_DIR: app.outDir,
+    };
+  }
   if (app.name === 'isochrones' && env.VITE_ISOCHRONES_GMP_API_KEY) {
     return { VITE_GMP_API_KEY: env.VITE_ISOCHRONES_GMP_API_KEY };
   }
@@ -158,7 +165,10 @@ function buildApp(app, childEnv) {
 
 function main() {
   const apps = loadApps();
-  const childEnv = sanitizedBuildEnv(apps, loadRootPublicEnv());
+  const childEnv = {
+    ...sanitizedBuildEnv(apps, loadRootPublicEnv()),
+    PORTFOLIO_BUILD_TIME: new Date().toISOString(),
+  };
   log(`Building ${apps.length} app(s) from ${APPS_JSON_PATH}`);
   mkdirSync(APPS_OUT_DIR, { recursive: true });
 

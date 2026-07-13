@@ -49,10 +49,6 @@ Platforms therefore need to be useful where the decision happens. That can mean 
 
 The same principle has held across earlier shifts in developer workflow. At Mapbox, integrations with [deck.gl](https://github.com/visgl/deck.gl) and [kepler.gl](https://github.com/keplergl/kepler.gl) put the platform beneath tools developers already chose. Agent interfaces change the mechanics, but not the operating lesson: meet developers inside the workflow and make the path to a correct result short.
 
-## What to do next
+## Replay one real task
 
-If you are a CPO, treat agent sessions as a product channel. Assign ownership for context quality, workflow packaging, distribution, and adoption instead of scattering them across documentation, partnerships, and AI experiments.
-
-If you are a VP Engineering, create one maintained path from official source material to agent tools and skills. Version it, test it, and decide who responds when an API change makes the agent experience stale.
-
-If you are a principal builder, replay a real developer task with no platform context, then with retrieval and workflow guidance. Inspect the trace. The first incorrect decision will tell you what to build next.
+Run a real developer task with no platform context, then run it again with current retrieval and workflow guidance. Inspect the trace. The first incorrect decision tells you whether the missing piece is a fact, a workflow, or an eval case.

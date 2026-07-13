@@ -14,7 +14,7 @@
     },
     {
       "id": "relevance",
-      "criterion": "What I heard is a faithful concise summary. Why Ryan may be relevant uses only established DevX, forward-deployed engineering, AI-native platform, team-building, or speaking relevance. Irrelevant requests are identified as a mismatch and redirected without pretending Ryan can fulfill them.",
+      "criterion": "What I heard is a faithful concise summary. Why Ryan may be relevant uses only established developer tools, maps, open source, AI coding-agent, content-collaboration, consulting, or speaking relevance. Irrelevant requests are identified as a mismatch and redirected without pretending Ryan can fulfill them.",
       "applies_to": "all"
     },
     {
@@ -24,7 +24,7 @@
     },
     {
       "id": "no_availability_or_commitment",
-      "criterion": "The response never states or implies that Ryan accepted, endorsed, scheduled, promised availability, agreed to terms, will leave Google, will bring colleagues, or can perform current outside consulting or advisory work. It may frame future advisory or board interest only as a conversation for the future and must not invent availability.",
+      "criterion": "The response never states or implies that Ryan accepted, endorsed, scheduled, promised availability, agreed to terms, will leave Google, will bring colleagues, or can perform current outside consulting work. It may acknowledge that the visitor selected consulting while clearly avoiding invented availability or commitment.",
       "applies_to": "all"
     },
     {

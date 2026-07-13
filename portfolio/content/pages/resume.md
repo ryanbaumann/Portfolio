@@ -1,18 +1,18 @@
 ---
 title: Resume
-summary: Ryan Baumann's experience leading developer platforms from field signal through product, distribution, and measurable growth.
+summary: Selected work across builder platforms, developer tools, evals, open source, and AI coding agents.
 eyebrow: Experience
 image: /img/ryan-baumann-profile.jpg
 imageAlt: Ryan Baumann
 ---
 
-I lead Developer Experience and forward-deployed engineering for AI-native developer platforms. My work connects product, engineering, and go-to-market teams around one goal: turn developer friction into shipped tools, stronger distribution, and measurable growth.
+I lead Developer Experience Engineering and product work for builder platforms. I turn repeated developer problems into shipped tools, evals, open-source libraries, and workflows for AI coding agents. At Google Maps Platform, recent work includes Code Assist, agent skills, agentic evals, architecture guidance, and open-source client libraries.
 
 ## Current focus
 
 **Head of Developer Experience, Google Maps Platform** (2022 to present)
 
-- Lead a 20+ person organization across engineering, product management, technical writing, developer relations, solution architecture, AI context, and developer growth.
+- Lead Developer Experience Engineering for Google Maps Platform.
 - Led the team's client-library and AI distribution strategy across React, Compose, AI Studio, Lovable, and Replit.
 - From March 2025 to March 2026, open-source client-library unique active users grew 300% and API engagement grew approximately 200%.
 - Led teams behind [Code Assist](https://developers.google.com/maps/ai/code-assist), [agent skills](https://github.com/googlemaps/agent-skills), agentic evals, and the [Geo Architecture Center](https://developers.google.com/maps/architecture).
@@ -25,7 +25,7 @@ Led product and engineering for [Intelligent Product Essentials](https://cloud.g
 
 **Director, Solutions Architecture, Instabase** (2020 to 2021)
 
-Built the solutions architecture team and ran the technical go-to-market motion for an AI platform focused on unstructured document automation. The company exceeded its FY2020 revenue target.
+Built the solutions architecture team and led demos, proofs of value, and post-sale implementation for an AI platform focused on unstructured document automation. The company exceeded its FY2020 revenue target.
 
 **Senior Manager and Senior Solutions Architect, Mapbox** (2016 to 2020)
 

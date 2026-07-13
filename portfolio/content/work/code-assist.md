@@ -1,7 +1,7 @@
 ---
 title: Google Maps Platform Code Assist
 org: Google
-role: Product incubation, GTM & engineering lead
+role: Product and engineering lead
 period: 2024 – present
 summary: Led the cross-functional team that turned field demand for accurate AI-generated Maps code into a Google-hosted MCP service grounded in official docs and samples.
 tags: ["mcp", "applied ai", "developer platforms"]
@@ -24,4 +24,4 @@ With it connected, agents retrieve current official docs instead of relying only
 
 ## What I learned
 
-Developer experience can be shipped as product. The interface is a tool call, the quality bar is an eval suite, and the distribution channel is every agent harness a developer already uses. That framing changed how we prioritize everything else.
+Current documentation is most useful when the agent can retrieve it inside the task, and an eval checks the result.

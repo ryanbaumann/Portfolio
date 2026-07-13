@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-13: Writer workflow and external-facing refinement
+
+- Added a password-protected `/writer/` build that previews drafts and future essays, publishes through a same-origin authenticated GitHub update, and supports explicit UTC `publishAt` schedules with hourly rebuilds.
+- Kept unpublished essays out of public detail pages, lists, homepage modules, RSS, sitemap, analytics, and search indexing; private assets now receive no-store and noindex response headers.
+- Added safe draft, immediate, and scheduled scaffolding commands plus deterministic build, gateway-auth, GitHub-update, and schedule-gate tests.
+- Hardened the writer release path with exact future-time validation, an explicit publish confirmation, a shared public/writer build cutoff, required runtime-secret verification, and production fail-closed smoke coverage.
+- Simplified the homepage to one concrete headline and action, removed recruiting copy, exposed four contact choices, added Resume to primary navigation, reduced the About portrait, and replaced the visible theme words with an accessible icon control.
+- Expanded portable Markdown rendering with semantic headings, stable and explicit fragment links, tables, and fenced-code language labels; Resume now renders from its Markdown source instead of a hard-coded duplicate.
+- Rewrote public copy around builder platforms, Developer Experience Engineering, product leadership, developer tools, evals, open source, and AI coding agents; kept maps as current-work evidence, regenerated affected social cards, and synchronized the optional qualifier eval dataset to the four public intents.
+- Added an exact GA4 setup runbook and build wiring for the `ANALYTICS_MEASUREMENT_ID` repository variable while preserving opt-in consent and the existing sensitive-data exclusions.
+
 ## 2026-07-13: Strategy-led portfolio experience
 
 - Rebuilt the homepage around the DevX/FDE thesis, proof strip, five-stage operating system, principal-builder recruiting, Lab, Field Notes, speaking, and earlier platform foundation.
