@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-13: Portfolio overhaul acceptance hardening
+
+- Closed the remaining private-demo gaps with strict manifest/provider validation, fail-closed static routing, expiring signed access cookies, public-only discovery, route-specific limits, and direct-access integration tests.
+- Fixed the default same-origin Strava photo path so Maps 3D markers and popovers always use the bounded, allowlisted gateway proxy; hardened redirects, MIME checks, ports, credentials, byte limits, CORS, and CORP behavior.
+- Added fixture-driven CMS regression tests for invalid dates, unsafe drafts, duplicate slugs, broken links, metadata uniqueness, and private-demo disclosure; new posts now remain drafts unless `--publish` is explicit.
+- Corrected content and skill links, emitted physical dimensions for dynamic images, and added real media to Contact and Resume with mobile, narrow, and desktop screenshot checks.
+- Made local builds consume the root `.env` without printing values, separated browser/server key prompts, documented contact/provider/private-demo configuration, and added a bounded production smoke script to deployment.
+
 ## 2026-07-13: Portfolio leadership positioning and preview audit
 
 - Rewrote Contact page copy around advisor work, platform seats, and content collaboration, with clearer AI-native developer experience and growth prompts.

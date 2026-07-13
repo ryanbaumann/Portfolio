@@ -63,7 +63,7 @@ cd portfolio && node build.mjs && node serve.mjs
 
 * Never commit API keys, OAuth secrets, access tokens, refresh tokens, or generated `.env.*` files.
 * Browser-exposed Google Maps keys must use `VITE_` variables, API restrictions, and HTTP referrer restrictions.
-* Server-side secrets stay in Node env vars: `STRAVA_CLIENT_ID`, `STRAVA_CLIENT_SECRET`, and `GMP_SERVER_API_KEY`.
+* Public OAuth client configuration uses `STRAVA_CLIENT_ID`; actual server-side secrets stay in Node env vars such as `STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`, and `RESEND_API_KEY`.
 * Gateway proxy endpoints return keyless `503` JSON responses instead of crashing, so smoke tests can run without secrets.
 
 ## Deploy
