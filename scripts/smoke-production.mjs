@@ -26,7 +26,7 @@ async function waitForHealthy(timeoutMs = 90_000) {
   let lastError;
   while (Date.now() - started < timeoutMs) {
     try {
-      const response = await fetch(`${baseUrl}/healthz`, { redirect: 'manual' });
+      const response = await fetch(`${baseUrl}/api/healthz`, { redirect: 'manual' });
       if (response.ok) return;
       lastError = new Error(`HTTP ${response.status}`);
     } catch (error) {

@@ -200,7 +200,7 @@ function findAppForPath(pathname) {
 async function handleApi(request, response, pathname, searchParams) {
   const ip = clientIp(request);
 
-  if (pathname === '/healthz') {
+  if (pathname === '/healthz' || pathname === '/api/healthz') {
     sendJson(response, 200, { ok: true, apps: publicApps.map((app) => app.name) });
     return;
   }

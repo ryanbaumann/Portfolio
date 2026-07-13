@@ -58,7 +58,7 @@ async function waitForHealthz(baseUrl, timeoutMs = 15_000) {
   let lastError;
   while (Date.now() - start < timeoutMs) {
     try {
-      const response = await fetch(`${baseUrl}/healthz`);
+      const response = await fetch(`${baseUrl}/api/healthz`);
       if (response.ok) return;
     } catch (err) {
       lastError = err;
@@ -196,8 +196,8 @@ async function main() {
   console.log(`[smoke] testing ${baseUrl}${startedOwnGateway ? ' (gateway started by this script)' : ' (external BASE_URL)'}`);
 
   try {
-    await check('/healthz returns 200', async () => {
-      const response = await fetch(`${baseUrl}/healthz`);
+    await check('/api/healthz returns 200', async () => {
+      const response = await fetch(`${baseUrl}/api/healthz`);
       if (response.status !== 200) throw new Error(`expected 200, got ${response.status}`);
       const data = await response.json();
       if (data.ok !== true) throw new Error(`expected ok: true, got ${JSON.stringify(data)}`);

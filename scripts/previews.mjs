@@ -63,7 +63,7 @@ async function startGateway() {
   const start = Date.now();
   while (Date.now() - start < 15_000) {
     try {
-      const response = await fetch(`${baseUrl}/healthz`);
+      const response = await fetch(`${baseUrl}/api/healthz`);
       if (response.ok) return baseUrl;
     } catch { /* not up yet */ }
     await new Promise((r) => setTimeout(r, 200));
