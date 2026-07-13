@@ -44,4 +44,4 @@ I joined as the first customer-facing engineer at Series B and grew the team fro
 
 ## Elsewhere
 
-[GitHub](https://github.com/ryanbaumann) · [LinkedIn](https://www.linkedin.com/in/ryanbaumann/) · [Substack](https://ryanbaumann.substack.com/) · [Email](mailto:rsbaumann@gmail.com)
+[GitHub](https://github.com/ryanbaumann) · [LinkedIn](https://www.linkedin.com/in/ryanbaumann/) · [Substack](https://ryanbaumann.substack.com/) · [Contact](/contact/)
