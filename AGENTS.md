@@ -29,6 +29,8 @@ picture.
   scaffolds the folder and wires apps.json, the Dockerfile, and dependabot.
   The homepage card, nav item, gateway route, container build, and smoke
   coverage all follow from the apps.json entry.
+  Use `--visibility unlisted` for direct-link previews or `--visibility private`
+  for a password-gated demo; private scaffolds print the required server env var.
 - **Add a blog post:** `npm run new:post -- "Post title"` (add
   `--external <url>` for a link-out entry). Voice guidance:
   `.agents/skills/portfolio-writing/SKILL.md`.
@@ -215,4 +217,3 @@ Use these repo-local skills when the task matches their scope:
 - Summarize changed behavior and cite touched files.
 - List every validation command run and whether it passed, failed, or was limited by environment.
 - Call out any untested browser/API behavior, required environment variables, or migration follow-ups.
-

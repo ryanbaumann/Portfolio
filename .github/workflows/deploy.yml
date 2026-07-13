@@ -6,7 +6,8 @@ name: Deploy to Cloud Run
 # build now ship in one image, built with Cloud Build and deployed to one
 # Cloud Run service. There is no GCS step anymore.
 #
-# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY) and public
+# Runtime secrets (STRAVA_CLIENT_SECRET, GMP_SERVER_API_KEY, RESEND_API_KEY,
+# CONTACT_TO_EMAIL) and public
 # config (STRAVA_CLIENT_ID) are set once on the Cloud Run
 # service, not passed through this workflow on every deploy — see the
 # comment above the `gcloud run deploy` step for the one-time setup
@@ -22,7 +23,7 @@ on:
 
 jobs:
   deploy:
-    name: Build and deploy trails-ninja
+    name: Build and deploy Ryan Baumann Portfolio
     runs-on: ubuntu-latest
     if: github.repository == 'ryanbaumann/Portfolio' || github.repository == 'ryanbaumann/portfolio'
     concurrency:
@@ -74,6 +75,8 @@ jobs:
             echo "Ensure the following runtime secrets are also configured directly on the Cloud Run service:"
             echo "- STRAVA_CLIENT_SECRET"
             echo "- GMP_SERVER_API_KEY"
+            echo "- RESEND_API_KEY"
+            echo "- CONTACT_TO_EMAIL"
             exit 1
           fi
 
@@ -116,16 +119,45 @@ jobs:
           #     --project "$GCP_PROJECT_ID" --region "$GCP_REGION" \
           #     --update-secrets=STRAVA_CLIENT_SECRET=strava-client-secret:latest \
           #     --update-secrets=GMP_SERVER_API_KEY=gmp-server-api-key:latest \
-          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>
+          #     --update-secrets=RESEND_API_KEY=resend-api-key:latest \
+          #     --update-secrets=CONTACT_TO_EMAIL=contact-to-email:latest \
+          #     --set-env-vars=STRAVA_CLIENT_ID=<your Strava app's client id>,CONTACT_FROM_EMAIL=<verified sender>
           #
           # STRAVA_CLIENT_ID isn't secret on its own (it's public in the
           # OAuth authorize URL), so plain --set-env-vars is fine for it.
           # Everything else should be a Secret Manager reference via
           # --update-secrets, never a literal value in this workflow.
 
-      - name: Post-deploy smoke test
+      - name: Verify Cloud Run runtime configuration
         run: |
-          echo "Waiting for Cloud Run to route traffic..."
-          sleep 5
-          curl -sSf https://www.ryanbaumann-portfolio.com/ > /dev/null
-          echo "Production smoke test passed!"
+          set -euo pipefail
+          SERVICE_JSON="$(mktemp)"
+          gcloud run services describe trails-ninja \
+            --project "$GCP_PROJECT_ID" \
+            --region "$GCP_REGION" \
+            --format=json > "$SERVICE_JSON"
+          node - "$SERVICE_JSON" <<'NODE'
+          const { readFileSync } = require('node:fs');
+          const service = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          const configured = new Set(
+            (service.spec?.template?.spec?.containers?.[0]?.env || []).map((entry) => entry.name),
+          );
+          const required = [
+            'STRAVA_CLIENT_ID',
+            'STRAVA_CLIENT_SECRET',
+            'GMP_SERVER_API_KEY',
+            'RESEND_API_KEY',
+            'CONTACT_TO_EMAIL',
+          ];
+          const missing = required.filter((name) => !configured.has(name));
+          if (missing.length) {
+            console.error(`::error::Cloud Run is missing runtime configuration: ${missing.join(', ')}`);
+            process.exit(1);
+          }
+          console.log('Cloud Run runtime variable names are configured; values were not read or printed.');
+          NODE
+
+      - name: Post-deploy smoke test
+        env:
+          BASE_URL: https://www.ryanbaumann-portfolio.com
+        run: node scripts/smoke-production.mjs

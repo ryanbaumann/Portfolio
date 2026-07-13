@@ -34,6 +34,21 @@ with its mount `path`. The gateway matches the most specific path first, so
 the root-mounted portfolio (`path: "/"`) is the catch-all after every demo
 path has had its chance.
 
+Manifest entries default to `visibility: "public"`. `unlisted` apps remain
+directly reachable but are omitted from the portfolio and `/api/apps`;
+`private` apps are also omitted and require
+`auth: { "type": "password", "envVar": "DEMO_PASSWORD" }`. The named env
+variable is server-only. Missing or invalid private auth fails closed before
+any static file is served. Optional `providers` entries contain registry names
+such as `strava`, `isochrones`, or `resend`; env variable names and values live
+only in `gateway/lib/config.js` and are never serialized to the browser.
+Provider names document credential ownership; they do not make a global
+`/api/*` route private. A future private demo that needs a private upstream
+must add an authenticated app-scoped gateway route, not reuse a public proxy.
+Private access cookies use the `__Host-` prefix and `Secure`; exercise the
+password flow through HTTPS (production or an HTTPS local proxy), not the
+plain-HTTP gateway development URL.
+
 ## Design rules
 
 1. **Apps are folders.** Any top-level directory with a `package.json` whose
@@ -86,13 +101,16 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 | secret  | `GCP_WIF_PROVIDER`      | Workload Identity Federation provider|
 | secret  | `GCP_SA_EMAIL`          | Deploy service account               |
 | secret  | `VITE_GMP_API_KEY`      | Referrer-restricted Maps browser key |
+| secret  | `VITE_ISOCHRONES_GMP_API_KEY` | Referrer-restricted Isochrones browser key |
 | secret  | `VITE_STRAVA_CLIENT_ID` | Strava OAuth client ID (public)      |
 | var     | `GCP_PROJECT_ID`        | Target project                       |
 | var     | `GCP_REGION`            | Cloud Run region                     |
 
-Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`) are set on
-the Cloud Run service — as Secret Manager references — never in the image or
-repo.
+Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
+`RESEND_API_KEY`, and `CONTACT_TO_EMAIL`) are set on the Cloud Run service
+as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
+is optional non-secret sender configuration and must use a sender accepted by
+the mail provider.
 
 ## Paved paths
 

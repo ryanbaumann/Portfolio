@@ -153,9 +153,8 @@ async function fetchText(url) {
 
 const SECRET_PATTERNS = [
   ['Strava/generic OAuth client_secret string', /client_secret/i],
-  // Google API keys. In a keyless CI build no VITE_GMP_API_KEY was ever
-  // injected, so any match here is a real leak, not an expected browser key.
-  ['Google API key (AIza...)', /AIza[0-9A-Za-z_-]{35}/],
+  // Referrer-restricted Maps browser keys are expected in Vite bundles.
+  // Server keys use non-VITE env vars and are never exposed to this scan.
   ['Stripe-style live secret key', /sk_live_[0-9A-Za-z]+/],
   ['PEM private key block', /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
 ];
@@ -189,7 +188,8 @@ function scanForSecrets(rootDirs) {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  const apps = JSON.parse(readFileSync(APPS_JSON_PATH, 'utf8'));
+  const apps = JSON.parse(readFileSync(APPS_JSON_PATH, 'utf8'))
+    .filter((app) => (app.visibility || 'public') === 'public');
   const startedOwnGateway = !process.env.BASE_URL;
   const baseUrl = process.env.BASE_URL || await startGateway();
 

@@ -1,5 +1,26 @@
 # Learnings
 
+## 2026-07-13: Empty proxy bases must still produce same-origin URLs
+
+Context: Strava photo proxy support existed, but production left `VITE_STRAVA_AUTH_BASE_URL` empty because the gateway is same-origin.
+Learning: An empty proxy base is a valid deployment mode, not a reason to bypass the proxy. URL helpers must distinguish an absent image URL from an intentionally empty broker origin.
+Evidence: The client returned raw CloudFront URLs whenever the base string was empty, so Maps 3D canvas reads still hit responses without CORS. A pure URL helper now maps allowlisted photos to `/api/photo-proxy` for the default deployment and has unit coverage for same-origin, cross-origin, and unsupported URLs.
+Use next time: Test URL builders with the exact production default, including empty-origin configuration, before treating proxy wiring as complete.
+
+## 2026-07-13: Private visibility must fail closed at manifest load and static routing
+
+Context: The gateway gated static files only when an app was both `private` and had an `auth` object.
+Learning: Security metadata cannot be optional after a resource is marked private. Validate the manifest at boot, then gate every private request before availability checks or static serving.
+Evidence: A private entry with missing or malformed auth metadata previously fell through to `serveFromDir`. Manifest validation now rejects it, direct index and asset requests return an auth response, missing secrets return `503`, and integration tests cover public, unlisted, private, authenticated, and missing-secret paths.
+Use next time: Make the secure state the outer condition, reject incomplete configuration early, and include direct static-asset requests in authorization tests.
+
+## 2026-07-13: A root setup file only works when every build path loads it
+
+Context: `npm run setup` wrote browser and server configuration to the root `.env`, while Vite builds ran from app directories and never read that file.
+Learning: A setup wizard and a build runner form one contract. The runner must load the generated file explicitly, preserve already-exported variables, and never log values.
+Evidence: The staged build now loads the root `.env` before spawning app builds, and setup prompts separately for restricted browser keys, the server key, and optional contact configuration.
+Use next time: Test setup output variable names against the actual build/deploy inputs and keep browser-public `VITE_*` values separate from server-only credentials.
+
 ## 2026-07-13: Contact pages should hide owner email addresses at the rendering layer
 
 Context: The portfolio needed contact UX without exposing Ryan's personal email address in the HTML.
