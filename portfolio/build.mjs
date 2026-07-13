@@ -282,7 +282,7 @@ function inlineMd(text) {
   });
   html = html.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, label, href) => {
     const external = /^https?:\/\//.test(href);
-    return `<a href="${rebase(href)}"${external ? ' rel="noopener"' : ''}>${label}</a>`;
+    return `<a href="${rebase(href)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${label}</a>`;
   });
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
@@ -534,10 +534,10 @@ ${content}
 <footer class="site-footer">
   <p>&copy; <span>${new Date().getFullYear()}</span> ${escapeHtml(site.name)}</p>
   <p class="footer-links">
-    <a href="${site.links.github}" rel="noopener">GitHub</a>
-    <a href="${site.links.linkedin}" rel="noopener">LinkedIn</a>
-    ${site.links.x ? `<a href="${site.links.x}" rel="noopener">X</a>` : ''}
-    ${site.links.substack ? `<a href="${site.links.substack}" rel="noopener">Substack</a>` : ''}
+    <a href="${site.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    ${site.links.x ? `<a href="${site.links.x}" target="_blank" rel="noopener noreferrer">X</a>` : ''}
+    ${site.links.substack ? `<a href="${site.links.substack}" target="_blank" rel="noopener noreferrer">Substack</a>` : ''}
     <a href="${BASE}talks/">Talks</a>
     <a href="${BASE}resume/">Resume</a>
     <a href="${BASE}privacy/">Privacy</a>
@@ -569,7 +569,10 @@ function metaLine(parts) {
 function linkChips(links = []) {
   if (!links.length) return '';
   const chips = links
-    .map((link) => `<a class="chip" href="${rebase(link.url)}" rel="noopener">${escapeHtml(link.label)} ↗</a>`)
+    .map((link) => {
+      const external = link.url.startsWith('http');
+      return `<a class="chip" href="${rebase(link.url)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escapeHtml(link.label)} ↗</a>`;
+    })
     .join('');
   return `<p class="chips">${chips}</p>`;
 }
@@ -648,14 +651,14 @@ function workCard(entry) {
   <p>${escapeHtml(meta.summary || '')}</p>
   ${meta.tags ? `<p class="card-tags">${meta.tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join('')}</p>` : ''}`;
   if (meta.image) {
-    return `<a class="card work-card has-thumb" href="${url}" data-analytics-type="work" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' rel="noopener"' : ''}>
+    return `<a class="card work-card has-thumb" href="${url}" data-analytics-type="work" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
   <img class="card-thumb" src="${rebase(meta.image)}" alt="${escapeHtml(meta.imageAlt || meta.title)}" loading="lazy" width="${imageSize.width}" height="${imageSize.height}" />
   <div class="card-body">
   ${cardMeta}
   </div>
 </a>`;
   }
-  return `<a class="card" href="${url}" data-analytics-type="work" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' rel="noopener"' : ''}>
+  return `<a class="card" href="${url}" data-analytics-type="work" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
   ${cardMeta}
 </a>`;
 }
@@ -666,7 +669,7 @@ function listRow(collection, entry) {
   const external = Boolean(meta.external);
   const clickable = external || hasDetailPage(entry);
   const title = clickable
-    ? `<a href="${url}"${external ? ' rel="noopener"' : ''}>${escapeHtml(meta.title)}${external ? ' ↗' : ''}</a>`
+    ? `<a href="${url}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>${escapeHtml(meta.title)}${external ? ' ↗' : ''}</a>`
     : escapeHtml(meta.title);
   const imagePath = meta.image ? join(STATIC_DIR, meta.image.replace(/^\//, '')) : '';
   const imageSize = meta.image ? getImageDimensions(imagePath) : null;
@@ -718,7 +721,7 @@ function shareLinks(pageUrl, title) {
   const email = `mailto:?subject=${encodedTitle}&body=${encodedUrl}`;
   return `<p class="share-links">
   <span class="share-label">Share</span>
-  <a class="chip" href="${linkedIn}" rel="noopener" aria-label="Share on LinkedIn" data-analytics-share="linkedin">LinkedIn</a>
+  <a class="chip" href="${linkedIn}" target="_blank" rel="noopener noreferrer" aria-label="Share on LinkedIn" data-analytics-share="linkedin">LinkedIn</a>
   <a class="chip" href="${email}" aria-label="Share via email" data-analytics-share="email">Email</a>
 </p>`;
 }
@@ -1018,7 +1021,7 @@ function buildDemosPage() {
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
   </div>
-  <p class="section-note">Every demo is open source. <a href="${site.links.github}/Portfolio" rel="noopener">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
+  <p class="section-note">Every demo is open source. <a href="${site.links.github}/Portfolio" target="_blank" rel="noopener noreferrer">read the code</a>. One Ryan Baumann portfolio container, one Cloud Run service, no secrets in the browser.</p>
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
@@ -1093,7 +1096,7 @@ function resumePageContent(meta, body) {
       <h1>${escapeHtml(site.name)}</h1>
       <p class="lede">${escapeHtml(site.positioning || site.role)}</p>
     </div>
-    <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" rel="noopener">LinkedIn</a> · <a href="${site.links.github}" rel="noopener">GitHub</a></p>
+    <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="${site.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a></p>
   </div>
   <div class="resume-body">${markdownToHtml(body)}</div>
 </section>`;
