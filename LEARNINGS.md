@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-13: Contact pages should hide owner email addresses at the rendering layer
+
+Context: The portfolio needed contact UX without exposing Ryan's personal email address in the HTML.
+Learning: A static portfolio can still keep the owner's address private by posting to a same-origin backend route and reading the recipient from server-only environment variables. The public form should collect the visitor's reply address, while the server uses `CONTACT_TO_EMAIL` and provider credentials such as `RESEND_API_KEY`.
+Evidence: Today's pass removed public `mailto:` links to Ryan's address, added `/contact/`, and routed submissions through `/api/contact`. The route returns a setup message when mail credentials are missing instead of leaking a fallback address.
+Use next time: Never solve portfolio contact by adding a visible owner email. Add or reuse a backend form route, document the server-only env vars, and make missing-provider behavior explicit.
+
 ## 2026-07-12: AEO works best when the page and schema say the same thing
 
 Context: A repo-wide copy pass needed to improve search and answer-engine clarity without adding vague keyword stuffing.

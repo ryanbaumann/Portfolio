@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-13: Portfolio feedback readiness pass
+
+- Compressed the portfolio header into a single-line shell on mobile and desktop, added Resume and Contact navigation, and added a manual light/dark theme toggle.
+- Added a resume-style page with tighter career sections, proof points, and links back to work and contact.
+- Replaced public email links with a backend-managed contact form and a gateway `/api/contact` route that sends through Resend when `RESEND_API_KEY` and `CONTACT_TO_EMAIL` are configured.
+- Updated About contact copy so the public site no longer renders Ryan's email address.
+- Kept existing real screenshots where available and left generated artifact cards only where no honest screenshot exists.
+
 ## 2026-07-12: Deployed UI/UX polish pass
 
 - Audited the live site text rendering and demo pages, then tightened the local portfolio UI before the next deploy.

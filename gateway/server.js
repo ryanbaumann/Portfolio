@@ -22,6 +22,7 @@ import { handleIsochronesApi } from './lib/isochrones.js';
 
 const PORT = Number(process.env.PORT || 8080);
 const JSON_BODY_LIMIT_BYTES = 16 * 1024;
+const FORM_BODY_LIMIT_BYTES = 32 * 1024;
 
 const { apps } = loadApps(process.env);
 // Only public-visibility apps appear in /api/apps and /healthz.
@@ -73,6 +74,99 @@ function sendRaw(response, statusCode, body, contentType) {
   response.end(body);
 }
 
+
+function readTextBody(request, limitBytes = FORM_BODY_LIMIT_BYTES) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let bytesRead = 0;
+    request.on('data', (chunk) => {
+      bytesRead += chunk.length;
+      if (bytesRead > limitBytes) {
+        reject(Object.assign(new Error('Payload too large'), { statusCode: 413 }));
+        request.destroy();
+        return;
+      }
+      body += chunk;
+    });
+    request.on('end', () => {
+      if (bytesRead <= limitBytes) resolve(body);
+    });
+    request.on('error', reject);
+  });
+}
+
+function sendHtml(response, statusCode, body) {
+  applySecurityHeaders(response);
+  response.writeHead(statusCode, {
+    'Content-Type': 'text/html; charset=utf-8',
+    'Cache-Control': 'no-store',
+  });
+  response.end(body);
+}
+
+function contactResponsePage(title, message, statusCode = 200) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>body{font-family:system-ui,sans-serif;max-width:42rem;margin:4rem auto;padding:0 1.25rem;line-height:1.6;color:#111827;background:#faf9f6}a{color:inherit}</style></head><body><p><a href="/contact/">← Contact</a></p><h1>${title}</h1><p>${message}</p></body></html>`;
+}
+
+async function handleContactRequest(request, response) {
+  if (request.method !== 'POST') {
+    sendJson(response, 405, { error: 'Method not allowed' });
+    return;
+  }
+
+  let rawBody;
+  try {
+    rawBody = await readTextBody(request);
+  } catch (err) {
+    sendHtml(response, err.statusCode || 400, contactResponsePage('Message not sent', err.message, err.statusCode || 400));
+    return;
+  }
+
+  const contentType = request.headers['content-type'] || '';
+  const params = contentType.includes('application/x-www-form-urlencoded')
+    ? new URLSearchParams(rawBody)
+    : new URLSearchParams();
+  const name = String(params.get('name') || '').trim().slice(0, 120);
+  const email = String(params.get('email') || '').trim().slice(0, 200);
+  const message = String(params.get('message') || '').trim().slice(0, 5000);
+
+  if (!name || !email || !message || !email.includes('@') || message.length < 20) {
+    sendHtml(response, 400, contactResponsePage('Message not sent', 'Please include your name, a valid email, and a message with at least 20 characters.', 400));
+    return;
+  }
+
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const toEmail = process.env.CONTACT_TO_EMAIL;
+  const fromEmail = process.env.CONTACT_FROM_EMAIL || 'Portfolio Contact <onboarding@resend.dev>';
+  if (!resendApiKey || !toEmail) {
+    sendHtml(response, 503, contactResponsePage('Contact form is not configured yet', 'The backend route is live, but RESEND_API_KEY and CONTACT_TO_EMAIL must be set before it can deliver messages.', 503));
+    return;
+  }
+
+  const upstream = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: fromEmail,
+      to: [toEmail],
+      reply_to: email,
+      subject: `Portfolio contact from ${name}`,
+      text: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+    }),
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!upstream.ok) {
+    sendHtml(response, 502, contactResponsePage('Message not sent', 'The mail provider did not accept the message. Please try again later.', 502));
+    return;
+  }
+
+  sendHtml(response, 200, contactResponsePage('Message sent', 'Thanks. I have your note and enough context to reply.', 200));
+}
+
 function readJsonBody(request) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -107,6 +201,11 @@ async function handleApi(request, response, pathname, searchParams) {
 
   if (pathname === '/healthz') {
     sendJson(response, 200, { ok: true, apps: publicApps.map((app) => app.name) });
+    return;
+  }
+
+  if (pathname === '/api/contact') {
+    await handleContactRequest(request, response);
     return;
   }
 

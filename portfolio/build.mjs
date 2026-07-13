@@ -318,16 +318,12 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
     { href: `${BASE}writing/`, label: 'Writing', key: 'writing' },
     { href: `${BASE}talks/`, label: 'Talks', key: 'talks' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Demos', key: 'demos' }] : []),
+    { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
+    { href: `${BASE}contact/`, label: 'Contact', key: 'contact' },
     { href: `${BASE}about/`, label: 'About', key: 'about' },
   ];
   const nav = navItems
     .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
-    .join('');
-  const headerCtas = [
-    { label: 'See demos', href: `${BASE}demos/` },
-    { label: 'Get in touch', href: `mailto:${site.links.email}` }
-  ]
-    .map((item) => `<a class="header-cta" href="${item.href}">${item.label}</a>`)
     .join('');
 
   const resolvedCanonical = canonical || absoluteUrl('/');
@@ -379,14 +375,15 @@ ${ogImageAltTag}
 ${twitterTags}
 ${articleTags ? articleTags + '\n' : ''}<link rel="icon" href="${BASE}favicon.svg" type="image/svg+xml" />
 <link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.name)} Writing" href="${absoluteUrl('/feed.xml')}" />
-${robotsTag ? robotsTag + '\n' : ''}${jsonLdTag ? jsonLdTag + '\n' : ''}<style>${CSS}</style>
+${robotsTag ? robotsTag + '\n' : ''}${jsonLdTag ? jsonLdTag + '\n' : ''}<script>try{const t=localStorage.getItem('theme');if(t)document.documentElement.dataset.theme=t;}catch{}</script>
+<style>${CSS}</style>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
   <nav aria-label="Site">${nav}</nav>
-  <div class="header-actions" aria-label="Primary actions">${headerCtas}</div>
+  <button class="theme-toggle" type="button" aria-label="Toggle color theme" onclick="try{const e=document.documentElement;const n=e.dataset.theme==='dark'?'light':'dark';e.dataset.theme=n;localStorage.setItem('theme',n)}catch{}">Theme</button>
 </header>
 <main id="main">
 ${content}
@@ -398,7 +395,7 @@ ${content}
     <a href="${site.links.linkedin}" rel="noopener">LinkedIn</a>
     ${site.links.x ? `<a href="${site.links.x}" rel="noopener">X</a>` : ''}
     ${site.links.substack ? `<a href="${site.links.substack}" rel="noopener">Substack</a>` : ''}
-    <a href="mailto:${site.links.email}">Email</a>
+    <a href="${BASE}contact/">Contact</a>
   </p>
 </footer>
 </body>
@@ -710,7 +707,8 @@ function buildHome(collections) {
     { label: 'Work', href: `${BASE}work/` },
     ...(demos.length ? [{ label: 'Demos', href: `${BASE}demos/` }] : []),
     { label: 'Writing', href: `${BASE}writing/` },
-    { label: 'Email', href: `mailto:${site.links.email}` },
+    { label: 'Resume', href: `${BASE}resume/` },
+    { label: 'Contact', href: `${BASE}contact/` },
     { label: 'GitHub', href: site.links.github, external: true },
     { label: 'LinkedIn', href: site.links.linkedin, external: true },
   ];
@@ -851,6 +849,44 @@ function buildCollectionIndex(collection, entries) {
   }));
 }
 
+
+function resumePageContent() {
+  return `<section class="resume-shell">
+  <div class="resume-header">
+    <div>
+      <p class="eyebrow">Resume</p>
+      <h1>${escapeHtml(site.name)}</h1>
+      <p class="lede">${escapeHtml(site.positioning || site.role)}</p>
+    </div>
+    <p class="resume-meta">${escapeHtml(site.location)}<br /><a href="${site.links.linkedin}" rel="noopener">LinkedIn</a> · <a href="${site.links.github}" rel="noopener">GitHub</a></p>
+  </div>
+  <div class="resume-section"><h2>Focus</h2><p>${escapeHtml(site.answerEngineSummary || site.description)}</p></div>
+  <div class="resume-section"><h2>Experience</h2>
+    <article><h3>Google Maps Platform</h3><p class="resume-meta">Developer Experience, solution architecture, product incubation · 2022 – present</p><p>Lead developer experience and forward-deployed platform work across Code Assist, agent skills, evals, AI-native distribution, and the Geo Architecture Center.</p></article>
+    <article><h3>Google Cloud</h3><p class="resume-meta">0→1 industry solution product and engineering lead · 2021 – 2022</p><p>Led Intelligent Product Essentials from zero to launch with GE Appliances in nine months.</p></article>
+    <article><h3>Mapbox</h3><p class="resume-meta">Customer engineering, product, partnerships · 2015 – 2020</p><p>Grew customer engineering from 1 to 15 as Mapbox crossed $100M ARR. Took Boundaries and Atlas to their first $5M ARR and led OSS partnerships with Uber's visualization stack.</p></article>
+    <article><h3>Instabase and Caterpillar</h3><p class="resume-meta">Solution architecture and industrial IoT</p><p>Led solution architecture at Series-B Instabase. Earlier, built industrial IoT systems at Caterpillar with 3 US patents.</p></article>
+  </div>
+  <div class="resume-section"><h2>Selected proof</h2><ul>${(site.proofPoints || []).map((point) => `<li><strong>${escapeHtml(point.label)}</strong>: ${escapeHtml(point.text)}</li>`).join('')}</ul></div>
+  <p class="chips"><a class="chip" href="${BASE}work/">Work</a><a class="chip" href="${BASE}contact/">Contact</a></p>
+</section>`;
+}
+
+function contactPageContent() {
+  return `<section class="contact-shell">
+  <p class="eyebrow">Contact</p>
+  <h1>Send a note</h1>
+  <p class="lede">Use this form instead of a public email address. It sends through the backend, keeps my address out of the HTML, and gives me enough context to reply.</p>
+  <form class="contact-form" action="${BASE}api/contact" method="post">
+    <label>Name <input name="name" autocomplete="name" required /></label>
+    <label>Email <input name="email" type="email" autocomplete="email" required /></label>
+    <label>What should I know? <textarea name="message" rows="7" required minlength="20"></textarea></label>
+    <button class="button" type="submit">Send note</button>
+  </form>
+  <p class="section-note">If the backend mail provider is not configured yet, the form returns a setup message instead of exposing an address.</p>
+</section>`;
+}
+
 function buildStandalonePages() {
   const dir = join(CONTENT_DIR, 'pages');
   if (!existsSync(dir)) return;
@@ -858,7 +894,8 @@ function buildStandalonePages() {
     if (!file.endsWith('.md') || file.startsWith('_')) continue;
     const slug = file.replace(/\.md$/, '');
     const { meta, body } = parseFrontMatter(readFileSync(join(dir, file), 'utf8'));
-    const content = `<article class="prose">
+    const customContent = slug === 'resume' ? resumePageContent() : slug === 'contact' ? contactPageContent() : null;
+    const content = customContent || `<article class="prose">
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
   ${(() => {
