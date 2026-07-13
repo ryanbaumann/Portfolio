@@ -517,18 +517,23 @@ ${articleTags ? articleTags + '\n' : ''}<link rel="icon" href="${BASE}favicon.sv
 <link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.name)} Writing" href="${absoluteUrl('/feed.xml')}" />
 ${robotsTag ? robotsTag + '\n' : ''}${contactDeliveryTag ? contactDeliveryTag + '\n' : ''}${jsonLdTag ? jsonLdTag + '\n' : ''}<script>try{const t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch{}</script>
 <style>${CSS}</style>
+${analyticsMarkup()}
 </head>
-<body>
+<body id="top">
 <a class="skip-link" href="#main">Skip to content</a>
 ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview. Nothing here is indexed.</div>' : ''}
 <header class="site-header">
+  <div class="site-branding">
   <a class="site-name" href="${BASE}">${escapeHtml(site.name)}</a>
-  <nav aria-label="Site">${nav}</nav>
+  </div>
+  <nav class="site-nav">
+  ${nav}
+  </nav>
   <div class="header-actions">
     <button class="theme-toggle" type="button" aria-label="Color theme: system. Activate to use light."><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg></span></button>
   </div>
 </header>
-<main id="main">
+<main id="main" class="site-main">
 ${content}
 </main>
 <footer class="site-footer">
@@ -544,7 +549,6 @@ ${content}
     <a href="${BASE}contact/">Contact</a>
   </p>
 </footer>
-${analyticsMarkup()}
 <script>(()=>{const b=document.querySelector('.theme-toggle');if(!b)return;const states=['system','light','dark'];const icons={system:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>',light:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>',dark:'<svg viewBox="0 0 24 24"><path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5a8.5 8.5 0 1 0 10.6 10.6Z"></path></svg>'};const sync=()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];b.querySelector('span').innerHTML=icons[current];b.setAttribute('aria-label','Color theme: '+current+'. Activate to use '+next+'.')};b.addEventListener('click',()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];if(next==='system'){delete document.documentElement.dataset.theme;localStorage.removeItem('theme')}else{document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)}sync()});sync()})();</script>
 </body>
 </html>
@@ -555,7 +559,50 @@ function analyticsMarkup() {
   if (WRITER_MODE) return '';
   const measurementId = String(process.env.ANALYTICS_MEASUREMENT_ID || site.analyticsMeasurementId || '');
   const canonicalHost = String(site.canonicalHost || '');
-  return `<script>(()=>{const measurementId=${JSON.stringify(measurementId)};const canonicalHost=${JSON.stringify(canonicalHost)};const debug=new URLSearchParams(location.search).get('analytics_debug')==='1';const hostAllowed=location.hostname===canonicalHost||debug;let loaded=false;const sanitizedLocation=location.origin+location.pathname;const sanitizedReferrer=()=>{try{const value=new URL(document.referrer);return value.origin===location.origin?value.origin+value.pathname:''}catch{return ''}};const event=(name,params)=>{if(window.gtag)window.gtag('event',name,params||{})};const load=()=>{if(loaded||!measurementId||!hostAllowed)return;loaded=true;window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'granted'});gtag('set','ads_data_redaction',true);const script=document.createElement('script');script.async=true;script.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(measurementId);script.onload=()=>{gtag('js',new Date());gtag('config',measurementId,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false});event('page_view',{page_location:sanitizedLocation,page_referrer:sanitizedReferrer()});const delivered=document.querySelector('meta[name="contact-delivery"][content="success"]')&&new URLSearchParams(location.search).get('delivered')==='1';if(delivered&&!sessionStorage.getItem('contact-lead-recorded')){event('generate_lead',{currency:'USD',value:0});sessionStorage.setItem('contact-lead-recorded','1')}};document.head.append(script)};load();let formStarted=false;document.querySelector('.contact-form')?.addEventListener('focusin',()=>{if(!formStarted){formStarted=true;event('form_start',{form_id:'portfolio_contact'})}});document.querySelector('.contact-form')?.addEventListener('submit',()=>event('form_submit',{form_id:'portfolio_contact'}));document.addEventListener('click',(click)=>{const link=click.target.closest('[data-analytics-type][data-analytics-id]');if(link)event('select_content',{content_type:link.dataset.analyticsType,content_id:link.dataset.analyticsId});const share=click.target.closest('[data-analytics-share]');if(share)event('share',{method:share.dataset.analyticsShare,content_type:'page',item_id:location.pathname})});})();</script>`;
+  return `<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${measurementId}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  const canonicalHost=${JSON.stringify(canonicalHost)};
+  const debug=new URLSearchParams(location.search).get('analytics_debug')==='1';
+  const hostAllowed=location.hostname===canonicalHost||debug;
+
+  if (hostAllowed) {
+    gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'granted'});
+    gtag('set','ads_data_redaction',true);
+    gtag('config', '${measurementId}', {send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false});
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!hostAllowed) return;
+
+    const sanitizedLocation=location.origin+location.pathname;
+    const sanitizedReferrer=()=>{try{const value=new URL(document.referrer);return value.origin===location.origin?value.origin+value.pathname:''}catch{return ''}};
+    const event=(name,params)=>{if(window.gtag)window.gtag('event',name,params||{})};
+
+    event('page_view',{page_location:sanitizedLocation,page_referrer:sanitizedReferrer()});
+
+    const delivered=document.querySelector('meta[name="contact-delivery"][content="success"]')&&new URLSearchParams(location.search).get('delivered')==='1';
+    if(delivered&&!sessionStorage.getItem('contact-lead-recorded')){
+      event('generate_lead',{currency:'USD',value:0});
+      sessionStorage.setItem('contact-lead-recorded','1');
+    }
+
+    let formStarted=false;
+    document.querySelector('.contact-form')?.addEventListener('focusin',()=>{if(!formStarted){formStarted=true;event('form_start',{form_id:'portfolio_contact'})}});
+    document.querySelector('.contact-form')?.addEventListener('submit',()=>event('form_submit',{form_id:'portfolio_contact'}));
+
+    document.addEventListener('click',(click)=>{
+      const link=click.target.closest('[data-analytics-type][data-analytics-id]');
+      if(link)event('select_content',{content_type:link.dataset.analyticsType,content_id:link.dataset.analyticsId});
+      const share=click.target.closest('[data-analytics-share]');
+      if(share)event('share',{method:share.dataset.analyticsShare,content_type:'page',item_id:location.pathname});
+    });
+  });
+</script>`;
 }
 
 // ---------------------------------------------------------------------------
