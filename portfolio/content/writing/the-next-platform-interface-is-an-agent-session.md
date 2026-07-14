@@ -1,4 +1,6 @@
 ---
+draft: true
+noindex: true
 title: The Next Platform Interface Is an Agent Session
 summary: Platforms need to ship context and workflows into the agent sessions where developers now make product decisions.
 date: 2026-07-13

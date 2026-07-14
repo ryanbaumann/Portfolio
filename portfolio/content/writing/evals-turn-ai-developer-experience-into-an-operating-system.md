@@ -1,4 +1,6 @@
 ---
+draft: true
+noindex: true
 title: Evals Are How You Know an AI Developer Tool Got Better
 summary: Task-based evals show whether a context, tool, or prompt improved the developer's actual job.
 date: 2026-07-13

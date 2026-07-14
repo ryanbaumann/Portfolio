@@ -1,4 +1,6 @@
 ---
+draft: true
+noindex: true
 title: Announcing the Code Assist Toolkit
 summary: The launch post for Google Maps Platform Code Assist: grounded platform expertise in any AI coding assistant, and why retrieval beats training-data memory.
 date: 2025-11-01

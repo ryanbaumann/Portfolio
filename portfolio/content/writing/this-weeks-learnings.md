@@ -1,4 +1,6 @@
 ---
+draft: true
+noindex: true
 title: #ThisWeeksLearnings
 summary: Notes from traces reviewed, evals written, products dogfooded, and opinions revised.
 date: 2026-07-12

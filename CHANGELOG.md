@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-14: DevEx is a Growth Discipline Essay Update
+
+- Published the rewritten "DevEx is a Growth Discipline" essay, focusing on the "builder experience" and scaling AI agents context deliverables.
+- Privatized older writing entries by setting `draft: true` and `noindex: true`.
+- Generated and integrated a portable infographic thumbnail for the new essay.
+
+
 ## 2026-07-14: Faster serving and consistent public docs
 
 - Added brotli/gzip compression for text responses (homepage HTML drops from ~36 KB to ~9 KB) and weak-ETag/Last-Modified conditional requests with 304s for static files. Images and fonts stay uncompressed; `/api/*` behavior is unchanged apart from compression.

@@ -1,4 +1,6 @@
 ---
+draft: true
+noindex: true
 title: Vibing with Maps: Practical Experiments
 summary: Hands-on experiments in AI-assisted map building on my Substack. What worked, what broke, and why curated context beats raw model knowledge for geo work.
 date: 2025-04-15
