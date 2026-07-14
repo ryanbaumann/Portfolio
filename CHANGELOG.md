@@ -1,4 +1,7 @@
 # Changelog
+
+## 2026-07-14: VisGL Talk Video
+- Added YouTube video link and embedded URL preview image to the VisGL talk.
 ## 2026-07-13: Analytics, links, and CI/CD resilience
 
 - Fixed a persistent CI/CD deployment failure caused by strict case-sensitivity in Google Cloud IAM policies where the GitHub Actions WIF principal `attribute.repository/ryanbaumann/portfolio` (lowercase) was blocked by an uppercase `Portfolio` IAM binding.
