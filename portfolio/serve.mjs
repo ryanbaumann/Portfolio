@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// serve.mjs — tiny static preview server for dist/. Zero dependencies.
+// serve.mjs - tiny static preview server for dist/. Zero dependencies.
 // Rebuild with `node build.mjs` after editing content; this just serves files.
 
 import { createServer } from 'node:http';
