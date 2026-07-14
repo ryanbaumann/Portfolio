@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// build.mjs — the entire CMS.
+// build.mjs - the entire CMS.
 //
 // Zero dependencies. Reads flat files from content/ (markdown with a small
 // front-matter block, plus site.json), renders static HTML into dist/, and
@@ -208,7 +208,7 @@ function assertValidBuild() {
 // gateway routes from), so a demo added there shows up here on the next
 // build with zero portfolio changes. When this site is extracted into its
 // own repo (no ../apps.json), the demos section and nav item simply
-// disappear — nothing else breaks.
+// disappear - nothing else breaks.
 function loadDemos() {
   const manifestPath = resolve(process.env.PORTFOLIO_APPS_MANIFEST || join(ROOT, '..', 'apps.json'));
   if (!existsSync(manifestPath)) return [];
@@ -253,7 +253,7 @@ function parseFrontMatter(raw) {
 }
 
 // ---------------------------------------------------------------------------
-// Markdown: the small subset the content actually uses — headings, bold,
+// Markdown: the small subset the content actually uses - headings, bold,
 // italic, inline code, links, images, lists, blockquotes, fenced code, hr.
 // ---------------------------------------------------------------------------
 
@@ -452,7 +452,7 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
 
   const resolvedCanonical = canonical || absoluteUrl('/');
   const resolvedImage = absoluteUrl(ogImage || site.defaultShareImage);
-  const resolvedImageAlt = escapeHtml(ogImageAlt || `${site.name} — ${site.role}`);
+  const resolvedImageAlt = escapeHtml(ogImageAlt || `${site.name} - ${site.role}`);
   const resolvedShareTitle = shareTitle || title;
   const resolvedShareSummary = shareSummary || description;
   const resolvedOgType = ogType || 'website';
@@ -910,7 +910,7 @@ function detailPage(collection, entry, activeKey) {
   <p class="back"><a href="${BASE}${collection.name}/">← All ${collection.label.toLowerCase()}</a></p>
 </article>`;
   writePage(join(collection.name, entry.slug, 'index.html'), layout({
-    title: `${meta.title} — ${site.name}`,
+    title: `${meta.title} - ${site.name}`,
     description: meta.summary || site.description,
     content,
     active: activeKey,
@@ -962,7 +962,7 @@ function writerDashboard(entries) {
 <script>(()=>{const updated=new URLSearchParams(location.search).get('updated');const status=document.querySelector('.writer-status');if(updated&&status){status.textContent='Saved '+updated+'. GitHub is starting the next deploy.';status.hidden=false}const localValue=(iso)=>{if(!iso)return'';const d=new Date(iso);const part=(value)=>String(value).padStart(2,'0');return d.getFullYear()+'-'+part(d.getMonth()+1)+'-'+part(d.getDate())+'T'+part(d.getHours())+':'+part(d.getMinutes())};document.querySelectorAll('[data-writer-form]').forEach((form)=>{const field=form.elements.publishAtLocal;field.value=localValue(field.dataset.publishAt);form.addEventListener('submit',(event)=>{const action=event.submitter?.value;if(action==='publish-now'&&!window.confirm('Publish this essay now? This commits directly to the publishing branch.')){event.preventDefault();return}if(action!=='schedule')return;const local=field.value;if(!local){event.preventDefault();field.focus();return}const scheduled=new Date(local);if(Number.isNaN(scheduled.valueOf())||scheduled.valueOf()<=Date.now()){event.preventDefault();field.setCustomValidity('Choose a future publish time.');field.reportValidity();return}field.setCustomValidity('');form.elements.publishAt.value=scheduled.toISOString()})})})();</script>`;
 
   writePage('index.html', layout({
-    title: `Writer dashboard — ${site.name}`,
+    title: `Writer dashboard - ${site.name}`,
     description: 'Private draft and scheduled essay administration.',
     content,
     active: 'writing',
@@ -1023,12 +1023,12 @@ ${demosSection}
 `;
 
   writePage('index.html', layout({
-    title: `${site.name} — ${site.role}`,
+    title: `${site.name} - ${site.role}`,
     description: site.description,
     content,
     canonical: absoluteUrl('/'),
     ogImage: site.defaultShareImage,
-    ogImageAlt: `${site.name} — ${site.role}`,
+    ogImageAlt: `${site.name} - ${site.role}`,
     jsonLd: [jsonLdHomePage(), jsonLdWebSite()],
   }));
 }
@@ -1046,7 +1046,7 @@ function buildDemosPage() {
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
-    title: `Demos — ${site.name}`,
+    title: `Demos - ${site.name}`,
     description: site.sectionIntros?.demos || site.description,
     content,
     active: 'demos',
@@ -1093,7 +1093,7 @@ ${elsewhere.length ? `<div class="collection-group">
 </section>`;
 
   writePage(join(collection.name, 'index.html'), layout({
-    title: `${collection.label} — ${site.name}`,
+    title: `${collection.label} - ${site.name}`,
     description: site.sectionIntros?.[collection.name] || site.description,
     content,
     active: collection.name,
@@ -1170,7 +1170,7 @@ function buildStandalonePages() {
   ${markdownToHtml(body)}
 </article>`;
     writePage(join(slug, 'index.html'), layout({
-      title: `${meta.title} — ${site.name}`,
+      title: `${meta.title} - ${site.name}`,
       description: meta.summary || site.description,
       content,
       active: slug,
@@ -1200,7 +1200,7 @@ function buildNotFoundPage() {
   </p>
 </section>`;
   writePage('404.html', layout({
-    title: `Page not found — ${site.name}`,
+    title: `Page not found - ${site.name}`,
     description: 'The page you were looking for could not be found.',
     content,
     canonical: absoluteUrl('/404.html'),
