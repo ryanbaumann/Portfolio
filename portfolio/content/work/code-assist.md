@@ -1,11 +1,11 @@
 ---
-title: Google Maps Platform Code Assist
+title: Google Maps Platform Code Assist MCP
 org: Google
 role: Product and engineering lead
 period: 2024 – present
 summary: Led the cross-functional team that turned field demand for accurate AI-generated Maps code into a Google-hosted MCP service grounded in official docs and samples.
 tags: ["mcp", "applied ai", "developer platforms"]
-links: [{"label": "Docs", "url": "https://developers.google.com/maps/ai/code-assist"}, {"label": "Launch blog", "url": "https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/"}, {"label": "GitHub", "url": "https://github.com/googlemaps/platform-ai"}, {"label": "Video", "url": "https://youtu.be/L2V58kKIHvc"}]
+links: [{"label": "Docs", "url": "https://developers.google.com/maps/ai/code-assist"}, {"label": "Launch blog", "url": "https://mapsplatform.google.com/resources/blog/announcing-code-assist-toolkit-bring-google-maps-platform-expertise-to-your-ai-coding-assistant/"}, {"label": "Video", "url": "https://youtu.be/L2V58kKIHvc"}]
 image: /img/work/code-assist-docs.png
 imageAlt: Official Code Assist documentation showing its experimental status, MCP grounding, public sources, and retrieval tools
 featured: true

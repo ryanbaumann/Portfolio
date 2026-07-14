@@ -18,7 +18,7 @@ Grounded retrieval (Code Assist) tells an agent what's true. It doesn't teach an
 
 ## What shipped
 
-I led the launch of Google Maps Platform agent skills: portable modules for building across Web, Android, iOS, and Web Services. One command, `npx skills add googlemaps/agent-skills`, installs them in AI Studio, Antigravity, Claude Code, and Replit. The repo also works as a Gemini CLI extension and integrates with Lovable. Each skill is gated by evals before it ships.
+I led the team and strategy to ship and own end to end user reach outcomes of Google Maps Platform agent skills: portable modules for building across Web, Android, iOS, and Web Services. One command, `npx skills add googlemaps/agent-skills`, installs them in AI Studio, Antigravity, Claude Code, and Replit. The repo also works as a Gemini CLI extension and integrates with Lovable. Each skill is gated by evals before it ships.
 
 Skills and Code Assist run as one system: skills teach the workflow, the MCP server grounds the details in retrieved documentation.
 

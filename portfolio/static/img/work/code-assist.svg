@@ -1,26 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-label="SHIPPED · GOOGLE MAPS PLATFORM: Code Assist">
   <style>:root {
-      --bg: #0b1220; --border: #1f2b3f; --dot: #26334a;
-      --eyebrow: #2563eb; --title: #f3f6fb; --body: #c7d2e4; --footer: #7e8aa0;
+      --bg: #faf9f6; --surface: #ffffff; --ink: #111827; --muted: #4b5563; --faint: #5f6875;
+      --line: #e5e7eb; --accent: #3b82f6; --accent-ink: #2563eb;
     }
-    @media (prefers-color-scheme: light) {
+    @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #f7f8fb; --border: #dfe4ee; --dot: #c7cede;
-        --eyebrow: #2563eb; --title: #111827; --body: #384156; --footer: #6b7280;
+        --bg: #030712; --surface: #111827; --ink: #f9fafb; --muted: #9ca3af; --faint: #aeb7c4;
+        --line: #1f2937; --accent: #60a5fa; --accent-ink: #93c5fd;
       }
     }
-    .card-bg { fill: var(--bg); } .card-border { stroke: var(--border); } .dot { fill: var(--dot); }
-    .rule { stroke: var(--border); } .eyebrow { fill: var(--eyebrow); }
-    .title { fill: var(--title); } .body { fill: var(--body); } .footer { fill: var(--footer); }
+    .surface { fill: var(--surface); }
+    .bg { fill: var(--bg); }
+    .border { stroke: var(--line); }
+    .eyebrow { fill: var(--accent-ink); }
+    .title { fill: var(--ink); }
+    .body { fill: var(--muted); }
+    .footer { fill: var(--faint); }
   </style>
-  <rect class="card-bg" width="960" height="600"/>
-  <rect class="card-border" x="1.5" y="1.5" width="957" height="597" fill="none" stroke-width="3" rx="14"/>
-  <circle class="dot" cx="46" cy="46" r="7"/>
-  <circle class="dot" cx="72" cy="46" r="7"/>
-  <circle class="dot" cx="98" cy="46" r="7"/>
-  <text class="eyebrow" x="480" y="266" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19" letter-spacing="4">SHIPPED · GOOGLE MAPS PLATFORM</text>
-  <text class="title" x="480" y="330" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="700">Code Assist</text>
-  <text class="body" x="480" y="392" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="30">agent ▸ tool call ▸ retrieval ▸ official docs</text>
-  <line class="rule" x1="120" y1="504" x2="840" y2="504" stroke-width="2"/>
-  <text class="footer" x="480" y="544" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="19">Claude Code · Cursor · Antigravity · Gemini CLI</text>
+  <rect class="surface" width="960" height="600"/>
+  
+  <!-- Subtle schematic grid for infographic vibe -->
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" class="border" stroke-width="1" opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="960" height="600" fill="url(#grid)" />
+  
+  <!-- Subtle top accent -->
+  <rect x="0" y="0" width="960" height="8" fill="var(--accent)"/>
+  
+  <!-- Outer border -->
+  <rect class="border" x="0" y="0" width="960" height="600" fill="none" stroke-width="2"/>
+
+  <!-- Content -->
+  <text class="eyebrow" x="80" y="227.5" text-anchor="start" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="18" font-weight="700" letter-spacing="3">SHIPPED · GOOGLE MAPS PLATFORM</text>
+  <text class="title" x="80" y="287.5" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="64" font-weight="750" letter-spacing="-2">Code Assist</text>
+  
+  <text class="body" x="80" y="332.5" text-anchor="start" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="34">agent ▸ tool call ▸ retrieval ▸ official docs</text>
+  
+  <!-- Footer -->
+  <line class="border" x1="80" y1="504" x2="880" y2="504" stroke-width="2"/>
+  <text class="footer" x="80" y="546" text-anchor="start" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="20">Claude Code · Cursor · Antigravity · Gemini CLI</text>
 </svg>

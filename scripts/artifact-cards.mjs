@@ -125,49 +125,71 @@ const CARDS = [
 
 const escape = (t) => String(t).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
-// Cards are referenced via <img>, and an SVG loaded that way still honors an
-// internal prefers-color-scheme media query. Colors are driven by CSS custom
-// properties so one stylesheet flips the whole card between light and dark to
-// match the page it sits on.
 function card({ eyebrow, title, lines, footer, mono }) {
   const W = 960;
   const H = 600;
   const sans = "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
   const monoStack = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
   const lineCount = lines.length;
-  const blockStart = 300 - ((lineCount - 1) * 26);
   const bodyFont = mono ? monoStack : sans;
+  
+  // Starting Y for vertical centering (shifted slightly up)
+  const contentHeight = 40 /* eyebrow */ + 70 /* title */ + (lineCount * 55) /* lines */;
+  const startY = (H - contentHeight) / 2 - 10;
+  
   const body = lines
-    .map((line, i) => `<text class="body" x="480" y="${blockStart + 92 + i * 52}" text-anchor="middle" font-family="${bodyFont}" font-size="30">${escape(line)}</text>`)
+    .map((line, i) => `<text class="body" x="80" y="${startY + 125 + i * 55}" text-anchor="start" font-family="${bodyFont}" font-size="${mono ? 28 : 34}">${escape(line)}</text>`)
     .join('\n  ');
+
+  // Exact tokens from style.css
   const styles = `
     :root {
-      --bg: #0b1220; --border: #1f2b3f; --dot: #26334a;
-      --eyebrow: #2563eb; --title: #f3f6fb; --body: #c7d2e4; --footer: #7e8aa0;
+      --bg: #faf9f6; --surface: #ffffff; --ink: #111827; --muted: #4b5563; --faint: #5f6875;
+      --line: #e5e7eb; --accent: #3b82f6; --accent-ink: #2563eb;
     }
-    @media (prefers-color-scheme: light) {
+    @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #f7f8fb; --border: #dfe4ee; --dot: #c7cede;
-        --eyebrow: #2563eb; --title: #111827; --body: #384156; --footer: #6b7280;
+        --bg: #030712; --surface: #111827; --ink: #f9fafb; --muted: #9ca3af; --faint: #aeb7c4;
+        --line: #1f2937; --accent: #60a5fa; --accent-ink: #93c5fd;
       }
     }
   `.trim();
+
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escape(`${eyebrow}: ${title}`)}">
   <style>${styles}
-    .card-bg { fill: var(--bg); } .card-border { stroke: var(--border); } .dot { fill: var(--dot); }
-    .rule { stroke: var(--border); } .eyebrow { fill: var(--eyebrow); }
-    .title { fill: var(--title); } .body { fill: var(--body); } .footer { fill: var(--footer); }
+    .surface { fill: var(--surface); }
+    .bg { fill: var(--bg); }
+    .border { stroke: var(--line); }
+    .eyebrow { fill: var(--accent-ink); }
+    .title { fill: var(--ink); }
+    .body { fill: var(--muted); }
+    .footer { fill: var(--faint); }
   </style>
-  <rect class="card-bg" width="${W}" height="${H}"/>
-  <rect class="card-border" x="1.5" y="1.5" width="${W - 3}" height="${H - 3}" fill="none" stroke-width="3" rx="14"/>
-  <circle class="dot" cx="46" cy="46" r="7"/>
-  <circle class="dot" cx="72" cy="46" r="7"/>
-  <circle class="dot" cx="98" cy="46" r="7"/>
-  <text class="eyebrow" x="480" y="${blockStart - 34}" text-anchor="middle" font-family="${monoStack}" font-size="19" letter-spacing="4">${escape(eyebrow)}</text>
-  <text class="title" x="480" y="${blockStart + 30}" text-anchor="middle" font-family="${sans}" font-size="52" font-weight="700">${escape(title)}</text>
+  <rect class="surface" width="${W}" height="${H}"/>
+  
+  <!-- Subtle schematic grid for infographic vibe -->
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" class="border" stroke-width="1" opacity="0.35"/>
+    </pattern>
+  </defs>
+  <rect width="${W}" height="${H}" fill="url(#grid)" />
+  
+  <!-- Subtle top accent -->
+  <rect x="0" y="0" width="${W}" height="8" fill="var(--accent)"/>
+  
+  <!-- Outer border -->
+  <rect class="border" x="0" y="0" width="${W}" height="${H}" fill="none" stroke-width="2"/>
+
+  <!-- Content -->
+  <text class="eyebrow" x="80" y="${startY + 20}" text-anchor="start" font-family="${monoStack}" font-size="18" font-weight="700" letter-spacing="3">${escape(eyebrow)}</text>
+  <text class="title" x="80" y="${startY + 80}" text-anchor="start" font-family="${sans}" font-size="64" font-weight="750" letter-spacing="-2">${escape(title)}</text>
+  
   ${body}
-  <line class="rule" x1="120" y1="${H - 96}" x2="${W - 120}" y2="${H - 96}" stroke-width="2"/>
-  <text class="footer" x="480" y="${H - 56}" text-anchor="middle" font-family="${monoStack}" font-size="19">${escape(footer)}</text>
+  
+  <!-- Footer -->
+  <line class="border" x1="80" y1="${H - 96}" x2="${W - 80}" y2="${H - 96}" stroke-width="2"/>
+  <text class="footer" x="80" y="${H - 54}" text-anchor="start" font-family="${monoStack}" font-size="20">${escape(footer)}</text>
 </svg>
 `;
 }

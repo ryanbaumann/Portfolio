@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-07-14: Premium artifact cards and demo source navigation
+
+- Redesigned and regenerated all SVG artifact cards (thumbnails) under `portfolio/static/img/` using flush-left typography, a subtle schematic background grid, and native CSS custom properties for `prefers-color-scheme` support.
+- Added direct "View Source" links to the navigation bars of all demo apps (`strava-explorer`, `aqi-map`, `isochrones`) pointing to their corresponding GitHub repository folders.
+
 ## 2026-07-14: Fix CI secret scanner false positives
 
 - Added `.gitleaks.toml` configuration to allowlist `.agents/skills/` mock credentials and build artifacts, resolving GitHub Actions `secret-scan` failures.

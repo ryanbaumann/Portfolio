@@ -1,5 +1,25 @@
 # Learnings
 
+## 2026-07-14: Light/Dark theme compatibility in SVG graphics using native CSS variables
+
+Context: Redesigning artifact cards (thumbnails) to look consistent in both light and dark modes without maintaining multiple static assets.
+Learning: Inline SVG graphic assets can use CSS Custom Properties (e.g. `var(--surface)`) that resolve directly to the hosting site's document variables when embedded inline. When referenced as images (e.g. `<img>`), SVGs can still resolve native media queries like `@media (prefers-color-scheme: dark)` inside their `<style>` tags to match the client's system theme dynamically.
+Evidence: Updated the `scripts/artifact-cards.mjs` generator script to output system-theme-aware styles. Verified that the resulting SVG artifact cards transition cleanly on the portfolio index pages when toggling dark mode.
+
+## 2026-07-14: Node `--env-file` crashes if the specified file does not exist
+
+Context: Executing `npm start` which runs `node --env-file=.env gateway/server.js` fails with an unhandled exit code when `.env` is absent.
+Learning: Node's native `--env-file` flag does not fail silently or fall back to system env when the file is missing; it throws a fatal startup exception (`node: .env: not found`). To ensure the server starts gracefully without requiring a setup flow in CI/CD or clean clones, a dummy `.env` file should be touched or verified before startup.
+Evidence: Running `touch .env && npm start` successfully resolved the startup crash.
+Use next time: Always verify or initialize a blank environment file before executing scripts using Node's `--env-file` flag.
+
+## 2026-07-14: Optimizing Cloud Run for zero-cost idleness with snappy cold starts
+
+Context: The deployment workflow kept one warm instance (`--min-instances 1`) to avoid cold start latency, which incurred continuous idle billing.
+Learning: For a zero-npm-dependency Node.js gateway that starts in milliseconds, a warm instance is unnecessary. Scaling to zero (`--min-instances 0`) reduces costs to $0.00 when idle. To keep the first request snappy, Cloud Run's Startup CPU Boost (`--cpu-boost`) temporarily allocates extra CPU during container startup, shortening cold start times to a fraction of a second.
+Evidence: Updated `.github/workflows/deploy.yml` with `--min-instances 0` and `--cpu-boost`. Since the Node.js gateway has no heavy dependencies and starts in under 20ms, it is a perfect candidate for zero-instance scaling without degrading user experience.
+Use next time: For lightweight containers (e.g., zero-npm-dependency Go/Rust/Node gateways), scale to 0 and enable `--cpu-boost` rather than paying for warm standby instances.
+
 ## 2026-07-14: Configure gitleaks ignore configuration for mock credentials
 
 Context: The `secret-scan` GitHub Action failed on mock credentials in `.agents/skills` reference documentation (like `YOUR_API_KEY` and mock `pageToken` strings) and build artifacts (`aqi-map/build/bundle.js` and `strava-explorer/build/bundle.js`).
