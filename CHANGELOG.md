@@ -5,6 +5,10 @@
 - Redesigned and regenerated all SVG artifact cards (thumbnails) under `portfolio/static/img/` using flush-left typography, a subtle schematic background grid, and native CSS custom properties for `prefers-color-scheme` support.
 - Added direct "View Source" links to the navigation bars of all demo apps (`strava-explorer`, `aqi-map`, `isochrones`) pointing to their corresponding GitHub repository folders.
 
+## 2026-07-14: Fix CI secret scanner false positives
+
+- Added `.gitleaks.toml` configuration to allowlist `.agents/skills/` mock credentials and build artifacts, resolving GitHub Actions `secret-scan` failures.
+
 ## 2026-07-14: Faster serving and consistent public docs
 
 - Added brotli/gzip compression for text responses (homepage HTML drops from ~36 KB to ~9 KB) and weak-ETag/Last-Modified conditional requests with 304s for static files. Images and fonts stay uncompressed; `/api/*` behavior is unchanged apart from compression.

@@ -20,6 +20,13 @@ Learning: For a zero-npm-dependency Node.js gateway that starts in milliseconds,
 Evidence: Updated `.github/workflows/deploy.yml` with `--min-instances 0` and `--cpu-boost`. Since the Node.js gateway has no heavy dependencies and starts in under 20ms, it is a perfect candidate for zero-instance scaling without degrading user experience.
 Use next time: For lightweight containers (e.g., zero-npm-dependency Go/Rust/Node gateways), scale to 0 and enable `--cpu-boost` rather than paying for warm standby instances.
 
+## 2026-07-14: Configure gitleaks ignore configuration for mock credentials
+
+Context: The `secret-scan` GitHub Action failed on mock credentials in `.agents/skills` reference documentation (like `YOUR_API_KEY` and mock `pageToken` strings) and build artifacts (`aqi-map/build/bundle.js` and `strava-explorer/build/bundle.js`).
+Learning: To keep reference documentation and build artifacts in the repository without triggering false positives in Gitleaks scans, configure a `.gitleaks.toml` file at the repository root and define path regexes under the `[allowlist]` block.
+Evidence: The `gitleaks detect --no-git -v` command failed locally due to these false positives, but passed with `no leaks found` once `.gitleaks.toml` was added.
+Use next time: Place `.gitleaks.toml` at the root directory of repositories using `gitleaks` to cleanly isolate documentation-only paths and generated folders.
+
 ## 2026-07-14: Never put a comment inside a backslash-continued shell command
 
 Context: A generated edit to `.github/workflows/deploy.yml` inserted a `# comment` line between `--port 8080 \` and `--min-instances 1` in the `gcloud run deploy` invocation.
