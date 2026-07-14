@@ -178,7 +178,7 @@ async function handleContactRequest(request, response) {
           body: JSON.stringify({
             contents: [{
               parts: [{
-                text: `Classify the following contact form submission as "SPAM" or "HAM". It is spam if it is a sales pitch (e.g. SEO, web design, lead gen) or unsolicited marketing. Reply with only one word: SPAM or HAM.\n\nName: ${name}\nEmail: ${email}\n\n${message}`
+                text: `Classify the following contact form submission as "SPAM" or "HAM". It is spam if it is a sales pitch (e.g. SEO, web design, lead gen), unsolicited marketing, obvious gibberish, or literal test spam (e.g. "spam spam"). Reply with only one word: SPAM or HAM.\n\nName: ${name}\nEmail: ${email}\n\n${message}`
               }]
             }],
             generationConfig: { maxOutputTokens: 5, temperature: 0.1 }
@@ -189,6 +189,9 @@ async function handleContactRequest(request, response) {
           const aiData = await aiResponse.json();
           const reply = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || '';
           if (reply.includes('SPAM')) isSpam = true;
+        } else {
+          const errorText = await aiResponse.text();
+          console.error(`Gemini API failed: ${aiResponse.status} ${aiResponse.statusText}`, errorText);
         }
       } catch (err) {
         // If Gemini fails or times out, fail open (let the message through)
