@@ -444,7 +444,6 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Lab', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
     { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
-    { href: `${BASE}contact/`, label: 'Contact', key: 'contact' },
   ];
   const nav = navItems
     .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
@@ -530,6 +529,7 @@ ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview
   ${nav}
   </nav>
   <div class="header-actions">
+    <a class="header-cta${active === 'contact' ? ' is-active' : ''}" href="${BASE}contact/"${active === 'contact' ? ' aria-current="page"' : ''}>Contact</a>
     <button class="theme-toggle" type="button" aria-label="Color theme: system. Activate to use light."><span aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg></span></button>
   </div>
 </header>
@@ -751,6 +751,37 @@ function demoCard(demo) {
     <p>${escapeHtml(demo.description || '')}</p>
     ${tags}
     <span class="demo-action">Launch demo →</span>
+  </div>
+</a>`;
+}
+
+function formatLongDate(isoDate) {
+  if (!isoDate) return '';
+  const parsed = new Date(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(parsed.valueOf())) return '';
+  return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+
+// Featured Field Note: a single large card (image left, text right) for the
+// latest essay on the homepage. Falls back to the row list for a plain link.
+function featuredNote(entry) {
+  const { meta } = entry;
+  const url = entryUrl('writing', entry);
+  const external = Boolean(meta.external);
+  const image = meta.socialImage || meta.image;
+  const imagePath = image ? join(STATIC_DIR, image.replace(/^\//, '')) : '';
+  const { width, height } = image && existsSync(imagePath) ? getImageDimensions(imagePath) : { width: 1200, height: 627 };
+  const longDate = formatLongDate(meta.date);
+  const thumb = image
+    ? `<img class="featured-note-thumb" src="${rebase(image)}" alt="${escapeHtml(meta.shareImageAlt || meta.imageAlt || meta.title)}" loading="lazy" width="${width}" height="${height}" />`
+    : '';
+  return `<a class="featured-note" href="${url}" data-analytics-type="writing" data-analytics-id="${escapeHtml(entry.slug)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
+  ${thumb}
+  <div class="featured-note-body">
+    <p class="featured-note-meta">${longDate ? `Latest · ${escapeHtml(longDate)}` : 'Latest'}</p>
+    <h3>${escapeHtml(meta.title)}${external ? ' ↗' : ''}</h3>
+    <p>${escapeHtml(meta.summary || '')}</p>
+    <span class="featured-note-action">Read the note →</span>
   </div>
 </a>`;
 }
@@ -979,7 +1010,7 @@ function buildHome(collections) {
   const demosSection = demos.length
     ? `
 <section>
-  ${sectionHeader('The lab', '', `${BASE}demos/`, 'All demos')}
+  ${sectionHeader('The lab', 'Working demos, public source', `${BASE}demos/`, 'All demos')}
   <p class="section-note">${escapeHtml(site.sectionIntros?.demos || '')}</p>
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
@@ -988,26 +1019,48 @@ function buildHome(collections) {
 `
     : '';
 
+  const stats = (site.heroStats || []).length
+    ? `<dl class="hero-stats">
+    ${site.heroStats.map((stat) => `<div>
+      <dt>${escapeHtml(stat.label)}</dt>
+      <dd>${escapeHtml(stat.value)}</dd>
+    </div>`).join('\n')}
+  </dl>`
+    : '';
+
+  const featured = writingEntries[0];
+  const fieldNotesBody = featured
+    ? featuredNote(featured)
+    : `<ul class="rows">${writingEntries.map((entry) => listRow('writing', entry)).join('\n')}</ul>`;
+
   const content = `
 <section class="hero">
-  ${site.profileImage ? `<img class="profile-image" src="${rebase(site.profileImage)}" alt="${escapeHtml(site.profileImageAlt || site.name)}" width="460" height="460" />` : ''}
+  <div class="hero-profile">
+    ${site.profileImage ? `<img class="profile-image" src="${rebase(site.profileImage)}" alt="${escapeHtml(site.profileImageAlt || site.name)}" width="460" height="460" />` : ''}
+    <div>
+      <p class="hero-role">${escapeHtml(site.profileHeadline || site.role)}</p>
+      <p class="hero-location">${escapeHtml(site.location)}</p>
+    </div>
+  </div>
   <p class="eyebrow">${escapeHtml(site.tagline)}</p>
   <h1>${escapeHtml(site.heroHeadline || site.name)}</h1>
   <p class="lede">${escapeHtml(site.intro)}</p>
-  <p class="hero-actions"><a class="button button-primary" href="${BASE}work/">See selected work</a></p>
+  <p class="hero-actions">
+    <a class="button button-primary" href="${BASE}work/">See selected work</a>
+    <a class="text-link" href="${BASE}writing/">Read the field notes →</a>
+  </p>
+  ${stats}
 </section>
 
 <section>
-  ${sectionHeader('Selected work', 'Tools developers can use', `${BASE}work/`, 'All work')}
+  ${sectionHeader('Selected work', 'Shipped tools, and the numbers behind them', `${BASE}work/`, 'All work')}
   <div class="grid home-work-grid">${selectedWork.map(workCard).join('\n')}</div>
 </section>
 
 ${demosSection}
 <section>
   ${sectionHeader('Field Notes', 'Ideas you can use', `${BASE}writing/`, 'All field notes')}
-  <ul class="rows">
-    ${writingEntries.map((entry) => listRow('writing', entry)).join('\n')}
-  </ul>
+  ${fieldNotesBody}
 </section>
 
 <section class="build-section home-close">
@@ -1016,7 +1069,7 @@ ${demosSection}
     <h2>Working on a builder platform or developer tool?</h2>
   </div>
   <div>
-    <p>I am most useful when the problem is concrete: a repeated developer failure, a tool that needs a clearer path to working code, or a launch that needs evidence.</p>
+    <p>I am most useful solving end-user technical opportunities for developer and builder platforms, working backwards from a growth hypothesis.</p>
     <a class="button button-primary" href="${BASE}contact/">Send a note</a>
   </div>
 </section>
