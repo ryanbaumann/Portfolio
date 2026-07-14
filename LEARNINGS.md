@@ -1,5 +1,18 @@
 # Learnings
 
+## 2026-07-14: Light/Dark theme compatibility in SVG graphics using native CSS variables
+
+Context: Redesigning artifact cards (thumbnails) to look consistent in both light and dark modes without maintaining multiple static assets.
+Learning: Inline SVG graphic assets can use CSS Custom Properties (e.g. `var(--surface)`) that resolve directly to the hosting site's document variables when embedded inline. When referenced as images (e.g. `<img>`), SVGs can still resolve native media queries like `@media (prefers-color-scheme: dark)` inside their `<style>` tags to match the client's system theme dynamically.
+Evidence: Updated the `scripts/artifact-cards.mjs` generator script to output system-theme-aware styles. Verified that the resulting SVG artifact cards transition cleanly on the portfolio index pages when toggling dark mode.
+
+## 2026-07-14: Node `--env-file` crashes if the specified file does not exist
+
+Context: Executing `npm start` which runs `node --env-file=.env gateway/server.js` fails with an unhandled exit code when `.env` is absent.
+Learning: Node's native `--env-file` flag does not fail silently or fall back to system env when the file is missing; it throws a fatal startup exception (`node: .env: not found`). To ensure the server starts gracefully without requiring a setup flow in CI/CD or clean clones, a dummy `.env` file should be touched or verified before startup.
+Evidence: Running `touch .env && npm start` successfully resolved the startup crash.
+Use next time: Always verify or initialize a blank environment file before executing scripts using Node's `--env-file` flag.
+
 ## 2026-07-14: Optimizing Cloud Run for zero-cost idleness with snappy cold starts
 
 Context: The deployment workflow kept one warm instance (`--min-instances 1`) to avoid cold start latency, which incurred continuous idle billing.
