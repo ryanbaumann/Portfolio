@@ -6,11 +6,19 @@
 - Privatized older writing entries by setting `draft: true` and `noindex: true`.
 - Generated and integrated a portable infographic thumbnail for the new essay.
 
+## 2026-07-14: Premium artifact cards and demo source navigation
+
+- Redesigned and regenerated all SVG artifact cards (thumbnails) under `portfolio/static/img/` using flush-left typography, a subtle schematic background grid, and native CSS custom properties for `prefers-color-scheme` support.
+- Added direct "View Source" links to the navigation bars of all demo apps (`strava-explorer`, `aqi-map`, `isochrones`) pointing to their corresponding GitHub repository folders.
+
+## 2026-07-14: Fix CI secret scanner false positives
+
+- Added `.gitleaks.toml` configuration to allowlist `.agents/skills/` mock credentials and build artifacts, resolving GitHub Actions `secret-scan` failures.
 
 ## 2026-07-14: Faster serving and consistent public docs
 
 - Added brotli/gzip compression for text responses (homepage HTML drops from ~36 KB to ~9 KB) and weak-ETag/Last-Modified conditional requests with 304s for static files. Images and fonts stay uncompressed; `/api/*` behavior is unchanged apart from compression.
-- Kept one warm Cloud Run instance (`--min-instances 1`) so shared links do not hit a cold start.
+- Configured Cloud Run to scale down to zero instances (`--min-instances 0`) when idle to minimize costs, and enabled startup CPU boost (`--cpu-boost`) to ensure first-request cold starts remain fast and snappy.
 - Brought the root and per-app READMEs into one consistent style: preview screenshot near the top, sentence-case headings, no em-dashes, section order aligned across demos, and copy checked against the evidence ledger.
 
 ## 2026-07-14: Public-readiness fixes and copy pass
