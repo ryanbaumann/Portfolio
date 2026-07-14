@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-14: Shorter, proof-led homepage
+
+- Reframed the homepage headline in active voice: "I grow builder platforms for the AI era."
+- Replaced the proof strip and five-step operating explanation with three selected work artifacts.
+- Reduced the homepage to one primary action, selected work, live demos, two current field notes, and a final contact action.
+- Removed the extra speaking, foundation, and personal-summary sections from the homepage while preserving those destinations elsewhere.
+
 ## 2026-07-14: Evidence-backed public claims
 
 - Removed unsupported default-position, longevity, revenue, company-scale, deployment-count, and patent claims from public portfolio copy.
