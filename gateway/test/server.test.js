@@ -234,6 +234,16 @@ test('contact delivery validates intent and marks only provider-confirmed succes
     assert.equal(spamRegexMatch.res.headers.location, '/contact-success/?delivered=1');
     assert.equal(delivered.length, 1); // Not delivered, count remains 1
 
+    const spamSeoConsultingMatch = await postForm(port, '/api/contact', {
+      ...valid,
+      intent: 'Content collaboration',
+      email: 'daniel.websolution012@gmail.com',
+      message: 'We recently ran a backend analysis of your website, and the results show that several important SEO (Search Engine Optimization) steps are incomplete.',
+    }, { 'x-forwarded-for': '1.1.1.2, proxy' });
+    assert.equal(spamSeoConsultingMatch.res.statusCode, 303);
+    assert.equal(spamSeoConsultingMatch.res.headers.location, '/contact-success/?delivered=1');
+    assert.equal(delivered.length, 1); // Not delivered, count remains 1
+
     const spamDotTrickMatch = await postForm(port, '/api/contact', {
       ...valid,
       intent: 'Other',

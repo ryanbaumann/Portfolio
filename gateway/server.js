@@ -163,7 +163,7 @@ async function handleContactRequest(request, response) {
   }
 
   // Basic spam filter: block common pitch keywords and excessive Gmail dot tricks
-  const spamRegex = /\b(seo|1st page|first page|targeted visitors|branding refresh|graphic design|website online|increase traffic|search results)\b/i;
+  const spamRegex = /\b(seo|1st page|first page|targeted visitors|branding refresh|graphic design|website online|increase traffic|search results|backend analysis|online visibility|generate more business)\b/i;
   const localPart = email.split('@')[0] || '';
   let isSpam = spamRegex.test(message) || (email.endsWith('@gmail.com') && (localPart.match(/\./g) || []).length >= 4);
 
