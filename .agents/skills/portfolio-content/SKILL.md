@@ -21,6 +21,7 @@ string. Common keys:
 | `featured` | work | `true` puts the entry on the home page |
 | `org`, `role`, `period`, `tags`, `links` | work | Card + case-study header |
 | `date`, `external` | writing | `external: <url>` = outbound link, no page |
+| `slug`, `aliases` | detail pages | Pin the canonical slug and list old root-relative paths that must permanently redirect to it |
 | `draft`, `noindex`, `publishAt` | writing | Drafts stay private to `/writer/`; `publishAt` is an explicit UTC timestamp gate |
 | `venue`, `type`, `links` | talks | Row metadata; `type` is free-form |
 | `eyebrow` | pages | Label above the page title |
@@ -46,6 +47,8 @@ the build rebases them if the site is mounted under a subpath.
 - The repository is public. Committed Markdown and `static/` assets are not confidential even when the rendered route is protected.
 
 Markdown headings receive stable fragment IDs. Authors may pin one with `## Heading {#stable-id}`. Tables, fenced code language labels, blockquotes, images, lists, emphasis, and links are supported.
+
+When renaming a published detail page, set its new `slug`, add every previous path to `aliases`, and update `canonical`. The build writes `redirects.json`; the gateway turns each alias into an HTTP 308 and preserves the query string. Never leave the old page rendered as duplicate content.
 
 ## Adding a new content type
 

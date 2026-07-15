@@ -35,6 +35,14 @@ const CARDS = [
     layout: 'artifact',
   },
   {
+    file: 'devx-growth-discipline.png',
+    eyebrow: 'WRITING · DEVX',
+    title: 'DevX Is a Growth Discipline',
+    summary: 'Own the friction. Ship the fix. Distribute it. Measure the outcome.',
+    source: 'portfolio/static/assets/devx-growth-loop.svg',
+    layout: 'artifact',
+  },
+  {
     file: 'the-next-platform-interface-is-an-agent-session.png',
     eyebrow: 'WRITING · AGENT EXPERIENCE',
     title: 'The Next Platform Interface Is an Agent Session',

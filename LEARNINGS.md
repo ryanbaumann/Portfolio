@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-07-15: Published content renames need server redirects, not duplicate pages
+
+Context: The first essay used `devex` in its public URL, while the preferred term and future title are `DevX`.
+Learning: Changing a slug and canonical tag is not enough. Published links need one declarative alias that the static build validates and the runtime turns into a permanent redirect. Rendering HTML at both paths creates duplicate content and does not guarantee an HTTP redirect.
+Evidence: The build now emits `redirects.json` from front-matter aliases, the gateway returns HTTP 308 while preserving the query string, and tests cover the runtime behavior.
+Use next time: When renaming a work, writing, or talk detail page, set the new `slug`, append the previous path to `aliases`, update `canonical`, and verify both the new 200 response and old 308 response.
+
 ## 2026-07-14: Light/Dark theme compatibility in SVG graphics using native CSS variables
 
 Context: Redesigning artifact cards (thumbnails) to look consistent in both light and dark modes without maintaining multiple static assets.

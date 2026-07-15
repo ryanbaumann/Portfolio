@@ -129,6 +129,17 @@ function validateEntry(collection, entry, seenSlugs) {
   if (seenSlugs.has(id)) failValidation(`${id}: duplicate slug`);
   seenSlugs.add(id);
   const { meta } = entry;
+  if (meta.aliases !== undefined) {
+    if (!Array.isArray(meta.aliases) || meta.aliases.length === 0) {
+      failValidation(`${id}: aliases must be a non-empty array`);
+    } else {
+      for (const alias of meta.aliases) {
+        if (typeof alias !== 'string' || !/^\/[a-z0-9/-]+\/$/.test(alias) || alias.includes('//')) {
+          failValidation(`${id}: alias must be a clean root-relative path ending in /: ${alias}`);
+        }
+      }
+    }
+  }
   for (const field of ['title', 'summary']) {
     if (!meta[field] || typeof meta[field] !== 'string') failValidation(`${id}: missing required ${field}`);
   }
@@ -1337,6 +1348,21 @@ function robotsTxt() {
   return `User-agent: *\nAllow: /\n\nSitemap: ${absoluteUrl('/sitemap.xml')}\n`;
 }
 
+function permanentRedirects(collections) {
+  const redirects = {};
+  for (const collection of COLLECTIONS) {
+    for (const entry of collections[collection.name]) {
+      const target = entryUrl(collection.name, entry);
+      for (const alias of entry.meta.aliases || []) {
+        if (alias === target) failValidation(`${collection.name}/${entry.slug}: alias duplicates its canonical path: ${alias}`);
+        if (redirects[alias]) failValidation(`${collection.name}/${entry.slug}: duplicate alias: ${alias}`);
+        redirects[alias] = target;
+      }
+    }
+  }
+  return redirects;
+}
+
 function validateMetadata() {
   const htmlFiles = readdirSync(DIST_DIR, { recursive: true })
     .filter((file) => String(file).endsWith('.html'));
@@ -1430,10 +1456,12 @@ const seenSlugs = new Set();
 for (const collection of COLLECTIONS) {
   for (const entry of allCollections[collection.name]) validateEntry(collection, entry, seenSlugs);
 }
+const redirects = permanentRedirects(collections);
 assertValidBuild();
 writePage('feed.xml', rssFeed(collections.writing));
 writePage('sitemap.xml', sitemapXml(collections));
 writePage('robots.txt', robotsTxt());
+writePage('redirects.json', `${JSON.stringify(redirects, null, 2)}\n`);
 
 if (existsSync(STATIC_DIR)) {
   cpSync(STATIC_DIR, DIST_DIR, { recursive: true });
