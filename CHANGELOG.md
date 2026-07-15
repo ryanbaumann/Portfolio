@@ -11,6 +11,12 @@
 - Archived the exact final image prompts and settings, including Gemini 3.1 Flash Image at 1K with high thinking, so all three visuals can be reproduced.
 - Added a mandatory portfolio review workflow for every publishable content change: deterministic copy, claim, link, URL, image, metadata, and browser checks plus a bounded independent maker/checker loop.
 
+## 2026-07-15: Deterministic lab onboarding gates
+
+- Removed two external-repository records that were hidden from the site, not gateway-routable, and skipped by build and smoke checks; neither project is presented as an incorporated lab until its runtime is actually integrated.
+- Restored `apps.json` to internal gateway routes and added `npm run check:labs` to validate package, path, tag, preview, Docker, CI, Dependabot, and private-runtime wiring.
+- Added container-level smoke coverage in CI and documented the hosted, unlisted, private, and private-source onboarding contracts in `docs/LABS_ONBOARDING.md`.
+
 ## 2026-07-14: DevEx is a Growth Discipline Essay Update
 
 - Published the rewritten "DevEx is a Growth Discipline" essay, focusing on the "builder experience" and scaling AI agents context deliverables.

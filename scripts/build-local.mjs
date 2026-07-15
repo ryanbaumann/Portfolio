@@ -99,9 +99,6 @@ function loadApps() {
 }
 
 export function resolveAppPaths(entry, repoRoot = REPO_ROOT) {
-  if (entry.path && entry.path.startsWith('http') || !entry.dev_build_dir) {
-    return { dir: null, outDir: null };
-  }
   const outDir = join(repoRoot, entry.dev_build_dir);
   return { dir: dirname(outDir), outDir };
 }
@@ -177,7 +174,6 @@ function main() {
 
   const failures = [];
   for (const app of apps) {
-    if (!app.dir) continue;
     try {
       buildApp(app, childEnv);
     } catch (err) {

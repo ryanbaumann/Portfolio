@@ -107,7 +107,7 @@ export function loadApps(env = process.env) {
 
 const NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const ENV_VAR_PATTERN = /^[A-Z][A-Z0-9_]*$/;
-const APP_PATH_PATTERN = /^(?:\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*|https?:\/\/.*)$/;
+const APP_PATH_PATTERN = /^\/(?:[a-z0-9]+(?:-[a-z0-9]+)*\/)*$/;
 
 export function validateManifestEntries(entries) {
   if (!Array.isArray(entries)) throw new Error('apps.json must contain an array.');
@@ -139,6 +139,17 @@ export function validateManifestEntries(entries) {
     if (entry.providers !== undefined) {
       if (!Array.isArray(entry.providers) || entry.providers.some((name) => typeof name !== 'string' || !isKnownProvider(name))) {
         throw new Error(`App ${entry.name} references an unknown provider.`);
+      }
+    }
+    if (entry.source_url !== undefined) {
+      let sourceUrl;
+      try {
+        sourceUrl = new URL(entry.source_url);
+      } catch {
+        throw new Error(`Invalid source_url for app ${entry.name}.`);
+      }
+      if (sourceUrl.protocol !== 'https:' || sourceUrl.username || sourceUrl.password || sourceUrl.search || sourceUrl.hash) {
+        throw new Error(`Invalid source_url for app ${entry.name}.`);
       }
     }
   }

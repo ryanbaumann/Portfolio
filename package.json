@@ -7,6 +7,7 @@
     "build": "node scripts/build-local.mjs",
     "start": "node --env-file=.env gateway/server.js",
     "smoke": "node scripts/smoke.mjs",
+    "check:labs": "node scripts/validate-apps.mjs",
     "new:demo": "node scripts/new-demo.mjs",
     "new:post": "node scripts/new-post.mjs",
     "previews": "node scripts/previews.mjs"

@@ -238,6 +238,21 @@ describe('validateManifestEntries', () => {
     assert.throws(() => validateManifestEntries([{ name: 'demo', path: '/demo/', providers: ['mystery'] }]), /unknown provider/);
   });
 
+  test('keeps route paths internal and validates source URLs separately', () => {
+    assert.throws(() => validateManifestEntries([{ name: 'external', path: 'https://example.com/demo' }]), /Invalid path/);
+    assert.doesNotThrow(() => validateManifestEntries([{
+      name: 'demo', path: '/demo/', source_url: 'https://github.com/example/demo',
+    }]));
+    for (const source_url of [
+      'http://github.com/example/demo',
+      'https://user:password@github.com/example/demo',
+      'https://github.com/example/demo?token=secret',
+      'https://github.com/example/demo#readme',
+    ]) {
+      assert.throws(() => validateManifestEntries([{ name: 'demo', path: '/demo/', source_url }]), /Invalid source_url/);
+    }
+  });
+
   test('rejects duplicate names and normalized paths', () => {
     assert.throws(() => validateManifestEntries([
       { name: 'one', path: '/same' }, { name: 'two', path: '/same/' },
