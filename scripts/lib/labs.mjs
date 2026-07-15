@@ -1,5 +1,6 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, relative, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 
 export const NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 export const SHA_PATTERN = /^[a-f0-9]{40}$/;
@@ -83,6 +84,13 @@ export function validateImport(sourceDir, output) {
   const pkg = JSON.parse(readFileSync(packagePath, 'utf8'));
   if (!pkg.scripts?.build || !pkg.scripts?.test || !pkg.engines?.node) throw new Error('package.json needs build, test, and engines.node');
   if (!/^[a-zA-Z0-9._/-]+$/.test(output) || output.split('/').includes('..')) throw new Error('output must be a safe relative path');
+}
+
+export function verifySourceRevision(sourceDir, expectedRef) {
+  const result = spawnSync('git', ['-C', sourceDir, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
+  if (result.status !== 0) throw new Error('import source must be a Git checkout when --ref is used');
+  const actual = result.stdout.trim();
+  if (actual !== expectedRef) throw new Error(`import source HEAD ${actual} does not match --ref ${expectedRef}`);
 }
 
 export function assertWithin(parent, child) {

@@ -14,6 +14,7 @@
     "labs:attach": "node scripts/attach-demo.mjs",
     "labs:fetch": "node scripts/fetch-lab-artifacts.mjs",
     "labs:scan": "node scripts/scan-lab-artifacts.mjs",
+    "labs:smoke-private": "node scripts/smoke-private-artifacts.mjs",
     "test:labs": "node --test scripts/test/*.test.mjs",
     "new:demo": "node scripts/new-demo.mjs",
     "new:post": "node scripts/new-post.mjs",

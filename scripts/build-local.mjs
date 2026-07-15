@@ -42,6 +42,7 @@ const args = new Set(process.argv.slice(2));
 const forceInstall = args.has('--force-install');
 const skipInstall = args.has('--skip-install');
 const allowMissingArtifacts = args.has('--allow-missing-artifacts');
+const onlyArtifacts = args.has('--only-artifacts');
 
 function log(...parts) {
   console.log('[build-local]', ...parts);
@@ -180,9 +181,10 @@ function buildApp(app, childEnv) {
 }
 
 function main() {
-  const apps = loadApps();
+  const manifestApps = loadApps();
+  const apps = onlyArtifacts ? manifestApps.filter((app) => app.source?.type === 'artifact') : manifestApps;
   const childEnv = {
-    ...sanitizedBuildEnv(apps, loadRootPublicEnv()),
+    ...sanitizedBuildEnv(manifestApps, loadRootPublicEnv()),
     PORTFOLIO_BUILD_TIME: new Date().toISOString(),
   };
   log(`Building ${apps.length} app(s) from ${APPS_JSON_PATH}`);

@@ -2,7 +2,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { addDependabot, copySnapshot, manifestEntry, parseArgs, registerEntry, rollbackPath, SHA_PATTERN, titleFromName, validateImport } from './lib/labs.mjs';
+import { addDependabot, copySnapshot, manifestEntry, parseArgs, registerEntry, rollbackPath, SHA_PATTERN, titleFromName, validateImport, verifySourceRevision } from './lib/labs.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const { positionals: [name], flags } = parseArgs(process.argv.slice(2));
@@ -12,11 +12,12 @@ const destination = join(repoRoot, 'demos', name);
 const output = flags.output || 'dist';
 if (!existsSync(sourceDir)) throw new Error(`source directory does not exist: ${sourceDir}`);
 if (existsSync(destination)) throw new Error(`demos/${name} already exists`);
+if (!flags['confirm-source-public']) throw new Error('import publishes the snapshot; pass --confirm-source-public after verifying it contains no private source or secrets');
 if (flags['source-url']) {
   const url = new URL(flags['source-url']);
   if (url.protocol !== 'https:' || url.username || url.password) throw new Error('source-url must be credential-free HTTPS');
   if (!SHA_PATTERN.test(flags.ref || '')) throw new Error('--ref must be the exact 40-character source commit');
-  if (!flags['confirm-source-public']) throw new Error('import publishes the snapshot; pass --confirm-source-public after verifying it contains no private source or secrets');
+  verifySourceRevision(sourceDir, flags.ref);
 }
 validateImport(sourceDir, output);
 const entry = manifestEntry({ name, title: flags.title || titleFromName(name), description: flags.description, visibility: flags.visibility || 'public', source: { type: 'workspace', package: `demos/${name}`, output }, tags: (flags.tags || 'interactive-demo').split(','), sourceUrl: flags['source-url'], sourceRef: flags.ref });
