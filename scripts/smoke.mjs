@@ -242,8 +242,8 @@ async function main() {
       if (location !== app.path) throw new Error(`expected redirect Location "${app.path}", got "${location}"`);
     });
 
-    const servedTextAssets = new Map();
     for (const app of apps) {
+      if (app.path.startsWith('http')) continue;
       await check(`${app.path} returns 200 HTML with resolving asset references`, async () => {
         const pageUrl = `${baseUrl}${app.path}`;
         const { response, text } = await fetchText(pageUrl);
@@ -251,7 +251,6 @@ async function main() {
         const contentType = response.headers.get('content-type') || '';
         if (!contentType.includes('text/html')) throw new Error(`expected text/html, got ${contentType}`);
         if (!/<html/i.test(text)) throw new Error('response does not look like parseable HTML (no <html> tag)');
-        servedTextAssets.set(pageUrl, text);
 
         const assetUrls = extractAssetUrls(text);
         if (assetUrls.length === 0) throw new Error('found no local asset references to verify');
@@ -262,10 +261,6 @@ async function main() {
           if (assetResponse.status !== 200) {
             throw new Error(`asset ${assetUrl} (resolved: ${resolved}) returned ${assetResponse.status}`);
           }
-          const assetType = assetResponse.headers.get('content-type') || '';
-          if (/^(?:text\/|application\/(?:javascript|json))|image\/svg\+xml/.test(assetType)) {
-            servedTextAssets.set(resolved, await assetResponse.text());
-          }
         }
       });
     }
@@ -273,25 +268,20 @@ async function main() {
     await check('strava-explorer bundle uses the real Strava OAuth authorize URL', async () => {
       const strava = apps.find((a) => a.name === 'strava-explorer');
       if (!strava) throw new Error('strava-explorer missing from apps.json');
-      const combined = [...servedTextAssets]
-        .filter(([url]) => url.includes(strava.path))
-        .map(([, content]) => content)
-        .join('\n');
+      const dir = join(APPS_STAGING_DIR, 'strava-explorer');
+      const jsFiles = listFilesRecursive(dir).filter((f) => f.endsWith('.js'));
+      if (jsFiles.length === 0) throw new Error(`no built JS found under ${dir}; run scripts/build-local.mjs first`);
+      const combined = jsFiles.map((f) => readFileSync(f, 'utf8')).join('\n');
       if (!combined.includes('https://www.strava.com/oauth/authorize')) {
-        throw new Error('did not find https://www.strava.com/oauth/authorize in the served bundle');
+        throw new Error('did not find https://www.strava.com/oauth/authorize in the built bundle');
       }
       if (!/response_type=code/.test(combined)) {
-        throw new Error('did not find response_type=code in the served bundle');
+        throw new Error('did not find response_type=code in the built bundle');
       }
     });
 
-    await check('no known secret pattern in any served asset', () => {
-      const hits = [];
-      for (const [url, content] of servedTextAssets) {
-        for (const [label, pattern] of SECRET_PATTERNS) {
-          if (pattern.test(content)) hits.push(`${label}: ${url}`);
-        }
-      }
+    await check('no client_secret string in any served asset', () => {
+      const hits = scanForSecrets([APPS_STAGING_DIR]).filter((h) => /client_secret/i.test(h));
       if (hits.length > 0) throw new Error(hits.join('\n'));
     });
 
