@@ -766,7 +766,8 @@ function demoCard(demo) {
   const preview = demo.preview
     ? `<img class="demo-preview" src="${rebase(demo.preview)}" alt="Screenshot of ${escapeHtml(demo.title)}" loading="lazy" width="${previewSize.width}" height="${previewSize.height}" />`
     : '';
-  return `<a class="card demo-card" href="${rebase(demo.path)}" data-analytics-type="demo" data-analytics-id="${escapeHtml(demo.name)}">
+  const external = demo.path.startsWith('http');
+  return `<a class="card demo-card" href="${rebase(demo.path)}" data-analytics-type="demo" data-analytics-id="${escapeHtml(demo.name)}"${external ? ' target="_blank" rel="noopener noreferrer"' : ''}>
   ${preview}
   <div class="demo-body">
     <h3>${escapeHtml(demo.title)}</h3>
