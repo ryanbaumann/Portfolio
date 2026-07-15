@@ -9,9 +9,8 @@ import { validateManifestEntries } from '../gateway/lib/apps.js';
 const REPO_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const APPS_PATH = join(REPO_ROOT, 'apps.json');
 const DOCKERFILE = readFileSync(join(REPO_ROOT, 'Dockerfile'), 'utf8');
-const CI_WORKFLOW = readFileSync(join(REPO_ROOT, '.github/workflows/ci.yml'), 'utf8');
 const DEPENDABOT = readFileSync(join(REPO_ROOT, '.github/dependabot.yml'), 'utf8');
-const DEPLOY_WORKFLOW = readFileSync(join(REPO_ROOT, '.github/workflows/deploy.yml'), 'utf8');
+const GATEWAY_SERVER = readFileSync(join(REPO_ROOT, 'gateway/server.js'), 'utf8');
 const TAG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const errors = [];
@@ -47,14 +46,20 @@ for (const app of apps) {
     }
   }
 
-  if (typeof app.dev_build_dir !== 'string' || !app.dev_build_dir) {
-    fail(`${label}: dev_build_dir is required; apps.json contains gateway-hosted apps only`);
+  if (app.api?.type === 'gateway') {
+    const route = app.api.path || app.api.prefix;
+    if (!GATEWAY_SERVER.includes(route)) fail(`${label}: declared gateway API is not registered in gateway/server.js (${route})`);
+  }
+  const isHostedDemo = app.path !== '/' && app.name !== 'portfolio-writer';
+  if (isHostedDemo && app.path !== `/${app.name}/`) fail(`${label}: hosted demo path must be /${app.name}/`);
+  if (isHostedDemo && !app.tags?.length) fail(`${label}: hosted demos need at least one tag`);
+  if (app.source?.type === 'artifact') {
+    if ((app.visibility || 'public') !== 'private') fail(`${label}: external artifacts must be private by default`);
     continue;
   }
-  if (isAbsolute(app.dev_build_dir)) {
-    fail(`${label}: dev_build_dir must be repo-relative`);
-    continue;
-  }
+
+  if (typeof app.dev_build_dir !== 'string' || !app.dev_build_dir) continue;
+  if (isAbsolute(app.dev_build_dir)) { fail(`${label}: dev_build_dir must be repo-relative`); continue; }
 
   const outputDir = resolve(REPO_ROOT, app.dev_build_dir);
   if (relative(REPO_ROOT, outputDir).startsWith('..')) {
@@ -75,12 +80,8 @@ for (const app of apps) {
   if (!packagePath.startsWith('demos/')) continue;
   manifestDemoDirs.add(packagePath);
 
-  if (app.path !== `/${app.name}/`) fail(`${label}: hosted demo path must be /${app.name}/`);
-  if (!app.tags?.length) fail(`${label}: hosted demos need at least one tag`);
   if (!existsSync(join(packageDir, 'package-lock.json'))) fail(`${label}: hosted demos need package-lock.json`);
-  if (!DOCKERFILE.includes(`AS ${app.name}-builder`)) fail(`${label}: missing Docker builder stage`);
-  if (!DOCKERFILE.includes(`./apps/${app.name}`)) fail(`${label}: missing Docker runtime copy`);
-  if (!CI_WORKFLOW.includes(packagePath)) fail(`${label}: missing from CI package matrix`);
+  if (!DOCKERFILE.includes('scripts/build-local.mjs')) fail('Dockerfile must use the manifest-driven build');
   if (!DEPENDABOT.includes(`directory: "/${packagePath}"`)) fail(`${label}: missing Dependabot entry`);
 
   if ((app.visibility || 'public') === 'public') {
@@ -100,17 +101,11 @@ for (const dirent of readdirSync(join(REPO_ROOT, 'demos'), { withFileTypes: true
   }
 }
 
-for (const app of apps.filter((entry) => (entry.visibility || 'public') === 'private')) {
-  if (!DEPLOY_WORKFLOW.includes(app.auth.envVar)) {
-    fail(`${app.name}: ${app.auth.envVar} is missing from deploy runtime configuration checks`);
-  }
-}
-
 if (errors.length) {
   console.error('[labs] validation failed:');
   for (const error of errors) console.error(`- ${error}`);
   process.exit(1);
 }
 
-const demos = apps.filter((app) => app.dev_build_dir.startsWith('demos/'));
+const demos = apps.filter((app) => app.path !== '/' && app.name !== 'portfolio-writer');
 console.log(`[labs] validated ${demos.length} hosted demos and ${apps.length} manifest entries`);

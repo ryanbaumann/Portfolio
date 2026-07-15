@@ -1,79 +1,133 @@
 # Lab demo onboarding contract
 
-`apps.json` is a deployment and routing contract, not a general link catalog.
-Every entry represents output built in this repository and served by the
-gateway at an internal path. Source repositories and externally hosted demos
-belong in `source_url` or portfolio content; they must never replace `path`.
+`apps.json` is the single routing, build, visibility, and runtime contract.
+Adding a workspace source automatically enters package CI, the root build,
+container staging, gateway routing, homepage discovery, and smoke coverage.
+Private external source reaches the same gateway as checksum-pinned build
+output; the public repository never receives its source or credentials.
 
-## Lifecycle
+## Choose one source workflow
 
-1. **Classify** the project as a hosted demo, external link, or private-source
-   service. Decide whether “private” means hidden deployment or confidential
-   source. Confidential source cannot be committed to this public repository.
-2. **Import** a hosted demo under `demos/<name>/`. Preserve useful history when
-   practical. Keep the old repository until consumers and links have moved.
-3. **Adapt** the app to an internal `/<name>/` base path and a home link. Browser
-   keys must be referrer-restricted. Secrets stay server-side behind an
-   app-scoped gateway API with input limits, upstream allowlists, timeouts,
-   rate limits, and keyless `503` behavior.
-4. **Register** it in `apps.json` with title, description, internal path,
-   `dev_build_dir`, visibility, tags, preview, providers, and optional
-   `source_url`. Use `npm run new:demo` for a new Maps/Vite app; use these same
-   gates when importing an existing project.
-5. **Wire** its Docker builder/runtime copy, CI package checks, Dependabot entry,
-   private runtime password configuration, and preview asset.
-6. **Prove** the package tests and build, `npm run check:labs`, root build,
-   gateway tests, gateway smoke, and container smoke. A primary browser flow
-   should use stubbed upstreams in PR CI; a quota-bounded live canary belongs
-   after deployment or on an explicit schedule.
-7. **Cut over** links and deployment only after production checks pass. Archive
-   the former repository with a short canonical-location notice. Do not delete
-   it: deletion is destructive and is not a dependable redirect strategy.
+### Start a new lab here
 
-## Visibility and privacy
+```bash
+npm run labs:new -- my-demo --template static
+npm run labs:new -- map-demo --template maps-2d
+npm run labs:new -- globe-demo --template maps-3d --visibility private
+cd demos/my-demo && npm install
+```
 
-| Mode | Public listing | Direct route | Source confidentiality | Required checks |
-|---|---|---|---|---|
-| `public` | Yes | Public | None | card, tags, preview, route/assets, primary flow |
-| `unlisted` | No | Public | None | absent from discovery, direct route works, `noindex` |
-| `private` | No | Password-gated | None | static assets and app APIs fail closed; auth succeeds; `no-store` and `noindex` |
-| Private source | No | Separate service or private artifact | Yes | private repository/IAM plus deployment checks outside this public repo |
+Templates are `static`, `maps-2d`, and `maps-3d`. The Maps templates use a
+referrer-restricted browser key named `VITE_GMP_API_KEY`; no server secret is
+placed in the bundle. Public demos need a real preview image before
+`labs:check` passes. `unlisted` is direct-link-only. `private` is omitted from
+discovery and fails closed until its generated password environment variable
+is configured on Cloud Run.
 
-An entry in a public `apps.json` is public metadata. Password protection only
-applies to same-origin routes the gateway serves; it cannot protect GitHub or
-another host. A private demo API must verify the same app session explicitly,
-because generic `/api/*` routing occurs before the static-file auth gate.
+### Import a public repository snapshot
 
-## Deterministic acceptance gates
+Check out the exact revision yourself, review it for secrets, then run:
 
-`npm run check:labs` fails when a hosted demo is missing its package contract,
-lockfile, internal path, tags, public preview, Docker copy, CI matrix entry, or
-Dependabot entry. Manifest validation rejects external route URLs and unsafe
-source URLs. Root CI then builds every app, runs gateway tests and smoke tests,
-builds the container, starts that exact image, and runs the same smoke suite
-against it. Smoke checks must never silently skip a manifest entry.
+```bash
+npm run labs:import -- infographic-agent \
+  --from ../infographic-agent \
+  --source-url https://github.com/ryanbaumann/infographic-agent \
+  --ref 214191bdceaf337ad0b1c3f8c19563fd0378f4ff \
+  --confirm-source-public
+```
 
-For a secret-bearing API, add deterministic unit tests for valid and invalid
-input, missing secret (`503`), upstream failure (`502`), timeout, response-size
-cap, allowlist/SSRF defense, rate limit (`429`), and private-session denial.
-The PR smoke path uses mocked upstreams; it does not need production secrets or
-an LLM.
+Import requires a lockfile plus deterministic `build` and `test` scripts and
+`engines.node`. It excludes `.git`, dependencies, build output, `.env*`, and
+temporary Google authentication files. It copies a snapshot; it never edits,
+deletes, archives, or redirects the source repository. Adapt and verify the
+snapshot here, cut traffic over, then archive the old repository with a link
+to the canonical monorepo location. Do not delete it.
 
-## Application to the two PR #64 candidates
+### Attach a private repository build
 
-| Gate | Infographic Agent | Real-World Reasoning Agent |
+The private repository owns its tests and produces a static `tar.gz` with
+`index.html` at the archive root, no source maps, and a base path matching
+`/<name>/`. Upload create-only to a private GCS object whose name contains the
+SHA-256, then register only the public lock metadata:
+
+```bash
+npm run labs:attach -- private-demo \
+  --artifact ../private-demo/dist-archive.tgz \
+  --uri gs://portfolio-private-labs/private-demo-<sha256>.tgz \
+  --release 2026-07-15.1
+```
+
+For a private Cloud Run backend exposed through the same portfolio origin:
+
+```bash
+npm run labs:attach -- private-demo \
+  --artifact ../private-demo/dist-archive.tgz \
+  --uri gs://portfolio-private-labs/private-demo-<sha256>.tgz \
+  --release 2026-07-15.1 \
+  --upstream-origin-env PRIVATE_DEMO_UPSTREAM_ORIGIN \
+  --upstream-audience-env PRIVATE_DEMO_UPSTREAM_AUDIENCE
+```
+
+The browser calls `/api/private-demo/*`. The gateway requires the private
+demo session, rate-limits requests, requires same-origin mutations, obtains a
+Cloud Run identity token for a fixed configured audience, strips caller auth
+and cookies, applies time/body/response caps, and never accepts an upstream
+URL from the request. The backend should expose only its bounded API routes;
+do not use this as an unrestricted internet proxy.
+
+Trusted deploy runs `labs:fetch --required`, verifies archive SHA-256 and safe
+members, rejects links/devices/traversal/source maps and size bombs, scans the
+staged files, then builds the image. Fork PR CI receives no GCP credential and
+uses explicit allow-missing mode; the gateway remains unavailable/fail-closed
+for absent private bytes. The deploy service account needs object-viewer only
+on the artifact bucket and Cloud Run invoker only on the named backend.
+
+Artifact URI, release, route, title, and tags remain visible in public
+`apps.json`. If even those names are confidential, a separate trusted
+manifest overlay is required and is intentionally outside this workflow.
+
+## API choices
+
+| `api.type` | Use when | Required work |
 |---|---|---|
-| Source | Public `ryanbaumann/infographic-agent` | Private `ryanbaumann/real-world-reasoning-demo` (renamed from `unlimited-maps-demo`) |
-| Actual demo | A live Cloud Run URL exists; PR #64 linked the source repository instead | Standalone full-stack service; no portfolio route was added |
-| Build/runtime | React/Vite single-file build; Node 18+ upstream | React/Vite plus Node server; Node 22+ upstream |
-| API decision | BYOK can remain static only if CI proves no bundled key; portfolio-funded use needs a bounded Gemini proxy | Requires namespaced Maps and Gemini gateway handlers or a separately deployed service |
-| Current portfolio gate | **Fail:** absent from source tree, Docker, CI, route, preview, and smoke | **Fail:** same, plus server APIs are not integrated |
-| Privacy decision | Public source means password gating can hide only the running route | Keep the repo/service private if source confidentiality matters; importing would publish it |
-| Recommended next step | Decide BYOK versus funded proxy, then import and onboard as `/infographic-agent/` | Decide public-source monorepo versus private separate service before any import |
+| `none` | Static/BYOK demo | No secret-bearing browser calls |
+| `gateway` | API is implemented in this gateway | Add bounded handler and focused tests; declare exact `path` or route-family `prefix` |
+| `upstream` | Backend stays in a private service | Use `labs:attach` upstream flags; set origin/audience/password runtime configuration |
 
-PR #64's two manifest records were removed because they represented neither
-routable apps nor working access control. Re-add each project only when it
-passes the hosted-demo contract above. Keep both source repositories for now;
-after a verified cutover, archive rather than delete them. The Infographic
-Agent repository may also need to remain as a compatibility shell while its
-published skill and installation URLs depend on that repository name.
+`api` and `source` are independent. A workspace demo can use a gateway API;
+an artifact demo can be static or use a private upstream. `visibility` is also
+independent, except external artifacts default to and must remain private.
+
+## Deterministic completion gate
+
+Run in this order:
+
+```bash
+npm test --prefix demos/<name>
+npm run build --prefix demos/<name>
+npm run labs:check
+npm run test:labs
+npm run build
+npm test --prefix gateway
+npm run smoke
+docker build --build-arg ALLOW_MISSING_ARTIFACTS=1 -t portfolio-review .
+```
+
+CI derives its package matrix from workspace sources in `apps.json`; there is
+no matrix, Docker stage, or gateway static route to edit. CI additionally
+builds the exact container and runs smoke against it. Secret-bearing handlers
+need deterministic valid/invalid input, missing-config `503`, auth denial,
+timeout, size, upstream failure, and rate-limit tests. Live quota-bearing
+canaries belong after deploy, not in fork PR CI.
+
+## Applying the contract to the two candidates
+
+| Demo | Verified source state | Path through this workflow | Current blocking gate |
+|---|---|---|---|
+| Infographic Agent | Public repo at `214191bdceaf337ad0b1c3f8c19563fd0378f4ff`; Vite single-file static build | `labs:import`, then `/infographic-agent/`; BYOK may remain `api.type: none` | Upstream package omits `engines.node`; add it and verify the imported build/test/preview before registration |
+| Real-World Reasoning Agent | Private repo at `e60bf823ddb4ce89fd435eec9094f6d2b6cd4dfe`; Node 22 full-stack service | Private artifact frontend plus authenticated `/api/real-world-reasoning-agent/*` upstream | Private repo must publish the immutable frontend artifact and adapt its current `/gmp`, `/ai`, and `/capabilities` calls to the namespaced API prefix |
+
+Neither source repository should be deleted now. The two revisions above were
+inspected to choose the workflow; no private source or build bytes are added
+to this public PR. Once each blocking gate is green, run the command shown,
+verify production, then archive the predecessor with a canonical redirect.

@@ -7,6 +7,13 @@ Learning: Changing a slug and canonical tag is not enough. Published links need 
 Evidence: The build now emits `redirects.json` from front-matter aliases, the gateway returns HTTP 308 while preserving the query string, and tests cover the runtime behavior.
 Use next time: When renaming a work, writing, or talk detail page, set the new `slug`, append the previous path to `aliases`, update `canonical`, and verify both the new 200 response and old 308 response.
 
+## 2026-07-15: Lab source, visibility, and API runtime are independent contracts
+
+Context: New labs can be authored in the portfolio, imported from a public repository, or built from confidential source while still sharing one gateway.
+Learning: Source location (`workspace` or immutable artifact), listing/access (`public`, `unlisted`, or `private`), and API ownership (`none`, gateway, or authenticated upstream) must be modeled independently. Coupling them creates skipped CI, leaked source, or APIs that bypass the private static gate.
+Evidence: The manifest now drives dynamic package CI and container staging; trusted deploy verifies private artifacts; private upstream requests require the owning app session and a fixed service identity.
+Use next time: Choose one value on each axis, register it in `apps.json`, and make CI prove the declared build, route, auth denial, and runtime configuration before cutover.
+
 ## 2026-07-14: Light/Dark theme compatibility in SVG graphics using native CSS variables
 
 Context: Redesigning artifact cards (thumbnails) to look consistent in both light and dark modes without maintaining multiple static assets.
