@@ -57,6 +57,11 @@
     "title": "Infographic Agent",
     "description": "Portable infographic architect. Generate professional infographics, visual summaries, charts, and data visualizations via autonomous agent.",
     "path": "https://github.com/ryanbaumann/infographic-agent/",
+    "visibility": "private",
+    "auth": {
+      "type": "password",
+      "envVar": "PORTFOLIO_INFOGRAPHIC_AGENT_PASSWORD"
+    },
     "tags": ["agent", "python", "playwright"],
     "preview": null
   },
@@ -65,6 +70,11 @@
     "title": "Real-World Reasoning Agent",
     "description": "Experimental real-world reasoning map demo showcasing unlimited context.",
     "path": "https://github.com/ryanbaumann/unlimited-maps-demo/",
+    "visibility": "private",
+    "auth": {
+      "type": "password",
+      "envVar": "PORTFOLIO_REAL_WORLD_REASONING_AGENT_PASSWORD"
+    },
     "tags": ["maps", "google-maps-platform", "reasoning"],
     "preview": null
   }
