@@ -16,6 +16,7 @@
 - Added complete `labs:new`, `labs:import`, and `labs:attach` paved paths for new templates, reviewed public-repository snapshots, and checksum-pinned private artifacts.
 - Made Docker and package CI manifest-driven, added deploy-only private artifact verification/scanning, and derived private runtime configuration from the manifest.
 - Added authenticated app-scoped upstream routing so private full-stack demos can keep their backend in a private Cloud Run service while using the portfolio's same-origin `/api/<demo>/` gateway.
+- Synchronized `.env.template` with the setup wizard, including the server-only Gemini key, and documented its Secret Manager-to-Cloud Run mapping.
 - Removed two external-repository records that were hidden from the site, not gateway-routable, and skipped by build and smoke checks; neither project is presented as an incorporated lab until its runtime is actually integrated.
 - Restored `apps.json` to internal gateway routes and added `npm run check:labs` to validate package, path, tag, preview, Docker, CI, Dependabot, and private-runtime wiring.
 - Added container-level smoke coverage in CI and documented the hosted, unlisted, private, and private-source onboarding contracts in `docs/LABS_ONBOARDING.md`.

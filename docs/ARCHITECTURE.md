@@ -114,11 +114,14 @@ deploys to Cloud Run on pushes to `main`. Required repo configuration:
 | var     | `ANALYTICS_MEASUREMENT_ID` | Optional public GA4 `G-...` stream ID |
 
 Runtime secrets (`STRAVA_CLIENT_SECRET`, `GMP_SERVER_API_KEY`,
-`RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `PORTFOLIO_WRITER_PASSWORD`, and
-`GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
+`RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `GEMINI_API_KEY`,
+`PORTFOLIO_WRITER_PASSWORD`, and `GITHUB_CONTENT_TOKEN`) are set on the Cloud Run service
 as Secret Manager references, never in the image or repo. `CONTACT_FROM_EMAIL`
 is optional non-secret sender configuration and must use a sender accepted by
-the mail provider.
+the mail provider. `GEMINI_API_KEY` is optional when contact classification is
+disabled; when enabled, create a Secret Manager secret named `gemini-api-key`
+and map it to the Cloud Run environment as shown in `deploy.yml`. Never create
+a `VITE_GEMINI_API_KEY`: Vite would expose it in the browser bundle.
 
 ## Paved paths
 
