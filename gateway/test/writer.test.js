@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { publishWritingUpdate, saveWritingDraft, updatePublishingFrontMatter } from '../lib/writer.js';
+import { publishWritingUpdate, requestWritingReview, saveWritingDraft, updatePublishingFrontMatter } from '../lib/writer.js';
 
 const ESSAY = `---
 title: Draft
@@ -90,4 +90,24 @@ test('writer direct edits update only the selected Markdown file', async () => {
   await saveWritingDraft({ sourceSlug: 'draft', markdown: ESSAY, env: { GITHUB_CONTENT_TOKEN: 'token', GITHUB_CONTENT_REPOSITORY: 'owner/repo' }, fetchImpl });
   assert.match(calls[0].url, /contents\/portfolio\/content\/writing\/draft\.md/);
   assert.equal(JSON.parse(calls[1].options.body).sha, 'abc123');
+});
+
+test('agent review request carries the saved file, author note, and required review lanes', async () => {
+  let request;
+  const fetchImpl = async (url, options) => {
+    request = { url, options };
+    return { ok: true, json: async () => ({ html_url: 'https://github.com/owner/repo/issues/42' }) };
+  };
+  const result = await requestWritingReview({
+    sourceSlug: 'draft', comment: 'Check the opening claim.',
+    env: { GITHUB_REVIEW_TOKEN: 'review-token', GITHUB_CONTENT_REPOSITORY: 'owner/repo' }, fetchImpl,
+  });
+  assert.equal(result.issueUrl, 'https://github.com/owner/repo/issues/42');
+  assert.equal(request.url, 'https://api.github.com/repos/owner/repo/issues');
+  const issue = JSON.parse(request.options.body);
+  assert.match(issue.body, /portfolio\/content\/writing\/draft\.md/);
+  assert.match(issue.body, /Check the opening claim/);
+  assert.match(issue.body, /portfolio-writing/);
+  assert.match(issue.body, /portfolio-review/);
+  assert.match(issue.body, /portfolio-design/);
 });

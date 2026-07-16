@@ -23,7 +23,7 @@ Create a safe draft with `npm run new:post -- "Essay title"`. Use `--publish` fo
 
 Production builds a second copy at `/writer/`. It includes drafts and future essays, is excluded from public app discovery, forces `noindex, nofollow`, disables analytics, and is protected by Google OAuth. Only `rsbaumann@gmail.com` is accepted by default. Point `WRITER_PUBLIC_ORIGIN` at the production HTTPS origin (for example, `https://ryanbaumann-dashboardfolio.admin.com`) and register `${WRITER_PUBLIC_ORIGIN}/auth/google/callback` as an authorized redirect URI in the Google Cloud OAuth client.
 
-The release dashboard previews all unfinished essays, allows direct Markdown edits, can publish now, schedule in the browser's local timezone, or keep an unpublished essay as a draft. Publish now requires an explicit browser confirmation. Every save creates a focused commit on `main` through the GitHub Contents API. The normal push deploy handles immediate publication; an hourly scheduled deploy publishes due timestamps. Coding-agent feedback is intentionally not automated yet: give an agent the focused Git commit or a GitHub issue, then use the dashboard's rendered preview and direct editor to review its iteration.
+The release dashboard makes the workflow explicit: open the private preview, edit the Markdown, save the draft, leave a review note, and request agentic review before publishing. A review request creates a GitHub issue with the content file, branch, and the required `portfolio-writing`, `portfolio-review`, and `portfolio-design` review lanes. A connected coding agent can pick up that issue, leave findings, and make a follow-up commit. Return to the dashboard to review that iteration in the private preview, then schedule or publish it. Publish now still requires an explicit browser confirmation. Every save creates a focused commit on `main` through the GitHub Contents API; the normal push deploy handles immediate publication, and an hourly scheduled deploy publishes due timestamps.
 
 Required runtime configuration:
 
@@ -32,6 +32,7 @@ Required runtime configuration:
 - `WRITER_PUBLIC_ORIGIN`: the exact HTTPS dashboard origin, with no path or trailing slash.
 - `GOOGLE_OAUTH_ALLOWED_EMAIL`: optional override, defaults to `rsbaumann@gmail.com`.
 - `GITHUB_CONTENT_TOKEN`: a fine-grained GitHub token restricted to this repository with **Contents: read and write**. Store it in Secret Manager.
+- `GITHUB_REVIEW_TOKEN`: a dedicated fine-grained GitHub token with **Issues: read and write**. Required to submit agent-review requests; it never reaches the browser.
 - `GITHUB_CONTENT_REPOSITORY`: optional, defaults to `ryanbaumann/Portfolio`.
 - `GITHUB_CONTENT_BRANCH`: optional, defaults to `main`.
 

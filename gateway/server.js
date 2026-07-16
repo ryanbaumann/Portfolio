@@ -21,7 +21,7 @@ import {
 } from './lib/auth.js';
 import { handleStravaApi } from './lib/strava.js';
 import { handleIsochronesApi } from './lib/isochrones.js';
-import { publishWritingUpdate, saveWritingDraft } from './lib/writer.js';
+import { publishWritingUpdate, requestWritingReview, saveWritingDraft } from './lib/writer.js';
 import { beginGoogleLogin, finishGoogleLogin, googleLoginPage, hasGoogleSession } from './lib/googleAuth.js';
 import { classifyContactSubmission } from './lib/contactSpam.js';
 import { errorPageHtml } from './lib/errorPage.js';
@@ -290,6 +290,21 @@ async function handleWriterSaveRequest(request, response) {
   } catch (error) { sendJson(request, response, error.statusCode || 502, { error: error.message }); }
 }
 
+async function handleWriterReviewRequest(request, response) {
+  if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
+  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
+  if (!writerApp || !hasGoogleSession(request)) return sendJson(request, response, 401, { error: 'Writer authentication required.' });
+  try {
+    const origin = new URL(String(request.headers.origin || ''));
+    if (origin.host !== request.headers.host) throw new Error('origin mismatch');
+    const params = new URLSearchParams(await readTextBody(request));
+    const result = await requestWritingReview({ sourceSlug: String(params.get('sourceSlug') || ''), comment: String(params.get('comment') || '') });
+    applySecurityHeaders(response);
+    response.writeHead(303, { Location: `/writer/?review=${encodeURIComponent(result.sourceSlug)}&issue=${encodeURIComponent(result.issueUrl)}`, 'Cache-Control': 'no-store' });
+    response.end();
+  } catch (error) { sendJson(request, response, error.statusCode || 502, { error: error.message }); }
+}
+
 function readJsonBody(request) {
   return new Promise((resolve, reject) => {
     let body = '';
@@ -374,6 +389,10 @@ async function handleApi(request, response, pathname, searchParams) {
   }
   if (pathname === '/api/writer/save') {
     await handleWriterSaveRequest(request, response);
+    return;
+  }
+  if (pathname === '/api/writer/review') {
+    await handleWriterReviewRequest(request, response);
     return;
   }
 

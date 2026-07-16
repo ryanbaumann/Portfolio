@@ -17,6 +17,7 @@ test('setup writes separate browser, server, and contact configuration', () => {
     GOOGLE_OAUTH_SESSION_SECRET: 'session-secret',
     WRITER_PUBLIC_ORIGIN: 'https://dashboard.example.com',
     GITHUB_CONTENT_TOKEN: 'github-token',
+    GITHUB_REVIEW_TOKEN: 'review-token',
     ANALYTICS_MEASUREMENT_ID: 'G-TEST123',
   });
   assert.match(generated, /^VITE_GMP_API_KEY=shared-browser-key$/m);
@@ -29,5 +30,6 @@ test('setup writes separate browser, server, and contact configuration', () => {
   assert.match(generated, /^GOOGLE_OAUTH_SESSION_SECRET=session-secret$/m);
   assert.match(generated, /^WRITER_PUBLIC_ORIGIN=https:\/\/dashboard\.example\.com$/m);
   assert.match(generated, /^GITHUB_CONTENT_TOKEN=github-token$/m);
+  assert.match(generated, /^GITHUB_REVIEW_TOKEN=review-token$/m);
   assert.match(generated, /^ANALYTICS_MEASUREMENT_ID=G-TEST123$/m);
 });

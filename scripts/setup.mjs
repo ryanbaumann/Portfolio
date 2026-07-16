@@ -42,6 +42,7 @@ async function main() {
   const GOOGLE_OAUTH_SESSION_SECRET = await ask('   Google OAuth session secret');
   const WRITER_PUBLIC_ORIGIN = await ask('   Dashboard HTTPS origin');
   const GITHUB_CONTENT_TOKEN = await ask('   Fine-grained GitHub Contents token');
+  const GITHUB_REVIEW_TOKEN = await ask('   Fine-grained GitHub Issues token');
 
   console.log('\n5. Analytics (optional; public configuration)');
   const ANALYTICS_MEASUREMENT_ID = await ask('   GA4 Measurement ID (G-...)');
@@ -65,6 +66,7 @@ async function main() {
     GOOGLE_OAUTH_SESSION_SECRET,
     WRITER_PUBLIC_ORIGIN,
     GITHUB_CONTENT_TOKEN,
+    GITHUB_REVIEW_TOKEN,
     ANALYTICS_MEASUREMENT_ID,
     GEMINI_API_KEY,
   });
@@ -98,6 +100,7 @@ GOOGLE_OAUTH_SESSION_SECRET=${values.GOOGLE_OAUTH_SESSION_SECRET || ''}
 GOOGLE_OAUTH_ALLOWED_EMAIL=rsbaumann@gmail.com
 WRITER_PUBLIC_ORIGIN=${values.WRITER_PUBLIC_ORIGIN || ''}
 GITHUB_CONTENT_TOKEN=${values.GITHUB_CONTENT_TOKEN || ''}
+GITHUB_REVIEW_TOKEN=${values.GITHUB_REVIEW_TOKEN || ''}
 
 # Analytics (public Measurement ID)
 ANALYTICS_MEASUREMENT_ID=${values.ANALYTICS_MEASUREMENT_ID || ''}
