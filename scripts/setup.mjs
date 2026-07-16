@@ -36,8 +36,11 @@ async function main() {
   const CONTACT_TO_EMAIL = await ask('   Contact destination email');
   const CONTACT_FROM_EMAIL = await ask('   Verified sender', 'Portfolio Contact <onboarding@resend.dev>');
 
-  console.log('\n4. Private writer (optional for local development)');
-  const PORTFOLIO_WRITER_PASSWORD = await ask('   Writer preview password');
+  console.log('\n4. Private release dashboard (optional for local development)');
+  const GOOGLE_OAUTH_CLIENT_ID = await ask('   Google OAuth client ID');
+  const GOOGLE_OAUTH_CLIENT_SECRET = await ask('   Google OAuth client secret');
+  const GOOGLE_OAUTH_SESSION_SECRET = await ask('   Google OAuth session secret');
+  const WRITER_PUBLIC_ORIGIN = await ask('   Dashboard HTTPS origin');
   const GITHUB_CONTENT_TOKEN = await ask('   Fine-grained GitHub Contents token');
 
   console.log('\n5. Analytics (optional; public configuration)');
@@ -57,7 +60,10 @@ async function main() {
     RESEND_API_KEY,
     CONTACT_TO_EMAIL,
     CONTACT_FROM_EMAIL,
-    PORTFOLIO_WRITER_PASSWORD,
+    GOOGLE_OAUTH_CLIENT_ID,
+    GOOGLE_OAUTH_CLIENT_SECRET,
+    GOOGLE_OAUTH_SESSION_SECRET,
+    WRITER_PUBLIC_ORIGIN,
     GITHUB_CONTENT_TOKEN,
     ANALYTICS_MEASUREMENT_ID,
     GEMINI_API_KEY,
@@ -85,8 +91,12 @@ RESEND_API_KEY=${values.RESEND_API_KEY}
 CONTACT_TO_EMAIL=${values.CONTACT_TO_EMAIL}
 CONTACT_FROM_EMAIL=${values.CONTACT_FROM_EMAIL}
 
-# Private writer
-PORTFOLIO_WRITER_PASSWORD=${values.PORTFOLIO_WRITER_PASSWORD || ''}
+# Private release dashboard
+GOOGLE_OAUTH_CLIENT_ID=${values.GOOGLE_OAUTH_CLIENT_ID || ''}
+GOOGLE_OAUTH_CLIENT_SECRET=${values.GOOGLE_OAUTH_CLIENT_SECRET || ''}
+GOOGLE_OAUTH_SESSION_SECRET=${values.GOOGLE_OAUTH_SESSION_SECRET || ''}
+GOOGLE_OAUTH_ALLOWED_EMAIL=rsbaumann@gmail.com
+WRITER_PUBLIC_ORIGIN=${values.WRITER_PUBLIC_ORIGIN || ''}
 GITHUB_CONTENT_TOKEN=${values.GITHUB_CONTENT_TOKEN || ''}
 
 # Analytics (public Measurement ID)

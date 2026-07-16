@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { publishWritingUpdate, updatePublishingFrontMatter } from '../lib/writer.js';
+import { publishWritingUpdate, saveWritingDraft, updatePublishingFrontMatter } from '../lib/writer.js';
 
 const ESSAY = `---
 title: Draft
@@ -79,4 +79,15 @@ test('writer publishing preserves actionable GitHub branch errors', async () => 
     }),
     (error) => error.statusCode === 422 && /branch rules/.test(error.message),
   );
+});
+
+test('writer direct edits update only the selected Markdown file', async () => {
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    calls.push({ url, options });
+    return options.method ? { ok: true } : { ok: true, json: async () => ({ sha: 'abc123' }) };
+  };
+  await saveWritingDraft({ sourceSlug: 'draft', markdown: ESSAY, env: { GITHUB_CONTENT_TOKEN: 'token', GITHUB_CONTENT_REPOSITORY: 'owner/repo' }, fetchImpl });
+  assert.match(calls[0].url, /contents\/portfolio\/content\/writing\/draft\.md/);
+  assert.equal(JSON.parse(calls[1].options.body).sha, 'abc123');
 });

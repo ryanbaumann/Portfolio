@@ -101,3 +101,21 @@ export async function publishWritingUpdate({ sourceSlug, action, publishAt, env 
   }
   return { action, sourceSlug, publishAt: action === 'schedule' ? publishAt : null };
 }
+
+export async function saveWritingDraft({ sourceSlug, markdown, env = process.env, fetchImpl = fetch }) {
+  if (!SOURCE_SLUG.test(sourceSlug || '')) throw Object.assign(new Error('Invalid essay slug.'), { statusCode: 400 });
+  if (typeof markdown !== 'string' || markdown.length > 28_000 || !markdown.startsWith('---\n')) throw Object.assign(new Error('Provide valid Markdown with front matter.'), { statusCode: 422 });
+  const token = env.GITHUB_CONTENT_TOKEN;
+  const repository = env.GITHUB_CONTENT_REPOSITORY || 'ryanbaumann/Portfolio';
+  const branch = env.GITHUB_CONTENT_BRANCH || 'main';
+  if (!token) throw Object.assign(new Error('Writer publishing is not configured.'), { statusCode: 503 });
+  const path = `portfolio/content/writing/${sourceSlug}.md`;
+  const url = `https://api.github.com/repos/${repository}/contents/${path}`;
+  const headers = { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28' };
+  const current = await fetchImpl(`${url}?ref=${encodeURIComponent(branch)}`, { headers, signal: AbortSignal.timeout(10_000) });
+  if (!current.ok) throw Object.assign(new Error('Could not load the essay from GitHub.'), { statusCode: current.status === 404 ? 404 : 502 });
+  const file = await current.json();
+  const saved = await fetchImpl(url, { method: 'PUT', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Edit ${sourceSlug}`, content: Buffer.from(markdown).toString('base64'), sha: file.sha, branch }), signal: AbortSignal.timeout(10_000) });
+  if (!saved.ok) throw Object.assign(new Error(saved.status === 409 ? 'The essay changed in GitHub. Reload and try again.' : 'GitHub did not accept the edit.'), { statusCode: saved.status === 409 ? 409 : 502 });
+  return { sourceSlug };
+}

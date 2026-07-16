@@ -833,6 +833,9 @@ main > section.hero { margin-bottom: clamp(0.75rem, 2vw, 1.5rem); }
 .writer-form label { display: grid; gap: 0.35rem; color: var(--muted); font-weight: 650; }
 .writer-form input[type="datetime-local"] { min-height: 44px; padding: 0.6rem; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--surface); color: var(--ink); font: inherit; }
 .writer-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.writer-edit { border-top: 1px dashed var(--line); padding-top: 0.75rem; }
+.writer-edit summary { cursor: pointer; color: var(--accent); font-weight: 650; }
+.writer-edit textarea { width: 100%; resize: vertical; padding: 0.75rem; border: 1px solid var(--line); border-radius: 0.6rem; background: var(--surface); color: var(--ink); font: 0.86rem/1.5 ui-monospace, "SF Mono", monospace; }
 
 @media (min-width: 760px) {
   .build-section { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }

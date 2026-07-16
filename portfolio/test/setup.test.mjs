@@ -12,7 +12,10 @@ test('setup writes separate browser, server, and contact configuration', () => {
     RESEND_API_KEY: 'resend-key',
     CONTACT_TO_EMAIL: 'owner@example.com',
     CONTACT_FROM_EMAIL: 'Portfolio <sender@example.com>',
-    PORTFOLIO_WRITER_PASSWORD: 'writer-password',
+    GOOGLE_OAUTH_CLIENT_ID: 'google-client',
+    GOOGLE_OAUTH_CLIENT_SECRET: 'google-secret',
+    GOOGLE_OAUTH_SESSION_SECRET: 'session-secret',
+    WRITER_PUBLIC_ORIGIN: 'https://dashboard.example.com',
     GITHUB_CONTENT_TOKEN: 'github-token',
     ANALYTICS_MEASUREMENT_ID: 'G-TEST123',
   });
@@ -21,7 +24,10 @@ test('setup writes separate browser, server, and contact configuration', () => {
   assert.match(generated, /^GMP_SERVER_API_KEY=server-key$/m);
   assert.match(generated, /^RESEND_API_KEY=resend-key$/m);
   assert.match(generated, /^CONTACT_TO_EMAIL=owner@example\.com$/m);
-  assert.match(generated, /^PORTFOLIO_WRITER_PASSWORD=writer-password$/m);
+  assert.match(generated, /^GOOGLE_OAUTH_CLIENT_ID=google-client$/m);
+  assert.match(generated, /^GOOGLE_OAUTH_CLIENT_SECRET=google-secret$/m);
+  assert.match(generated, /^GOOGLE_OAUTH_SESSION_SECRET=session-secret$/m);
+  assert.match(generated, /^WRITER_PUBLIC_ORIGIN=https:\/\/dashboard\.example\.com$/m);
   assert.match(generated, /^GITHUB_CONTENT_TOKEN=github-token$/m);
   assert.match(generated, /^ANALYTICS_MEASUREMENT_ID=G-TEST123$/m);
 });
