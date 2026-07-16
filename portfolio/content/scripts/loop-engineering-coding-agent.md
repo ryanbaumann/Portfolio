@@ -16,7 +16,7 @@ shareImageAlt: Social card showing a bounded coding-agent loop from contract to 
 
 Most coding-agent cost comes from running a single high-capability model for every sub-task. An orchestrator that delegates bounded jobs to cheaper, lower-power models can cut token spend dramatically while keeping quality where it matters: at the decision points.
 
-I built this prompt around that architecture. One orchestrator holds the goal, decomposes the work, and owns the final answer. Workers run on fast or balanced models, each scoped to one job with explicit edit boundaries and a done condition. The orchestrator inspects their evidence before integrating. The expensive model reasons about what to do. The cheap models do it.
+I built this prompt around that architecture. One orchestrator holds the goal, decomposes the work, and owns the final answer. Workers run on fast or balanced capability profiles, each scoped to one job with explicit edit boundaries and a done condition. The orchestrator inspects their evidence before integrating. The expensive model reasons about what to do. The cheap models do it.
 
 ## Loop engineering: the idea
 
@@ -47,8 +47,6 @@ The prompt uses "fast," "balanced," and "deep" capability profiles instead of mo
 4. Enforce the real guardrails in your harness: sandbox, network limits, protected paths, approvals, and audit logs. A prompt asks for good behavior; it cannot enforce it.
 5. Test it in the exact model, tools, and permissions you run.
 
-I am also considering packaging this as a reusable skill that loads only when the agent enters a multi-step coding task.
-
 ## What I can and can't claim yet
 
 The suite specifies 16 scenarios, including dirty worktrees, read-only diagnosis, prompt injection in repository data, conflicting instructions, production boundaries, retry limits, parallel writers, helper containment, cross-session work, missing verification, security changes, UI checks, and memory quality.
@@ -56,3 +54,7 @@ The suite specifies 16 scenarios, including dirty worktrees, read-only diagnosis
 The structural check passes. A separate read-only review found problems that I corrected. That is not a behavioral benchmark, and no behavioral trial results are recorded. Before using the prompt as a production gate, run repeated trials in your own harness and retain the transcripts, tool calls, diffs, final repository state, and calibrated grading evidence.
 
 Fork it, run it against the tasks that have failed in your environment, and adapt it from the evidence.
+
+## What comes next
+
+I am considering packaging this as a reusable skill that loads only when the agent enters a multi-step coding task.
