@@ -119,8 +119,8 @@ function validateSocialImage(id, meta) {
     return;
   }
   const { width, height } = getImageDimensions(imagePath);
-  if (/\.(png|jpe?g)$/i.test(meta.socialImage) && (width !== 1200 || height !== 627)) {
-    failValidation(`${id}: raster social image must be 1200x627: ${meta.socialImage}`);
+  if (/\.(png|jpe?g)$/i.test(meta.socialImage) && (width !== 1200 || (height !== 627 && height !== 630))) {
+    failValidation(`${id}: raster social image must be 1200x627 or 1200x630: ${meta.socialImage}`);
   }
 }
 
@@ -210,8 +210,8 @@ function validateSite() {
     if (!existsSync(imagePath)) failValidation(`site.json: defaultShareImage asset not found: ${site.defaultShareImage}`);
     else {
       const { width, height } = getImageDimensions(imagePath);
-      if (/\.(png|jpe?g)$/i.test(site.defaultShareImage) && (width !== 1200 || height !== 627)) {
-        failValidation('site.json: raster defaultShareImage must be 1200x627');
+      if (/\.(png|jpe?g)$/i.test(site.defaultShareImage) && (width !== 1200 || (height !== 627 && height !== 630))) {
+        failValidation('site.json: raster defaultShareImage must be 1200x627 or 1200x630');
       }
     }
   }
@@ -1016,6 +1016,7 @@ function detailPage(collection, entry, activeKey) {
   <p class="eyebrow">${escapeHtml(collection.label)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
   <p class="article-meta">${metaLine([meta.org || meta.venue, meta.role, meta.period || meta.date])}</p>
+  ${meta.summary ? `<p class="lede">${escapeHtml(meta.summary)}</p>` : ''}
   ${linkChips(meta.links)}
   ${heroImage(meta, collection.name)}
   ${markdownToHtml(entry.body)}
@@ -1350,6 +1351,7 @@ function buildStandalonePages(pages) {
     const content = customContent || `<article class="prose">
   <p class="eyebrow">${escapeHtml(meta.eyebrow || site.name)}</p>
   <h1>${escapeHtml(meta.title)}</h1>
+  ${meta.summary ? `<p class="lede">${escapeHtml(meta.summary)}</p>` : ''}
   ${heroImage(meta, 'pages', slug === 'about' ? ' profile-portrait' : '')}
   ${markdownToHtml(body)}
 </article>`;
