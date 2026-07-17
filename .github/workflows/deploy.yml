@@ -40,7 +40,7 @@ jobs:
 
     env:
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      GCP_REGION: ${{ vars.GCP_REGION || 'us-central1' }}
+      GCP_REGION: ${{ vars.GCP_REGION || 'us-west1' }}
 
     steps:
       - name: Checkout Code
@@ -51,6 +51,13 @@ jobs:
           MISSING=0
           if [ -z "${{ vars.GCP_PROJECT_ID }}" ]; then
             echo "::error::Missing required repository variable: GCP_PROJECT_ID"
+            MISSING=1
+          elif [ "${{ vars.GCP_PROJECT_ID }}" != "geojson-bq-blog" ]; then
+            echo "::error::GCP_PROJECT_ID must be geojson-bq-blog for this repository"
+            MISSING=1
+          fi
+          if [ -n "${{ vars.GCP_REGION }}" ] && [ "${{ vars.GCP_REGION }}" != "us-west1" ]; then
+            echo "::error::GCP_REGION must be us-west1 for this repository"
             MISSING=1
           fi
           if [ -z "${{ secrets.GCP_WIF_PROVIDER }}" ]; then
@@ -191,5 +198,5 @@ jobs:
 
       - name: Post-deploy smoke test
         env:
-          BASE_URL: https://www.ryanbaumann-portfolio.com
+          BASE_URL: https://ryanbaumann.dev
         run: node scripts/smoke-production.mjs

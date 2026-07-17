@@ -44,7 +44,7 @@ picture.
   prompt text.
 - **Schedule an essay:** `npm run new:post -- "Post title" --schedule 2099-07-14T16:00:00Z`. Preview and manage drafts at the private `/writer/` app. See `docs/WRITER_WORKFLOW.md`; public-repo drafts are not confidential.
 - **Regenerate demo screenshots:** `npm run previews` (uses
-  strava-explorer's Playwright; `BASE_URL=https://www.ryanbaumann-portfolio.com`
+  strava-explorer's Playwright; `BASE_URL=https://ryanbaumann.dev`
   to shoot production).
 - **Regenerate artifact cards:** `node scripts/artifact-cards.mjs` rebuilds
   the SVG artifact cards used on work, writing, and talks pages when no
@@ -121,6 +121,7 @@ Run commands from the app directory unless noted.
 
 ## Environment Variables and Secrets
 
+- Every Google Cloud command for this repository must explicitly target `geojson-bq-blog` with `--project geojson-bq-blog` (or an already validated variable with that exact value). Never rely on the active gcloud default, and never use `gmp-demos-ryanbaumann` for this repository.
 - Never commit real API keys, OAuth client secrets, access tokens, refresh tokens, or generated `.env.*` files.
 - `demos/strava-explorer` expects Google Maps Platform and Strava configuration through Vite `import.meta.env` variables. Preserve the `VITE_` prefix for browser-exposed variables. Anything with `VITE_` is inlined into the browser bundle by Vite — never put a real secret in a `VITE_`-prefixed variable (see `docs/ARCHITECTURE.md` rule 2).
 - If you encounter hard-coded credentials or tokens, prefer moving them to documented environment variables and note required API restrictions in the PR.

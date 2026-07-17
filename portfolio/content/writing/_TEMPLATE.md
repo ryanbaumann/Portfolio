@@ -3,7 +3,7 @@ title: A thesis, not a topic
 summary: One sentence that states the claim and why it matters.
 date: 2026-01-15
 updated: 2026-01-15
-canonical: https://www.ryanbaumann-portfolio.com/writing/post-title/
+canonical: https://ryanbaumann.dev/writing/post-title/
 image: /img/writing/post-title.jpg
 imageAlt: A specific description of the evidence shown in the article image
 socialImage: /social/post-title.jpg

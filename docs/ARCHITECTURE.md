@@ -5,14 +5,14 @@ workspace Lab apps, and a zero-dependency Node gateway that routes between
 them and brokers secret-bearing API calls. The shared `apps.json` manifest
 can also list external experiments, which render as outbound links instead of
 shipping in the container. The canonical public URL is
-`https://www.ryanbaumann-portfolio.com/`. No access tokens or server API
+`https://ryanbaumann.dev/`. No access tokens or server API
 secrets belong in browser bundles.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
 │ Cloud Run service: trails-ninja (legacy service name)              │
 │                                                                    │
-│ https://www.ryanbaumann-portfolio.com/                             │
+│ https://ryanbaumann.dev/                                          │
 │   └── gateway/server.js (node:20-slim, no deps)                    │
 │       ├── /                → site (portfolio)                      │
 │       │    /work/ /writing/ /talks/ /demos/ …                      │
@@ -137,8 +137,9 @@ a `VITE_GEMINI_API_KEY`: Vite would expose it in the browser bundle.
 | Attach private build | `npm run labs:attach -- my-demo --artifact <tgz> --uri <content-addressed-gs-uri> --release <id>` |
 | Add a blog post | `npm run new:post -- "Post title"` |
 | Set up the email list or comments | `docs/EMAIL_LIST_AND_COMMENTS.md` |
+| Move or configure the public domain | follow `docs/DOMAIN_MIGRATION.md` |
 | Schedule a blog post | `npm run new:post -- "Post title" --schedule 2099-07-14T16:00:00Z` |
 | Syndicate a Field Note | follow `docs/SYNDICATION.md` |
 | Add a work entry / talk | copy the `_TEMPLATE.md` in `portfolio/content/<collection>/` |
-| Regenerate demo screenshots | `npm run previews` (or `BASE_URL=https://www.ryanbaumann-portfolio.com npm run previews`) |
+| Regenerate demo screenshots | `npm run previews` (or `BASE_URL=https://ryanbaumann.dev npm run previews`) |
 | Verify everything | `npm run build && npm run smoke` |

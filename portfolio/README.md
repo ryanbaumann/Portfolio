@@ -1,10 +1,10 @@
 # Ryan Baumann Portfolio
 
-Ryan Baumann's site: [work](https://www.ryanbaumann-portfolio.com/work/),
+Ryan Baumann's site: [work](https://ryanbaumann.dev/work/),
 Field Notes, talks, and Ryan’s Lab, from 15+ years building developer platforms
 as a growth engine, currently as Head of Developer Experience at Google Maps
 Platform. Served at the root of
-[ryanbaumann-portfolio.com](https://www.ryanbaumann-portfolio.com/).
+[ryanbaumann.dev](https://ryanbaumann.dev/).
 
 Built to be **bare bones, fast, and easy to update**: a zero-dependency
 static site generator over a flat-file markdown CMS. No framework, no

@@ -50,7 +50,7 @@ Use one controlled UTM vocabulary:
 Example:
 
 ```text
-https://www.ryanbaumann-portfolio.com/writing/loop-engineering-coding-agent/?utm_source=linkedin&utm_medium=organic_social&utm_campaign=fn_loop_engineering_202607&utm_content=post_hook_a
+https://ryanbaumann.dev/writing/loop-engineering-coding-agent/?utm_source=linkedin&utm_medium=organic_social&utm_campaign=fn_loop_engineering_202607&utm_content=post_hook_a
 ```
 
 The portfolio sends only these four allowlisted values to Google Analytics.

@@ -228,14 +228,14 @@ test('contact delivery validates intent and marks only provider-confirmed succes
 
     const success = await postForm(port, '/api/contact', {
       ...valid,
-      intent: 'Consulting',
+      intent: 'Developer platform discussion',
     });
     assert.equal(success.res.statusCode, 303);
     assert.equal(success.res.headers.location, '/contact-success/?delivered=1');
     assert.equal(success.body, '');
     assert.equal(delivered.length, 1);
-    assert.equal(delivered[0].subject, '[Consulting] Portfolio contact from Ada Lovelace');
-    assert.match(delivered[0].text, /^Intent: Consulting\nName: Ada Lovelace\nEmail: ada@example\.com\n\n/);
+    assert.equal(delivered[0].subject, '[Developer platform discussion] Portfolio contact from Ada Lovelace');
+    assert.match(delivered[0].text, /^Intent: Developer platform discussion\nName: Ada Lovelace\nEmail: ada@example\.com\n\n/);
 
     const spamRegexMatch = await postForm(port, '/api/contact', {
       ...valid,
@@ -404,6 +404,21 @@ test('unknown static path serves a styled HTML 404 with a home link', async () =
     assert.doesNotMatch(body, /^Not found\.$/);
   } finally {
     appsByPathLength.splice(0, appsByPathLength.length, ...originalByPath);
+    await new Promise((resolve) => server.close(resolve));
+  }
+});
+
+test('legacy and www site hosts permanently redirect to the canonical .dev URL', async () => {
+  server.listen(0);
+  const port = server.address().port;
+
+  try {
+    for (const host of ['www.ryanbaumann.dev', 'ryanbaumann-portfolio.com', 'www.ryanbaumann-portfolio.com']) {
+      const { res } = await request(port, '/writing/example/?utm_source=legacy', { Host: host });
+      assert.equal(res.statusCode, 308);
+      assert.equal(res.headers.location, 'https://ryanbaumann.dev/writing/example/?utm_source=legacy');
+    }
+  } finally {
     await new Promise((resolve) => server.close(resolve));
   }
 });

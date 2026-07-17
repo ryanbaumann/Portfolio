@@ -30,8 +30,14 @@ import { proxyUpstream } from './lib/upstream.js';
 const PORT = Number(process.env.PORT || 8080);
 const JSON_BODY_LIMIT_BYTES = 16 * 1024;
 const FORM_BODY_LIMIT_BYTES = 32 * 1024;
+const CANONICAL_SITE_ORIGIN = 'https://ryanbaumann.dev';
+const REDIRECT_SITE_HOSTS = new Set([
+  'www.ryanbaumann.dev',
+  'ryanbaumann-portfolio.com',
+  'www.ryanbaumann-portfolio.com',
+]);
 const CONTACT_INTENTS = Object.freeze([
-  'Consulting',
+  'Developer platform discussion',
   'Content collaboration',
   'Speaking opportunity',
   'Other',
@@ -621,6 +627,16 @@ const server = createServer(async (request, response) => {
 
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       sendJson(request, response, 405, { error: 'Method not allowed' });
+      return;
+    }
+
+    // Keep one public URL owner. The optional www host and the previous
+    // portfolio domain remain mapped during the migration, but every page
+    // permanently redirects to the same path and query on the apex .dev host.
+    if (REDIRECT_SITE_HOSTS.has(requestUrl.hostname.toLowerCase())) {
+      applySecurityHeaders(response);
+      response.writeHead(308, { Location: `${CANONICAL_SITE_ORIGIN}${pathname}${requestUrl.search}` });
+      response.end();
       return;
     }
 

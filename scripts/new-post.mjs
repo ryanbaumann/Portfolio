@@ -75,7 +75,7 @@ if (existsSync(postPath)) {
 }
 
 const date = new Date().toISOString().slice(0, 10);
-const canonical = external || `https://www.ryanbaumann-portfolio.com/writing/${slug}/`;
+const canonical = external || `https://ryanbaumann.dev/writing/${slug}/`;
 const tagList = tags.split(',').map((tag) => tag.trim()).filter(Boolean);
 
 const body = external

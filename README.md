@@ -4,7 +4,7 @@
 
 This repo is the public home for Ryan Baumann's portfolio and Ryan’s Lab. It is part personal site, part runnable reference architecture, and part proof that developer experience work should ship as real artifacts.
 
-The live site is https://www.ryanbaumann-portfolio.com/.
+The live site is https://ryanbaumann.dev/.
 
 ## What is inside
 
@@ -75,6 +75,10 @@ cd portfolio && node build.mjs && node serve.mjs
 ## Deploy
 
 `.github/workflows/deploy.yml` builds the container with Cloud Build and deploys it to Cloud Run on pushes to `main` using Workload Identity Federation.
+
+The canonical production origin is `https://ryanbaumann.dev/`. Follow
+[`docs/DOMAIN_MIGRATION.md`](docs/DOMAIN_MIGRATION.md) to configure DNS and
+preserve path-level redirects from the previous domain.
 
 ## Cost and terms
 

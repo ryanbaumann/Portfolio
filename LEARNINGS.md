@@ -2,6 +2,20 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-17 - Pin every portfolio GCP command to its authorized project
+
+Context: The local gcloud default can point at an unrelated Google Cloud project even when the repository's deployment variables correctly name the portfolio project.
+Learning: This repository is authorized to use only `geojson-bq-blog`. Every command must pass that exact project explicitly; never infer authority from the active gcloud configuration and never use `gmp-demos-ryanbaumann` here.
+Evidence: Ryan explicitly confirmed the project boundary. The deploy preflight now fails unless `GCP_PROJECT_ID` equals `geojson-bq-blog`, and the repository and domain-migration instructions record the same guardrail.
+Use next time: Before any Google Cloud read or write, resolve the target from repository configuration, confirm it is exactly `geojson-bq-blog`, and include `--project geojson-bq-blog` or a validated equivalent in the command.
+
+## 2026-07-17 - A domain cutover includes generated binaries and dependent origins
+
+Context: Replacing canonical URL strings did not update domain text already rasterized into social-card JPEGs, and the Lab metadata still pointed at removed PNG variants. The deploy smoke also moved to the new host before DNS was ready, while writer OAuth retained a host-bound old origin.
+Learning: Prepare the code first, map and certify the new host against the current service, then deploy the canonical change. Regenerate binary assets, validate absolute metadata assets, and migrate every host-bound integration such as OAuth callbacks and cookies in the same cutover.
+Evidence: Social cards were regenerated with `ryanbaumann.dev`; Lab metadata now resolves to JPEGs; production smoke checks redirects, feed, sitemap, canonicals, and social assets; the domain runbook orders DNS before the cutover deploy and includes writer OAuth.
+Use next time: Treat a domain move as a dependency inventory, not a string replacement. Check generated text in images, absolute asset URLs, deployment health targets, OAuth origins, email senders, analytics, API referrers, and search ownership before changing DNS.
+
 ## 2026-07-17 - Distribution and privacy copy must match the deployed data path
 
 Context: The live site loaded privacy-preserving GA4 analytics by default while the Privacy page described an opt-in control, and the email implementation still used Resend's retired Audience API.

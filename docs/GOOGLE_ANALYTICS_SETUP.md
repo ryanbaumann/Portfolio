@@ -15,9 +15,13 @@ Google requires an Editor role or higher to create a property. See [Add a GA4 pr
 
 1. In the new property, open **Admin > Data collection and modification > Data streams**.
 2. Select **Web**.
-3. Use `https://www.ryanbaumann-portfolio.com` as the website URL and `Ryan Baumann Portfolio` as the stream name.
+3. Use `https://ryanbaumann.dev` as the website URL and `Ryan Baumann Portfolio` as the stream name.
 4. Create the stream.
 5. In **Stream details**, copy the Measurement ID. It starts with `G-`. See [Find your Measurement ID](https://support.google.com/analytics/answer/12270356).
+
+If the portfolio stream already exists, keep its Measurement ID and history;
+edit the existing stream URL to `https://ryanbaumann.dev` instead of creating
+a second stream.
 
 Do not paste Google's manual tag snippet into the site. The portfolio build already owns tag loading, privacy boundaries, and event behavior.
 
