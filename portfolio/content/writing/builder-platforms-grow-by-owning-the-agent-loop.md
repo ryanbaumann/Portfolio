@@ -57,7 +57,7 @@ For each critical user journey, define the checks that can be objective:
 - Are credentials handled through the correct boundary?
 - How much time, tool use, and token cost did the successful run require?
 
-Add human judgment where the task needs it. Start with a human-written rubric for qualities like UI taste and system simplicity. Calibrate any model grader against repeated human review. A judge that agrees with itself is not evidence that it agrees with developers.
+Add human judgment where the task needs it. For qualities like UI taste and system simplicity, start with a human-written rubric, and calibrate any model grader against repeated human review. A judge that agrees with itself is not evidence that it agrees with developers.
 
 ![A critical user journey passes through deterministic checks and calibrated judgment before a ship, improve, or hold decision, while a separate held-out set helps protect the measurement.](/img/writing/agent-feedback-loop-evals.svg)
 
@@ -77,9 +77,9 @@ Do not collect raw source code or private conversations by default. Keep only th
 
 Our team uses this pattern for Google Maps Platform through [portable agent skills](/work/agent-skills/) and a [task-based eval suite](/work/agentic-evals/). I led the strategy for both, and we use eval results to guide launch and distribution decisions.
 
-Ship versioned context in a portable form. Run the same tasks in the tools, prompts, and execution boundaries developers receive. Treat every new model or harness as another row in the test matrix, not a reason to restart the strategy.
+Ship versioned context in a portable form, and run the same tasks in the tools, prompts, and execution boundaries developers receive. Treat every new model or harness as another row in the test matrix, not a reason to restart the strategy.
 
-Open source the skills, examples, and selected evals you want agent builders and model teams to learn from. Keep a separate held-out set. Share the harness where useful, not every test case and answer.
+Open source the skills, examples, and selected evals you want agent builders and model teams to learn from, but keep a separate held-out set. Share the harness where useful, not every test case and answer.
 
 ## Build one complete loop
 
