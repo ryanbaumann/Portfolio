@@ -11,8 +11,8 @@ shareTitle: Own the Agent Feedback Loop
 shareSummary: A DevX strategy for making critical developer journeys work across changing models and agent harnesses.
 shareImageAlt: Social card for Own the Agent Feedback Loop with a compact context, eval, outcome, and distribution loop.
 tags: ["developer experience", "ai", "evals"]
-draft: true
-noindex: true
+draft: false
+noindex: false
 ---
 
 The best model will change. So will the agent wrapped around it. A builder platform cannot build its strategy around either one. It needs to own the feedback loop that keeps its critical developer journeys working as models and agents change.
@@ -21,7 +21,7 @@ This is a growth problem, not just an AI quality problem. When a developer asks 
 
 ## The model is not the strategy
 
-A coding agent is a model plus a harness. The harness controls instructions, tools, repository search, context, and stopping. Change either and the behavior changes.
+A coding agent is a model plus a harness. The harness controls instructions, tools, repository search, context, and how the agent decides it is done. Change either and the behavior changes.
 
 Models and harnesses will keep moving. Your platform can still own four parts of the loop:
 
@@ -34,13 +34,13 @@ Models and harnesses will keep moving. Your platform can still own four parts of
 
 *The loop: distribute tested context, measure activation, retention, and expansion, then review selected traces to improve the skills and evals.*
 
-Evals show which context works. Distribution puts it in more hands. Outcome signals expose gaps. After review, some failures become new tasks and some successes become better examples. Usage does not automatically become training data for a model company, and it should not.
+Evals test the context. Distribution puts the tested path in more hands, while outcome signals show where it still falls short. After review, some failures become new tasks and some successes become better examples. Usage does not automatically become training data for a model company, and it should not.
 
 ## Why verifiers matter
 
-Pretraining learns broad patterns from text and code. Post-training shapes the base model for a job. Supervised fine-tuning uses examples. Reinforcement learning uses rewards. The [instruction-following research](https://arxiv.org/abs/2203.02155) behind this pattern combined demonstrations with human preferences.
+Pretraining gives a model broad capability by learning patterns across text and code. Post-training turns that capability toward a job through supervised fine-tuning on examples, reinforcement learning from rewards, or a combination of the two. The [instruction-following research](https://arxiv.org/abs/2203.02155) behind this pattern combined demonstrations with human preferences.
 
-Coding adds checkable signals. A compiler checks the build. Tests check specified behavior. Static analysis catches some security and API errors. Reinforcement learning from verifiable rewards, or RLVR, can use those checks as rewards. [DeepSeekMath](https://arxiv.org/abs/2402.03300) introduced GRPO, which learns from the relative rewards of multiple attempts at the same task.
+Coding makes some reward signals unusually concrete: a compiler can check the build, tests can check specified behavior, and static analysis can catch some security and API errors. Reinforcement learning from verifiable rewards, or RLVR, can use those checks as its reward signal. [DeepSeekMath](https://arxiv.org/abs/2402.03300) introduced GRPO, which learns from the relative rewards of multiple attempts at the same task.
 
 ![Pretraining produces a base model, post-training can shape it with supervised examples and preference or verifiable rewards, and the model operates inside a harness with platform context, tools, and an execution environment.](/img/writing/agent-feedback-loop-training.svg)
 
@@ -67,9 +67,9 @@ Keep a meaningful slice of tasks and answers out of the context and tuning loop.
 
 ## First-party signals close the product loop
 
-A builder platform needs a first-party measurement path. That can be an owned surface or authorized, privacy-safe attribution through partner harnesses. The point is to define and govern the instrumentation and data boundary, not to replace every coding agent.
+A builder platform needs a first-party measurement path, either through a surface it owns or a partner harness with clear permission and privacy boundaries. The point is to govern what gets measured and shared, not to replace every coding agent.
 
-Record the exact model, harness, context, execution environment, verifier, and run budget. Then measure the product outcome. A passing eval says the path can work. Activation says a developer reached first value. Retention says the value lasted. Expansion says the platform became useful for more work.
+Record the exact model, harness, context, execution environment, verifier, and run budget, then connect the run to a product outcome. A passing eval only says the path can work. From there, activation marks first value; retention shows whether it lasted; expansion shows the platform earning more of the developer's work.
 
 Do not collect raw source code or private conversations by default. Keep only the signals that can change a product decision, and review traces through an explicit privacy and security process.
 
