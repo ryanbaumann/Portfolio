@@ -353,7 +353,7 @@ async function handleContactRequest(request, response) {
 // still honors the password-cookie session when the app is configured for it.
 async function handleWriterFormRequest(request, response, { allowPasswordCookie = false } = {}, action) {
   if (request.method !== 'POST') return sendJson(request, response, 405, { error: 'Method not allowed' });
-  const writerApp = appsByPathLength.find((app) => app.name === 'portfolio-writer');
+  const writerApp = appsByPathLength.find((app) => app.name === 'fieldwork-writer');
   const authenticated = allowPasswordCookie && writerApp?.auth?.type !== 'google-oauth'
     ? writerApp?.auth?.envVar && verifyAuthCookie(request, writerApp.name, process.env[writerApp.auth.envVar])
     : hasGoogleSession(request);

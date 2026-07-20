@@ -40,6 +40,8 @@ const COLLECTIONS = [
 ];
 
 const site = JSON.parse(readFileSync(join(CONTENT_DIR, 'site.json'), 'utf8'));
+const brand = site.brand || site.name;
+const brandShort = site.brandShort || brand.slice(0, 1);
 
 const validationErrors = [];
 
@@ -239,7 +241,7 @@ function loadDemos() {
     // The portfolio itself is listed in the manifest (it's how the gateway
     // mounts this site at "/"); everything else is a demo.
     return entries.filter((entry) =>
-      entry.path !== '/' && entry.name !== 'portfolio' && (entry.visibility || 'public') === 'public');
+      entry.path !== '/' && entry.name !== 'fieldwork' && (entry.visibility || 'public') === 'public');
   } catch {
     return [];
   }
@@ -467,10 +469,9 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
     { href: `${BASE}talks/`, label: 'Talks', key: 'talks' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Labs', key: 'demos' }] : []),
     { href: `${BASE}about/`, label: 'About', key: 'about' },
-    { href: `${BASE}resume/`, label: 'Resume', key: 'resume' },
   ];
   const nav = navItems
-    .map((item) => `<a href="${item.href}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
+    .map((item) => `<a href="${item.href}" class="nav-${item.key}"${item.key === active ? ' aria-current="page"' : ''}>${item.label}</a>`)
     .join('');
 
   const resolvedCanonical = canonical || absoluteUrl('/');
@@ -532,6 +533,7 @@ function layout({ title, description, content, active = '', canonical, ogImage, 
 ${canonicalTag}
 <meta property="og:title" content="${escapeHtml(resolvedShareTitle)}" />
 <meta property="og:description" content="${escapeHtml(resolvedShareSummary)}" />
+<meta property="og:site_name" content="${escapeHtml(brand)}" />
 <meta property="og:type" content="${escapeHtml(resolvedOgType)}" />
 ${ogUrlTag}
 ${ogImageTag}
@@ -551,13 +553,12 @@ ${analyticsMarkup()}
 ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview. Nothing here is indexed.</div>' : ''}
 <header class="site-header">
   <div class="site-branding">
-  <a class="site-name" href="${BASE}" aria-label="${escapeHtml(site.name)} home"><span class="site-name-full">${escapeHtml(site.name)}</span><span class="site-name-short" aria-hidden="true">RB</span></a>
+  <a class="site-name" href="${BASE}" aria-label="${escapeHtml(brand)} home"><span class="site-name-full">${escapeHtml(brand)}</span><span class="site-name-short" aria-hidden="true">${escapeHtml(brandShort)}</span></a>
   </div>
   <div class="site-nav-frame">
     <nav class="site-nav" aria-label="Primary">
     ${nav}
     </nav>
-    <button class="nav-overflow-cue" type="button" aria-label="Show more navigation links" hidden>More →</button>
   </div>
   <div class="header-actions">
     <a class="header-contact${active === 'contact' ? ' is-active' : ''}" href="${BASE}contact/"${active === 'contact' ? ' aria-current="page"' : ''}>Contact</a>
@@ -568,7 +569,7 @@ ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview
 ${content}
 </main>
 <footer class="site-footer">
-  <p>&copy; <span>${new Date().getFullYear()}</span> ${escapeHtml(site.name)}</p>
+  <p>&copy; <span>${new Date().getFullYear()}</span> ${escapeHtml(site.brandByline || `${brand} by ${site.name}`)}</p>
   <p class="footer-links">
     <a href="${site.links.github}" target="_blank" rel="noopener noreferrer">GitHub</a>
     <a href="${site.links.linkedin}" target="_blank" rel="noopener noreferrer">LinkedIn</a>
@@ -582,7 +583,6 @@ ${content}
   </p>
 </footer>
 <script>(()=>{const b=document.querySelector('.theme-toggle');if(!b)return;const states=['system','light','dark'];const icons={system:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg>',light:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"></path></svg>',dark:'<svg viewBox="0 0 24 24"><path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5a8.5 8.5 0 1 0 10.6 10.6Z"></path></svg>'};const sync=()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];b.querySelector('span').innerHTML=icons[current];b.setAttribute('aria-label','Color theme: '+current+'. Activate to use '+next+'.')};b.addEventListener('click',()=>{const current=document.documentElement.dataset.theme||'system';const next=states[(states.indexOf(current)+1)%states.length];if(next==='system'){delete document.documentElement.dataset.theme;localStorage.removeItem('theme')}else{document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)}sync()});sync()})();</script>
-<script>(()=>{const n=document.querySelector('.site-nav'),b=document.querySelector('.nav-overflow-cue'),f=document.querySelector('.site-nav-frame');if(!n||!b||!f)return;const atEnd=()=>n.scrollLeft+n.clientWidth>=n.scrollWidth-1;const syncLabel=()=>{if(b.hidden)return;const end=atEnd();b.textContent=end?'← Back':'More →';b.setAttribute('aria-label',end?'Show first navigation links':'Show more navigation links')};const syncOverflow=()=>{f.classList.remove('has-nav-overflow');const overflow=n.scrollWidth>n.clientWidth+1;f.classList.toggle('has-nav-overflow',overflow);b.hidden=!overflow;syncLabel()};b.addEventListener('click',()=>n.scrollTo({left:atEnd()?0:n.scrollWidth,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'}));n.addEventListener('scroll',syncLabel,{passive:true});addEventListener('resize',syncOverflow,{passive:true});syncOverflow()})();</script>
 </body>
 </html>
 `;
@@ -953,7 +953,7 @@ function jsonLdWebSite() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: site.name,
+    name: brand,
     url: absoluteUrl('/'),
     description: site.answerEngineSummary || site.description,
     author: { '@type': 'Person', name: site.name },
@@ -964,7 +964,7 @@ function jsonLdHomePage() {
   return {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
-    name: `${site.name} portfolio`,
+    name: site.brandByline || `${brand} by ${site.name}`,
     url: absoluteUrl('/'),
     description: site.answerEngineSummary || site.description,
     about: { '@type': 'Person', name: site.name, url: absoluteUrl('/') },
@@ -1054,7 +1054,7 @@ function detailPage(collection, entry, activeKey) {
   <p class="back"><a href="${BASE}${collection.name}/">← All ${collection.label.toLowerCase()}</a></p>
 </article>${isWriting ? `\n${subscribeSection()}\n${commentsSection()}` : ''}`;
   writePage(join(collection.name, entry.slug, 'index.html'), layout({
-    title: `${meta.title} - ${site.name}`,
+    title: `${meta.title} - ${brand}`,
     description: meta.summary || site.description,
     content,
     active: activeKey,
@@ -1278,7 +1278,7 @@ ${demosSection}
 `;
 
   writePage('index.html', layout({
-    title: `${site.name} - ${site.role}`,
+    title: site.brandByline || `${brand} by ${site.name}`,
     description: site.description,
     content,
     canonical: absoluteUrl('/'),
@@ -1297,11 +1297,11 @@ function buildDemosPage() {
   <div class="grid demo-grid">
     ${demos.map(demoCard).join('\n')}
   </div>
-  <p class="section-note">Labs combines open-source reference apps hosted with this portfolio and selected external experiments. <a href="${site.links.github}/Portfolio" target="_blank" rel="noopener noreferrer">Read the portfolio source</a>.</p>
+  <p class="section-note">Labs combines open-source reference apps hosted with Fieldwork and selected external experiments. <a href="${site.links.github}/fieldwork" target="_blank" rel="noopener noreferrer">Read the source</a>.</p>
 </section>`;
 
   writePage(join('demos', 'index.html'), layout({
-    title: `Labs - ${site.name}`,
+    title: `Labs - ${brand}`,
     description: site.sectionIntros?.demos || site.description,
     content,
     active: 'demos',
@@ -1349,7 +1349,7 @@ ${subscribeSection()}`;
 </section>`;
 
   writePage(join(collection.name, 'index.html'), layout({
-    title: `${collection.label} - ${site.name}`,
+    title: `${collection.label} - ${brand}`,
     description: site.sectionIntros?.[collection.name] || site.description,
     content,
     active: collection.name,
@@ -1444,7 +1444,7 @@ function buildStandalonePages(pages) {
   ${markdownToHtml(body)}
 </article>`;
     writePage(join(slug, 'index.html'), layout({
-      title: `${meta.title} - ${site.name}`,
+      title: `${meta.title} - ${brand}`,
       description: meta.summary || site.description,
       content,
       active: slug,
@@ -1474,7 +1474,7 @@ function buildNotFoundPage() {
   </p>
 </section>`;
   writePage('404.html', layout({
-    title: `Page not found - ${site.name}`,
+    title: `Page not found - ${brand}`,
     description: 'The page you were looking for could not be found.',
     content,
     canonical: absoluteUrl('/404.html'),
@@ -1500,7 +1500,7 @@ function rssFeed(entries) {
     .join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel>
-<title>${escapeHtml(site.name)} Writing</title>
+<title>${escapeHtml(brand)} by ${escapeHtml(site.name)}</title>
 <link>${escapeHtml(absoluteUrl('/writing/'))}</link>
 <description>${escapeHtml(site.sectionIntros?.writing || site.description)}</description>
 ${items}
