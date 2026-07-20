@@ -165,14 +165,14 @@ const FLOWS = [
     eyebrow: 'TIERED CODING AGENTS',
     lead: 'One model decides, cheaper models write',
     steps: ['Developer intent', 'Frontier model\ndecides the design', 'Lower-cost workers\nwrite the code', 'Verifiers prove\nthe result'],
-    footer: 'cost per task routes the work',
+    footer: 'cost per task routes the work, consistency keeps it there',
   },
   {
     file: 'writing/model-tiers-devx.svg',
     eyebrow: 'TWO READERS, ONE PLATFORM',
     lead: 'Win the decision, survive the execution',
     steps: ['Win the decision\nat the frontier tier', 'Survive execution\nat the cheapest tier', 'Prove both\nwith evals'],
-    footer: 'test context on the cheapest tier that will run it',
+    footer: 'completion rate · run-to-run variance · tokens per journey',
   },
   {
     file: 'writing/evals-independent-checks.svg',

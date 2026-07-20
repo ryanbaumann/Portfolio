@@ -155,7 +155,7 @@ const CARDS = [
     file: 'the-model-that-picks-your-platform-doesnt-write-the-code.png',
     eyebrow: 'FIELD NOTES · DEVELOPER EXPERIENCE',
     title: "The Model That Picks Your Platform Doesn't Write the Code",
-    summary: 'Frontier orchestrators decide. Lower-cost workers implement. Evals prove it.',
+    summary: 'Frontier models decide. Small models complete the task consistently. Evals prove it.',
     source: 'portfolio/static/img/writing/model-tiers-header.svg',
     layout: 'artifact',
   },

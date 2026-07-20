@@ -33,6 +33,8 @@ A developer platform meets this system twice, and the readers want different thi
 
 So the developer experience strategy is not frontier or cheap. It is both, with different assets. Put current, decision-shaping context where the orchestrator plans, and test your examples against the cheapest tier you expect to write the code.
 
+The execution side has its own scoreboard, and it is consistency, not brilliance. A developer journey is not cheap because a small model passes it once. It is cheap when the small model completes the task reliably: the same journey, run after run, with low variance and less context each release. When work that needed Gemini Pro completes just as well on Gemini Flash, developers get the same result faster and at lower cost, and that test applies to every model family you route. Track completion rate, run-to-run variance, and tokens per journey at each tier, and treat a journey that passes one tier lower as a real platform win.
+
 ## Make the loop portable across all of them
 
 You will not control which models or agents developers bring, so the improving loop has to travel. Our team is running that loop for Google Maps Platform through portable [agent skills](/work/agent-skills/) and a [task-based eval suite](/work/agentic-evals/); I lead the strategy and review the traces. Open source the skills and the evals you want agent builders and model teams to learn from, and [keep a held-out set](/writing/builder-platforms-grow-by-owning-the-agent-loop/) so the score stays trustworthy. Then distribute the same tested context everywhere developers work: popular coding agents, open ones, and the internal agents teams are standing up.

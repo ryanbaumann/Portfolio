@@ -35,5 +35,5 @@ with evals">
       <text x="394" y="445" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="26" font-weight="700" fill="var(--surface)">3</text>
       <text x="600" y="489" text-anchor="middle" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="40" font-weight="700" fill="var(--ink)"><tspan x="600" dy="0">Prove both</tspan><tspan x="600" dy="40">with evals</tspan></text>
     </g>
-  <text x="600" y="630" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="30" fill="var(--faint)">test context on the cheapest tier that will run it</text>
+  <text x="600" y="630" text-anchor="middle" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="30" fill="var(--faint)">completion rate · run-to-run variance · tokens per journey</text>
 </svg>
