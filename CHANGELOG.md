@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - Enhanced the `sitemap.xml` generator to output `<image:image>` and `<image:loc>` nodes for pages with cover images to optimize visual search indexing.
 
 ### Changed
+- Fixed CI workflow secret scanning by running the open-source Gitleaks Docker image directly instead of using the proprietary Gitleaks Action wrapper that requires a commercial license.
 - Fixed tar command compatibility in archive verification and test suite to support both GNU and BSD tar output formats, ensuring tests pass locally on macOS as well as in CI.
 - Extended the portfolio writing guidance, examples, content workflow, presentation workflow, and review gate with an honest curiosity, retention, title, social packaging, and visual preview framework for posts, headlines, naming, talks, and social cards.
 - Reframed the DevX growth Field Note around the misconception that DevX is a docs queue, with updated title, summary, social copy, opening, and closing.

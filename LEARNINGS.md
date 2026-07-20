@@ -2,6 +2,13 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-19 - Gitleaks Action v3 licensing breaks CI/CD workflows
+
+Context: The CI pipeline's Gitleaks secret scanner step failed with a "missing gitleaks license" error because the proprietary `gitleaks-action@v3` wrapper enforces licensing key checks for organization repos or when GitHub's account-type API experiences a transient lookup failure.
+Learning: Avoid proprietary action wrappers that add commercial licensing enforcement mechanisms for open-source tools when they can be run directly. Instead, run the official open-source tool binary directly or via Docker (`ghcr.io/gitleaks/gitleaks`) to scan git history without external dependencies or license checks.
+Evidence: Changing the CI step to run `docker run --rm -v "${{ github.workspace }}:/repo" ghcr.io/gitleaks/gitleaks:latest git --source=/repo --verbose --redact` runs successfully without requiring a GITLEAKS_LICENSE secret or crashing on API failures.
+Use next time: Prefer running open-source security tools via direct Docker commands or binary installation in workflows over proprietary wrapper actions that require license keys.
+
 ## 2026-07-19 - tar output format differences break size checks and rename options
 
 Context: Checking the size of files in static archive artifacts failed on macOS because BSD `tar -tvzf` uses a different column order (size at index 4) compared to GNU `tar` (size at index 2), and the test suite's path-traversal simulation failed due to missing `--transform` support in BSD `tar`.
