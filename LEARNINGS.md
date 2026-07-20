@@ -13,7 +13,7 @@ Use next time: Inventory page paths, redirects, metadata, images, repository lin
 
 Context: The header exposed every desktop destination on narrow screens, requiring horizontal scrolling and an extra JavaScript overflow control.
 Learning: Mobile navigation is a hierarchy decision. Keep the three primary reader destinations visible in one row, move secondary destinations to a complete footer, and verify the rendered header width rather than relying on a scroll affordance.
-Evidence: At 360 pixels, the rendered header shows Field Notes, Work, and About, its scroll width equals its client width, and Resume remains available from About and the footer.
+Evidence: At 360 pixels, the rendered header shows Notes, Work, and About, its scroll width equals its client width, and Resume remains available from About and the footer.
 Use next time: Define desktop and mobile destination priority explicitly, retain 44-pixel targets, and add a structural test for links that must remain present or absent.
 
 ## 2026-07-19 - Gitleaks Action v3 licensing breaks CI/CD workflows

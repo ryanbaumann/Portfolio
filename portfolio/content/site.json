@@ -1,7 +1,8 @@
 {
   "name": "Ryan Baumann",
   "brand": "Fieldwork",
-  "brandShort": "F",
+  "headerBrand": "Ryan’s Fieldwork",
+  "brandShort": "Fieldwork",
   "brandByline": "Fieldwork by Ryan Baumann",
   "role": "Head of DevX at Google Maps Platform",
   "tagline": "BUILDER PLATFORMS \u00b7 DEVELOPER TOOLS \u00b7 AI CODING AGENTS",

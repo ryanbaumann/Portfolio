@@ -140,7 +140,7 @@ function formResponsePage(title, message, statusCode = 200, { backHref = '/conta
 }
 
 const contactResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode);
-const subscribeResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode, { backHref: '/writing/', backLabel: 'Field Notes' });
+const subscribeResponsePage = (title, message, statusCode = 200) => formResponsePage(title, message, statusCode, { backHref: '/writing/', backLabel: 'Notes' });
 
 // POST /api/subscribe — add an email address to the Resend global Contacts
 // model, the internal Field Notes segment, and its user-facing Topic. Sends

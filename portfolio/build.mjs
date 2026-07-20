@@ -35,12 +35,13 @@ if (Number.isNaN(BUILD_TIME.valueOf())) {
 // entries with a body get their own page at /<name>/<slug>/.
 const COLLECTIONS = [
   { name: 'work', label: 'Work', listPage: true, detailPages: true },
-  { name: 'writing', label: 'Field Notes', listPage: true, detailPages: true },
+  { name: 'writing', label: 'Notes', listPage: true, detailPages: true },
   { name: 'talks', label: 'Talks', listPage: true, detailPages: true },
 ];
 
 const site = JSON.parse(readFileSync(join(CONTENT_DIR, 'site.json'), 'utf8'));
 const brand = site.brand || site.name;
+const headerBrand = site.headerBrand || brand;
 const brandShort = site.brandShort || brand.slice(0, 1);
 
 const validationErrors = [];
@@ -464,7 +465,7 @@ const CSS = readFileSync(join(ROOT, 'style.css'), 'utf8');
 
 function layout({ title, description, content, active = '', canonical, ogImage, ogImageAlt, shareTitle, shareSummary, ogType, articleDate, articleUpdated, robots, jsonLd, contactDelivery }) {
   const navItems = [
-    { href: `${BASE}writing/`, label: 'Field Notes', key: 'writing' },
+    { href: `${BASE}writing/`, label: 'Notes', key: 'writing' },
     { href: `${BASE}work/`, label: 'Work', key: 'work' },
     { href: `${BASE}talks/`, label: 'Talks', key: 'talks' },
     ...(demos.length ? [{ href: `${BASE}demos/`, label: 'Labs', key: 'demos' }] : []),
@@ -553,7 +554,7 @@ ${analyticsMarkup()}
 ${WRITER_MODE ? '<div class="writer-banner" role="status">Private writer preview. Nothing here is indexed.</div>' : ''}
 <header class="site-header">
   <div class="site-branding">
-  <a class="site-name" href="${BASE}" aria-label="${escapeHtml(brand)} home"><span class="site-name-full">${escapeHtml(brand)}</span><span class="site-name-short" aria-hidden="true">${escapeHtml(brandShort)}</span></a>
+  <a class="site-name" href="${BASE}" aria-label="${escapeHtml(brand)} home"><span class="site-name-full">${escapeHtml(headerBrand)}</span><span class="site-name-short" aria-hidden="true">${escapeHtml(brandShort)}</span></a>
   </div>
   <div class="site-nav-frame">
     <nav class="site-nav" aria-label="Primary">
@@ -1254,7 +1255,7 @@ function buildHome(collections) {
 </section>
 
 <section>
-  ${sectionHeader('', 'Field Notes', `${BASE}writing/`, 'All field notes')}
+  ${sectionHeader('', 'Notes', `${BASE}writing/`, 'All notes')}
   <p class="section-note">Learnings from users</p>
   ${fieldNotesBody}
 </section>
@@ -1469,7 +1470,7 @@ function buildNotFoundPage() {
   <p class="hero-actions">
     <a class="button button-primary" href="${BASE}">Home</a>
     <a href="${BASE}work/">Work</a>
-    <a href="${BASE}writing/">Field Notes</a>
+    <a href="${BASE}writing/">Notes</a>
     ${demos.length ? `<a href="${BASE}demos/">Labs</a>` : ''}
   </p>
 </section>`;
