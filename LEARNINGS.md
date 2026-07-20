@@ -2,12 +2,19 @@
 
 This log captures durable lessons discovered while building and maintaining the portfolio and demo lab, keeping the root instructions lean.
 
+## 2026-07-19 - tar output format differences break size checks and rename options
+
+Context: Checking the size of files in static archive artifacts failed on macOS because BSD `tar -tvzf` uses a different column order (size at index 4) compared to GNU `tar` (size at index 2), and the test suite's path-traversal simulation failed due to missing `--transform` support in BSD `tar`.
+Learning: Do not assume `tar` options or output formats are identical across operating systems (BSD on macOS vs GNU on Linux). Parse size robustly using regular expressions targeting either format pattern, and try-catch OS-specific options (like `--transform` on GNU `tar`) falling back to their BSD equivalents (like `-s`).
+Evidence: The updated `inspectArchive` matches both BSD and GNU formats via regex, and `labs.test.mjs` handles `--transform` errors by falling back to the `-s` rename option, resolving the local test failure on macOS.
+Use next time: Use regex patterns rather than split column indices for parsing CLI command output, and provide fallback options when running platform-dependent tools like `tar`.
+
 ## 2026-07-19 - Curiosity works when it corrects a real assumption
 
 Context: Ryan wanted the copywriting skill to make social posts, headlines, titles, names, and preview images more interesting while preserving the portfolio's evidence-led tone.
 Learning: High-retention packaging should begin with the reader's plausible misconception, turn it into a specific question or tension, then quickly resolve the mechanism with evidence. The strongest hook often appears after swapping the obvious topic for the underlying lesson. Visual previews should carry one concrete contrast or artifact at small size, while the title carries the claim or question.
 Evidence: Learning research on misconception-based multimedia shows that directly engaging prior beliefs can improve conceptual change, and creator packaging analysis consistently emphasizes clear promise, trust, simple visuals, title-image alignment, and iteration.
-Use next time: For any public title, social draft, article headline, demo name, or preview card, draft the obvious framing first, find the hidden lesson, state the honest tension, and verify the opening paragraph pays off the promise immediately.
+Use next time: For any public title, social draft, article headline, demo name, talk title, or preview card, draft the obvious framing first, find the hidden lesson, state the honest tension, verify the opening paragraph pays off the promise immediately, and propagate the rule into content, presentation, and review workflows instead of leaving it in writing guidance only.
 
 ## 2026-07-18 - Social automation should stop at an editable draft
 
