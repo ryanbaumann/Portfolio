@@ -1296,7 +1296,6 @@ ${demosSection}
 function buildDemosPage() {
   if (!demos.length) return;
   const content = `<section>
-  <p class="eyebrow">Labs</p>
   <h1>Labs</h1>
   <p class="lede">${escapeHtml(site.sectionIntros?.demos || '')}</p>
   <div class="grid demo-grid">
@@ -1328,13 +1327,10 @@ function buildCollectionIndex(collection, entries) {
     const owned = entries.filter((entry) => !entry.meta.external);
     const elsewhere = entries.filter((entry) => entry.meta.external);
     body = `<div class="collection-group">
-  <h2>Essays</h2>
-  <p>Canonical ideas published here first, with evidence and a practical next move.</p>
   <ul class="rows">${owned.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>
 </div>
 ${elsewhere.length ? `<div class="collection-group">
   <h2>Elsewhere</h2>
-  <p>Launch notes and experiments published with the teams and communities behind the work.</p>
   <ul class="rows">${elsewhere.map((entry) => listRow(collection.name, entry)).join('\n')}</ul>
 </div>` : ''}
 ${subscribeSection()}`;
@@ -1347,7 +1343,6 @@ ${subscribeSection()}`;
     : '';
 
   const content = `<section>
-  <p class="eyebrow">${escapeHtml(collection.label)}</p>
   <h1>${escapeHtml(collection.label)}</h1>
   ${intro}
   ${isEmpty ? emptyState : body}
