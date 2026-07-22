@@ -1203,16 +1203,16 @@ function buildHome(collections) {
   const bySlug = (collection, slug) => collections[collection].find((entry) => entry.slug === slug);
   const pinnedWork = collections.work.find((e) => e.meta.order !== undefined) || collections.work[0];
   const otherWork = collections.work.filter((e) => e !== pinnedWork);
-  const selectedWork = [pinnedWork, ...otherWork].slice(0, 3);
+  const selectedWork = [pinnedWork, ...otherWork].filter(Boolean).slice(0, 3);
 
   const pinnedWriting = collections.writing.find((e) => e.meta.order !== undefined) || collections.writing[0];
   const otherWriting = collections.writing.filter((e) => e !== pinnedWriting);
-  const writingEntries = [pinnedWriting, ...otherWriting].slice(0, 4);
+  const writingEntries = [pinnedWriting, ...otherWriting].filter(Boolean).slice(0, 4);
 
   const visibleDemos = demos.filter((d) => !d.hideOnHome);
   const pinnedDemo = visibleDemos.find((d) => d.order !== undefined) || visibleDemos[0];
   const otherDemos = visibleDemos.filter((d) => d !== pinnedDemo);
-  const homeDemos = [pinnedDemo, ...otherDemos].slice(0, 3);
+  const homeDemos = [pinnedDemo, ...otherDemos].filter(Boolean).slice(0, 3);
   const demosSection = homeDemos.length
     ? `
 <section>
